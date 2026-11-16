@@ -22,8 +22,8 @@ pause() {
     shell_eval "new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, $1, () => (r(true), false)))" >/dev/null
 }
 
-# Test-only helpers inside the shell: a virtual pointer and keyboard, and a
-# sampler for the size of the body.
+# Test-only helpers inside the shell: a virtual pointer and keyboard, a module
+# that gives the notch something to show, and a sampler for the size of the body.
 shell_eval '(() => {
     const seat = Clutter.get_default_backend().get_default_seat();
     const pointer = seat.create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
@@ -53,6 +53,24 @@ shell_eval '(() => {
             return [x + neck.width / 2, y + neck.height / 2];
         },
         away: [300, 700],
+        // One row and one chip. Modules do not survive disable(), so tests
+        // call this again after they enabled the extension anew.
+        register() {
+            visor.api.register({
+                id: "probe",
+                name: "Probe",
+                icon: "dialog-information-symbolic",
+                slot: "now",
+                enable(ctx) {
+                    visorTest.ctx = ctx;
+                    ctx.now.set([{ id: "row", icon: "dialog-information-symbolic", title: "Probe row" }]);
+                    ctx.peek.set(visorTest.chip);
+                },
+                disable() {},
+            });
+        },
+        // Wider than the hint, so the width of the peek state comes from the chip.
+        chip: { icon: "dialog-information-symbolic", text: "The chip of the probe module", priority: 1 },
         // Calls start(), then records [ms, width, height] of the body every 8 ms.
         sample(notch, start, duration) {
             return new Promise(resolve => {
@@ -78,6 +96,7 @@ shell_eval 'new Gio.Settings({schema_id: "org.gnome.desktop.interface"}).set_boo
 shell_eval 'visorTest.move(...visorTest.away).then(() => visorTest.move(...visorTest.away))' >/dev/null
 shell_eval 'Main.overview.hide()' >/dev/null
 shell_wait_for '!Main.overview.visible'
+shell_eval 'visorTest.register()' >/dev/null
 
 finish() {
     if ((failures == 0)); then echo "PASS"; else echo "FAILED: $failures"; fi

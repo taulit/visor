@@ -12,6 +12,7 @@ reenable="(Main.extensionManager.disableExtension('$uuid'), Main.extensionManage
 log_before="$(wc -l <"$HOME/shell.log")"
 
 shell_eval "$reenable" >/dev/null
+shell_eval 'visorTest.register()' >/dev/null
 pause 200
 fresh="$(shell_eval "$count")"
 

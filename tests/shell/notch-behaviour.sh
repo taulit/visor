@@ -26,7 +26,7 @@ check 'root is centred on the neck, below the panel' "[$n.root.x, $n.root.y]" "[
 check 'root is on the primary monitor' "Main.layoutManager.findMonitorForActor($n.root) === Main.layoutManager.primaryMonitor" true
 check 'idle: nothing of the body can be picked' "[$ours($nx, $panel + 2), $ours($nx, $panel + 30)]" '[false,false]'
 check 'idle: quiet' "$quiet" '["idle",false,false,0]'
-check 'content not built yet' '[visor.content.peek, visor.content.sheet]' '[null,null]'
+check 'content not built yet' '[visor.content.peek.actor, visor.content.sheet.root]' '[null,null]'
 
 echo "--- hover (virtual pointer)"
 shell_eval "visorTest.move(...visorTest.away)" >/dev/null
@@ -35,13 +35,13 @@ shell_eval "visorTest.move($nx, $ny)" >/dev/null
 check 'pointer on the neck: hint' "$state" '"hint"'
 check 'hint size: neck + 40 wide, 8 high' "[$n.body.width - $n.neck.width, $n.body.height]" '[40,8]'
 check 'hint: peek timer runs' "[...$n.timers.keys()]" '["peek"]'
-check 'hint: still no peek widget' 'visor.content.peek' null
-pause 200
-check 'after 260 ms: still hint' "$state" '"hint"'
-pause 200
+check 'hint: still no peek widget' 'visor.content.peek.actor' null
+pause 80
+check 'well before the peek delay: still hint' "$state" '"hint"'
+pause 350
 check 'after the peek delay (380 ms): peek' "$state" '"peek"'
-check 'peek size: natural width + 28, 56 high' "[$n.body.width - 2 * Math.ceil(visor.content.peek.width / 2) , $n.body.height]" '[28,56]'
-check 'peek content is centred' "(p => [Math.abs(p.get_transformed_position()[0] + p.width / 2 - $nx) <= 1, Math.abs(p.get_transformed_position()[1] + p.height / 2 - ($panel + 28)) <= 1])(visor.content.peek)" '[true,true]'
+check 'peek size: natural width + 28, 56 high' "[$n.body.width - 2 * Math.ceil(visor.content.peek.actor.width / 2) , $n.body.height]" '[28,56]'
+check 'peek content is centred' "(p => [Math.abs(p.get_transformed_position()[0] + p.width / 2 - $nx) <= 1, Math.abs(p.get_transformed_position()[1] + p.height / 2 - ($panel + 28)) <= 1])(visor.content.peek.actor)" '[true,true]'
 check 'peek: no timer left' "$n.timers.size" 0
 check 'peek: body is picked inside, not outside its visible area' "[$ours($nx, $panel + 40), $ours($nx, $panel + 60), $ours($nx - $n.body.width / 2 - 20, $panel + 20), $ours($nx + $n.body.width / 2 + 3, $panel + 40)]" '[true,false,false,false]'
 shell_eval "visorTest.move($nx, $panel + 40)" >/dev/null
@@ -73,7 +73,10 @@ echo "--- click (virtual pointer)"
 shell_eval "visorTest.move($nx, $ny)" >/dev/null
 shell_eval "visorTest.click()" >/dev/null
 check 'click on the neck opens' "$state" '"open"'
-check 'open size: sheet width x its preferred height' "[$n.body.width === visor.content.sheetWidth(), $n.body.height === visor.content.sheet.get_preferred_height(-1)[1]]" '[true,true]'
+# What the sheet asks for at its width, without the height the notch gave it.
+wanted='(r => { const h = r.height; r.set_height(-1); const [, natural] = r.get_preferred_height(r.width); r.set_height(h); return natural; })(visor.content.sheet.root)'
+check 'open size: sheet width x its preferred height' "[$n.body.width === visor.content.sheetWidth(), $n.body.height === $wanted, $n.body.height > 56, visor.content.sheet.root.height === $n.body.height]" '[true,true,true,true]'
+check 'the search entry has the key focus' 'global.stage.get_key_focus() === visor.content.sheet.entry.clutter_text' true
 check 'registered as the active panel menu, modal' "[Main.panel.menuManager.activeMenu === $n.menu, Main.actionMode === Shell.ActionMode.POPUP]" '[true,true]'
 check 'banners blocked while open' 'Main.messageTray._bannerBlocked' true
 check 'no timers while open' "$n.timers.size" 0
@@ -168,23 +171,27 @@ shell_eval "$n.close()" >/dev/null
 
 echo "--- content changes"
 shell_eval "$n.open()" >/dev/null
-shell_eval 'visor.content.sheet.set_style("padding: 24px; height: 420px;")' >/dev/null
-check 'sheet got higher: contentChanged() resizes the open body' "($n.contentChanged(), [$n.state, $n.body.height, visor.content.sheet.height])" '["open",468,468]'
-shell_eval 'visor.content.sheet.set_style("padding: 24px; height: 2000px;")' >/dev/null
-check 'height is capped at 820' "($n.contentChanged(), [$n.body.height, visor.content.sheet.height])" '[820,820]'
-shell_eval 'visor.content.sheet.set_style("padding: 24px; height: 300px;")' >/dev/null
+sheet='visor.content.sheet.root'
+shell_eval "$sheet.set_style('padding: 24px; height: 420px;')" >/dev/null
+check 'sheet got higher: contentChanged() resizes the open body' "($n.contentChanged(), [$n.state, $n.body.height, $sheet.height])" '["open",468,468]'
+shell_eval "$sheet.set_style('padding: 24px; height: 2000px;')" >/dev/null
+check 'height is capped at 820' "($n.contentChanged(), [$n.body.height, $sheet.height])" '[820,820]'
+shell_eval "$sheet.set_style('padding: 24px; height: 300px;')" >/dev/null
 check 'and shrinks again' "($n.contentChanged(), $n.body.height)" 348
+shell_eval "$sheet.set_style(null)" >/dev/null
+check 'style removed: back to what the sheet asks for' "($n.contentChanged(), $n.body.height === $wanted)" true
+rows='["one", "two", "three"].map(id => ({ id, icon: "alarm-symbolic", title: id }))'
+check 'a module adds rows: the open body follows by itself' "(async h => { visorTest.ctx.now.set($rows); await new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => (r(), false))); return [$n.body.height > h + 50, $n.body.height === $sheet.height]; })($n.body.height)" '[true,true]'
 shell_eval "$n.close()" >/dev/null
 shell_eval "$n.flash()" >/dev/null
-shell_eval 'visor.content.peek.text = "a much longer row of chips for the peek"' >/dev/null
-check 'chips changed: the peek gets wider' "(w => ($n.contentChanged(), $n.body.width > w + 100))($n.body.width)" true
-check 'chips gone, pointer away: idle' "(visor.content.hasPeek = () => false, $n.contentChanged(), $quiet)" '["idle",false,false,0]'
-shell_eval 'delete visor.content.hasPeek' >/dev/null
+check 'chip changed: the peek gets wider by itself' "(w => (visorTest.ctx.peek.set({ ...visorTest.chip, text: 'a much longer chip for the peek row, about twice as long as before' }), $n.body.width > w + 100))($n.body.width)" true
+check 'chips gone, pointer away: idle' "(visorTest.ctx.peek.set(null), $quiet)" '["idle",false,false,0]'
+shell_eval 'visorTest.ctx.peek.set(visorTest.chip)' >/dev/null
 shell_eval "visorTest.move($nx, $ny)" >/dev/null
 pause 450
 check 'peek by hover' "$state" '"peek"'
-check 'chips gone, pointer on it: hint' "(visor.content.hasPeek = () => false, $n.contentChanged(), [$n.state, $n.body.height])" '["hint",8]'
-shell_eval 'delete visor.content.hasPeek' >/dev/null
+check 'chips gone, pointer on it: hint' "(visorTest.ctx.peek.set(null), [$n.state, $n.body.height])" '["hint",8]'
+shell_eval 'visorTest.ctx.peek.set(visorTest.chip)' >/dev/null
 shell_eval "visorTest.move(...visorTest.away)" >/dev/null
 pause 350
 
@@ -247,7 +254,7 @@ echo "--- enable() time and restoration"
 times="$(shell_eval '(() => { const out = []; for (let i = 0; i < 9; i++) { visor.disable(); const t = GLib.get_monotonic_time(); visor.enable(); out.push((GLib.get_monotonic_time() - t) / 1000); } return out.sort((a, b) => a - b); })()')"
 echo "enable() in ms, 9 runs, sorted: $times"
 check 'median enable() below 5 ms' "(t => t[4] < 5)($times)" true
-check 'content not built by enable()' '[visor.content.peek, visor.content.sheet]' '[null,null]'
+check 'content not built by enable()' '[visor.content.peek.actor, visor.content.sheet.root]' '[null,null]'
 shell_eval "visor.notch.open()" >/dev/null
 check 'disable while open: everything handed back' "(visor.disable(), [Object.hasOwn(Main.panel, 'toggleCalendar'), Object.hasOwn(Main.panel, 'closeCalendar'), Main.panel.toggleCalendar === Object.getPrototypeOf(Main.panel).toggleCalendar, Main.wm._allowedKeybindings['open-shortcut'] === Shell.ActionMode.NONE, Main.messageTray._bannerBlocked, Main.panel.menuManager.activeMenu == null, Main.actionMode === Shell.ActionMode.NORMAL, Main.panel.statusArea.dateMenu.container.visible, Main.panel._centerBox.get_n_children()])" '[false,false,true,true,false,true,true,true,1]'
 shell_eval 'visor.enable()' >/dev/null

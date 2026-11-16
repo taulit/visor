@@ -16,6 +16,7 @@ shell_eval "$row($open)"
 final="$(shell_eval "(s => s.at(-1).slice(1))($open)")"
 echo "final size: $final, largest: $(shell_eval "(s => [Math.max(...s.map(e => e[1])), Math.max(...s.map(e => e[2]))])($open)")"
 first="$(shell_eval "(s => s[0].slice(1))($open)")"
+full="$(shell_eval "(s => s.at(-1)[2])($open)")"
 
 if [[ "$animated" == true ]]; then
     check 'starts small' "(s => s[0][2] < s.at(-1)[2] / 2)($open)" true
@@ -51,7 +52,7 @@ retarget="$(shell_eval "visorTest.sample(visor.notch, () => {
 }, 700)")"
 shell_eval "$row($retarget)"
 if [[ "$animated" == true ]]; then
-    check 'turns around below the full height' "(s => { const top = Math.max(...s.map(e => e[2])); return top > 20 && top < 348; })($retarget)" true
+    check 'turns around below the full height' "(s => { const top = Math.max(...s.map(e => e[2])); return top > 20 && top < $full; })($retarget)" true
     check 'no jump at the turn (largest step down < 25 % of the peak)' "(s => { const top = Math.max(...s.map(e => e[2])); return Math.max(...s.map((e, i) => i ? s[i - 1][2] - e[2] : 0)) < top / 4; })($retarget)" true
 fi
 check 'ends in idle and hidden' '[visor.notch.state, visor.notch.body.visible, visor.notch.motion.running]' '["idle",false,false]'
