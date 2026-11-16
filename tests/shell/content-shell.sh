@@ -71,6 +71,22 @@ run "(() => {
                 await wait(60);
             }
         },
+        async shiftTab() {
+            keyboard.notify_keyval(now(), Clutter.KEY_Shift_L, Clutter.KeyState.PRESSED);
+            await T.key(Clutter.KEY_Tab);
+            keyboard.notify_keyval(now(), Clutter.KEY_Shift_L, Clutter.KeyState.RELEASED);
+            await wait(60);
+        },
+        // A press where nothing of the notch is.
+        async clickOutside() {
+            for (let i = 0; i < 10 && global.get_pointer()[1] !== 900; i++) {
+                pointer.notify_absolute_motion(now(), 200, 900);
+                await wait(60);
+            }
+            pointer.notify_button(now(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.PRESSED);
+            pointer.notify_button(now(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.RELEASED);
+            await wait(120);
+        },
         async move(actor) {
             await moveTo(actor);
             await wait(200);
@@ -113,6 +129,10 @@ check 'Down goes to the next row, Enter runs its primary action' \
     'T.key(Clutter.KEY_Down, Clutter.KEY_Return).then(() => T.row("taulit").contains(T.focus()) && T.logged("agents:allow") === 1 && T.logged("agents:deny") === 0)'
 check 'Enter expands a row that has neither activate nor primary' \
     'T.key(Clutter.KEY_Down, Clutter.KEY_Return).then(() => T.row("iphone-control").contains(T.focus()) && T.within(T.row("iphone-control"), "visor-row-more").length === 1 && T.within(T.row("iphone-control"), "visor-row-more")[0].visible)'
+check 'Up goes back row by row and ends in the search entry' \
+    '(async () => { const seen = []; for (let i = 0; i < 3; i++) { await T.key(Clutter.KEY_Up); seen.push(T.focus()); } return T.row("taulit").contains(seen[0]) && T.row("Midnight City").contains(seen[1]) && seen[2] === T.sheet.entry.clutter_text || seen.map(String).join(); })()'
+check 'Shift+Tab goes backwards, Tab forwards again' \
+    '(async () => { await T.key(Clutter.KEY_Tab); const dock = T.focus(); await T.shiftTab(); const back = T.focus(); await T.shiftTab(); const last = T.focus(); await T.key(Clutter.KEY_Tab); return dock.has_style_class_name("visor-dock-button") && back === T.sheet.entry.clutter_text && last.has_style_class_name("visor-button") && T.focus() === back || [dock, back, last, T.focus()].map(String).join(); })()'
 check 'Tab walks every interactive element' \
     '(async () => {
         T.sheet.entry.grab_key_focus();
@@ -151,7 +171,7 @@ check 'now.clear takes the row away, now.set brings a new one' \
     '(() => { const before = T.row("tender research"); visorDemo.ctx.timers.now.clear(); const gone = T.row("tender research") === null; visorDemo.ctx.timers.now.set(visorDemo.rows.timers("3:20")); return gone && T.row("tender research") !== before && T.titles().indexOf("tender research") === 4; })()'
 
 check 'a change of the height reaches the notch' \
-    '(async () => { let calls = 0; const original = visor.notch.contentChanged; visor.notch.contentChanged = function () { calls++; return original.call(this); }; const before = visor.notch.root.height; const more = ["one", "two", "three"].map(id => ({ id, icon: "alarm-symbolic", title: "Timer " + id })); visorDemo.ctx.timers.now.set([...visorDemo.rows.timers("3:20"), ...more]); await T.wait(200); const grown = visor.notch.root.height; visorDemo.ctx.timers.now.set(visorDemo.rows.timers("3:20")); await T.wait(200); visor.notch.contentChanged = original; return calls >= 2 && grown > before && visor.notch.root.height === before || [calls, before, grown, visor.notch.root.height].join(); })()'
+    '(async () => { let calls = 0; const original = visor.notch.contentChanged; visor.notch.contentChanged = function () { calls++; return original.call(this); }; const before = visor.notch.body.height; const more = ["one", "two", "three"].map(id => ({ id, icon: "alarm-symbolic", title: "Timer " + id })); visorDemo.ctx.timers.now.set([...visorDemo.rows.timers("3:20"), ...more]); await T.wait(200); const grown = visor.notch.body.height; visorDemo.ctx.timers.now.set(visorDemo.rows.timers("3:20")); await T.wait(200); visor.notch.contentChanged = original; return calls >= 2 && grown > before && visor.notch.body.height === before && T.sheet.root.height === before || [calls, before, grown, visor.notch.body.height, T.sheet.root.height].join(); })()'
 
 echo "# escape"
 check 'Escape clears the search first' \
@@ -162,6 +182,8 @@ check 'a dock icon opens the view of its module' \
     'T.click(T.find("visor-dock-button")[0]).then(() => T.sheet.view === "notes" && T.find("visor-view-title")[0].text === "Notes" && T.titles().join() === "Shopping list,Visor ideas" && visor.content.sheetWidth() === 960)'
 check 'Escape in a view clears a search text, then leaves the view, then is not used' \
     '(() => { T.sheet.entry.set_text("x"); const first = visor.content.handleEscape() && T.sheet.view === "notes"; const second = visor.content.handleEscape() && T.sheet.view === null; return first && second && visor.content.handleEscape() === false && T.focus() === T.sheet.entry.clutter_text; })()'
+check 'the Escape key leaves a view, clears the search, then closes the panel' \
+    '(async () => { await T.click(T.find("visor-dock-button")[0]); const inView = T.sheet.view === "notes"; await T.key(Clutter.KEY_Escape); const left = T.sheet.view === null && T.focus() === T.sheet.entry.clutter_text; await T.key(Clutter.KEY_x); const typed = T.sheet.entry.get_text(); await T.key(Clutter.KEY_Escape); const cleared = T.sheet.entry.get_text() === "" && visor.notch.state === "open"; await T.key(Clutter.KEY_Escape); return inView && left && typed === "x" && cleared && visor.notch.state === "idle" || [inView, left, typed, cleared, visor.notch.state].join(); })()'
 check 'ctx.open(view) opens the panel on that view; closing resets view and search' \
     '(async () => { visor.notch.close(); visorDemo.ctx.media.open("notes"); await T.wait(100); const opened = visor.notch.state === "open" && T.sheet.view === "notes"; T.sheet.entry.set_text("left over"); visor.notch.close(); return opened && T.sheet.view === null && T.sheet.entry.get_text() === ""; })()'
 
@@ -182,7 +204,11 @@ echo "# peek"
 check 'flash puts a chip first in the accent colour for three seconds' \
     '(async () => { const peek = visor.content.getPeek(); visorDemo.ctx.media.peek.flash({ icon: "media-playback-start-symbolic", text: "Now: Kids", priority: 1 }); const first = peek.get_child_at_index(0); const flashed = first.label_actor.text === "Now: Kids" && first.has_style_class_name("accent") && peek.get_n_children() === 4; await T.wait(3300); const after = peek.get_child_at_index(0); return flashed && after.has_style_class_name("waiting") && peek.get_children().some(c => c.label_actor.text === "Midnight City" && !c.has_style_class_name("accent")); })()'
 check 'a click on a chip opens the panel' \
-    '(async () => { visor.notch.dispatch({type: "enter"}); await T.wait(700); await T.click(visor.content.getPeek().get_child_at_index(1)); return visor.notch.state === "open"; })()'
+    '(async () => { visor.notch.close(); visor.notch.dispatch({type: "enter"}); await T.wait(700); const peeking = visor.notch.state === "peek"; await T.click(visor.content.getPeek().get_child_at_index(1)); return peeking && visor.notch.state === "open" && T.focus() === T.sheet.entry.clutter_text || [peeking, visor.notch.state].join(); })()'
+check 'a click outside closes the panel' \
+    'T.clickOutside().then(() => visor.notch.state === "idle" && Main.actionMode === Shell.ActionMode.NORMAL)'
+check 'a click on the neck opens the panel, the next one closes it, the third opens it again' \
+    '(async () => { const seen = []; for (let i = 0; i < 3; i++) { await T.click(visor.notch.neck); seen.push(visor.notch.state); } return seen.join() === "open,idle,open" && T.focus() === T.sheet.entry.clutter_text || seen.join(); })()'
 
 echo "# modules that throw"
 run 'globalThis.titlesBefore = T.titles()'
@@ -243,10 +269,10 @@ actors_off="$(shell_eval "$count")"
 run "Main.extensionManager.enableExtension('$uuid')"
 shell_wait_for "Main.extensionManager.lookup('$uuid').state === 1"
 content_register
+run 'visor.notch.dispatch({type: "enter"})'
+shell_wait_for 'visor.notch.state === "peek"'
 run 'visor.notch.open()'
 run "$(content_find visor-dock-button).at(-1).emit('clicked', 1)"
-run 'visor.notch.dispatch({type: "enter"})'
-sleep 0.7
 run "Main.extensionManager.disableExtension('$uuid')"
 shell_wait_for "Main.extensionManager.lookup('$uuid').state !== 1"
 check 'disabling the extension with everything built leaves no actor behind' "$count === $actors_off"
