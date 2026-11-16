@@ -2,4 +2,5 @@
 # the waiting one first.
 source "$repo/scripts/scenarios/content-lib.sh"
 content_register
-shell_eval "visor.notch.setState('peek')" >/dev/null
+shell_eval 'visor.notch.dispatch({type: "enter"})' >/dev/null
+shell_wait_for 'visor.notch.state === "peek"'

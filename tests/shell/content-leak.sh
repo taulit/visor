@@ -3,14 +3,14 @@
 # modules are registered and the sheet, the list of modules and the peek row
 # are built. Fails if actors are left behind or the shell logs warnings.
 #
-# Usage: tests/content-leak.sh [cycles]   (default 20)
+# Usage: tests/shell/content-leak.sh [cycles]   (default 20)
 set -euo pipefail
 
-repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 if [[ "${1:-}" != --inside ]]; then
     exec "$repo/scripts/nested.sh" --log "$repo/.shell-test/content-leak.log" -- \
-        "$repo/tests/content-leak.sh" --inside "${1:-20}"
+        "$repo/tests/shell/content-leak.sh" --inside "${1:-20}"
 fi
 
 source "$repo/scripts/lib/shell.sh"
@@ -30,7 +30,8 @@ for ((i = 1; i <= cycles; i++)); do
     content_register
     shell_eval 'visor.notch.open()' >/dev/null
     shell_eval "$(content_find visor-dock-button).at(-1).emit('clicked', 1)" >/dev/null
-    shell_eval "visor.notch.setState('peek')" >/dev/null
+    shell_eval 'visor.notch.dispatch({type: "enter"})' >/dev/null
+    sleep 0.6
     shell_eval "visorDemo.ctx.media.peek.flash({ icon: 'media-playback-start-symbolic', text: 'New', priority: 1 })" >/dev/null
     # Half of the cycles are disabled with the panel open, half with the peek row showing.
     ((i % 2)) && shell_eval 'visor.notch.open()' >/dev/null

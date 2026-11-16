@@ -394,12 +394,12 @@ describe('content changes', () => {
 describe('quiet when idle', () => {
   it('leaves no timer running after any path back to idle', () => {
     const paths: ((h: Harness) => Harness)[] = [
-      (h) => h.send('enter').send('leave').wait(250),
-      (h) => h.send('enter').wait(380).send('leave').wait(250),
-      (h) => h.send('enter').wait(380).send('activate').send('close'),
-      (h) => h.send('flash').wait(3000),
-      (h) => h.send('enter').send('flash').send('leave').wait(3000),
-      (h) => h.send('enter').send({ type: 'overview', visible: true }),
+      h => h.send('enter').send('leave').wait(250),
+      h => h.send('enter').wait(380).send('leave').wait(250),
+      h => h.send('enter').wait(380).send('activate').send('close'),
+      h => h.send('flash').wait(3000),
+      h => h.send('enter').send('flash').send('leave').wait(3000),
+      h => h.send('enter').send({ type: 'overview', visible: true }),
     ];
     for (const path of paths) {
       const h = path(new Harness());

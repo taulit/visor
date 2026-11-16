@@ -2,16 +2,16 @@
 # Drives the content half (registry, kit, sheet, peek) in the sandboxed
 # headless shell with real key and pointer events and checks what happens.
 #
-# Usage: tests/content-shell.sh
+# Usage: tests/shell/content-shell.sh
 # The log ends up in .shell-test/content-shell.log. It contains the errors of
 # the demo modules that throw on purpose; anything else fails the test.
 set -euo pipefail
 
-repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 if [[ "${1:-}" != --inside ]]; then
     exec "$repo/scripts/nested.sh" --log "$repo/.shell-test/content-shell.log" -- \
-        "$repo/tests/content-shell.sh" --inside
+        "$repo/tests/shell/content-shell.sh" --inside
 fi
 
 source "$repo/scripts/lib/shell.sh"
@@ -182,7 +182,7 @@ echo "# peek"
 check 'flash puts a chip first in the accent colour for three seconds' \
     '(async () => { const peek = visor.content.getPeek(); visorDemo.ctx.media.peek.flash({ icon: "media-playback-start-symbolic", text: "Now: Kids", priority: 1 }); const first = peek.get_child_at_index(0); const flashed = first.label_actor.text === "Now: Kids" && first.has_style_class_name("accent") && peek.get_n_children() === 4; await T.wait(3300); const after = peek.get_child_at_index(0); return flashed && after.has_style_class_name("waiting") && peek.get_children().some(c => c.label_actor.text === "Midnight City" && !c.has_style_class_name("accent")); })()'
 check 'a click on a chip opens the panel' \
-    '(async () => { visor.notch.setState("peek"); await T.wait(100); await T.click(visor.content.getPeek().get_child_at_index(1)); return visor.notch.state === "open"; })()'
+    '(async () => { visor.notch.dispatch({type: "enter"}); await T.wait(700); await T.click(visor.content.getPeek().get_child_at_index(1)); return visor.notch.state === "open"; })()'
 
 echo "# modules that throw"
 run 'globalThis.titlesBefore = T.titles()'
@@ -245,7 +245,8 @@ shell_wait_for "Main.extensionManager.lookup('$uuid').state === 1"
 content_register
 run 'visor.notch.open()'
 run "$(content_find visor-dock-button).at(-1).emit('clicked', 1)"
-run "visor.notch.setState('peek')"
+run 'visor.notch.dispatch({type: "enter"})'
+sleep 0.7
 run "Main.extensionManager.disableExtension('$uuid')"
 shell_wait_for "Main.extensionManager.lookup('$uuid').state !== 1"
 check 'disabling the extension with everything built leaves no actor behind' "$count === $actors_off"

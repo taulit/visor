@@ -2,9 +2,9 @@
 # Takes the screenshots of all content scenarios into .shell-test/v1-content/
 # and fails when the shell logged an error while one of them ran.
 #
-# Usage: tests/content-shots.sh [scenario...]   (default: all content-* scenarios)
+# Usage: tests/shell/content-shots.sh [scenario...]   (default: all content-* scenarios)
 set -euo pipefail
-repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 out="$repo/.shell-test/v1-content"
 
 scenarios=("$@")

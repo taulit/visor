@@ -19,7 +19,7 @@ describe('springValue', () => {
   it('solves m·x″ + c·x′ + k·(x − 1) = 0', () => {
     const { stiffness, damping, mass } = NOTCH_SPRING;
     for (const t of [0.02, 0.1, 0.2, 0.35, 0.5]) {
-      const [v, a] = derivatives((s) => springValue(s), t);
+      const [v, a] = derivatives(s => springValue(s), t);
       const residual = mass * a + damping * v + stiffness * (springValue(t) - 1);
       expect(Math.abs(residual)).toBeLessThan(1e-3);
     }
