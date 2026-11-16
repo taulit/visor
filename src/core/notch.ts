@@ -338,7 +338,8 @@ export class Notch implements NotchHost {
   }
 
   private enter(state: NotchState, previous: NotchState, animate: boolean): void {
-    this.syncPosition();
+    // The new state is measured below, once its content is in the clip.
+    this.updatePosition();
 
     // Built by the content on first use.
     let child: St.Widget | null = null;
@@ -628,20 +629,23 @@ export class Notch implements NotchHost {
     });
   }
 
-  /** Puts the root below the panel, centred on the neck. */
   private syncPosition(): void {
-    if (!this.neck.has_allocation()) return;
+    // The clock or the dot changed the width the body is derived from.
+    if (this.updatePosition() && this.model.state !== 'open') this.retarget();
+  }
+
+  /** Puts the root below the panel, centred on the neck. True when the width of the neck changed. */
+  private updatePosition(): boolean {
+    if (!this.neck.has_allocation()) return false;
 
     const [x] = this.neck.get_transformed_position();
     const width = this.neck.width;
     const panelBox = Main.layoutManager.panelBox;
     this.root.set_position(Math.round(x + width / 2), Math.round(panelBox.y + panelBox.height));
 
-    if (width !== this.neckWidth) {
-      this.neckWidth = width;
-      // The clock or the dot changed the width the body is derived from.
-      if (this.model.state !== 'open') this.retarget();
-    }
+    if (width === this.neckWidth) return false;
+    this.neckWidth = width;
+    return true;
   }
 
   private syncScale(): void {
