@@ -174,6 +174,8 @@ export class Registry {
       throw new Error(`Visor: module '${id}' has the unknown slot ${JSON.stringify(module.slot)}`);
     if (typeof module.enable !== 'function' || typeof module.disable !== 'function')
       throw new Error(`Visor: module '${id}' needs enable() and disable()`);
+    if (typeof module.name !== 'string' || typeof module.icon !== 'string')
+      throw new Error(`Visor: module '${id}' needs a name and an icon name`);
 
     if (owner) {
       const api = declaredApi(owner.metadata);

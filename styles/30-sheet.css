@@ -10,6 +10,19 @@
   padding: 0 16px 20px;
 }
 
+/*
+ * Hairlines. St paints all sides of a border in the colour of the top side,
+ * so the tokens set border-color and the width picks the side.
+ */
+.visor-search,
+.visor-view-header {
+  border-bottom-width: 1px;
+}
+.visor-dock,
+.visor-column.divided {
+  border-left-width: 1px;
+}
+
 /* --- Search row and dock --- */
 .visor-search {
   height: 56px;
@@ -117,11 +130,11 @@
 /* --- Colours on a dark panel --- */
 .visor-dark .visor-search,
 .visor-dark .visor-view-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 .visor-dark .visor-dock,
 .visor-dark .visor-column.divided {
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 .visor-dark .visor-search-icon,
 .visor-dark .visor-dock-button,
@@ -138,7 +151,8 @@
 .visor-dark .visor-search-entry StLabel.hint-text {
   color: rgba(245, 245, 247, 0.36);
 }
-.visor-dark .visor-dock-button:hover {
+.visor-dark .visor-dock-button:hover,
+.visor-dark .visor-dock-button:focus {
   background-color: rgba(255, 255, 255, 0.12);
 }
 .visor-dark .visor-search-overlay {
@@ -149,11 +163,11 @@
 /* --- Colours on a light panel --- */
 .visor-light .visor-search,
 .visor-light .visor-view-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 .visor-light .visor-dock,
 .visor-light .visor-column.divided {
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 .visor-light .visor-search-icon,
 .visor-light .visor-dock-button,
@@ -170,7 +184,8 @@
 .visor-light .visor-search-entry StLabel.hint-text {
   color: rgba(29, 29, 31, 0.38);
 }
-.visor-light .visor-dock-button:hover {
+.visor-light .visor-dock-button:hover,
+.visor-light .visor-dock-button:focus {
   background-color: rgba(0, 0, 0, 0.09);
 }
 .visor-light .visor-search-overlay {
@@ -181,11 +196,11 @@
 /* --- High contrast on a dark panel: hairlines at full opacity, muted text at 80 % --- */
 .visor-dark.visor-hc .visor-search,
 .visor-dark.visor-hc .visor-view-header {
-  border-bottom: 1px solid #f5f5f7;
+  border-color: #f5f5f7;
 }
 .visor-dark.visor-hc .visor-dock,
 .visor-dark.visor-hc .visor-column.divided {
-  border-left: 1px solid #f5f5f7;
+  border-color: #f5f5f7;
 }
 .visor-dark.visor-hc .visor-search-icon,
 .visor-dark.visor-hc .visor-dock-button,
@@ -197,11 +212,11 @@
 /* --- High contrast on a light panel: hairlines at full opacity, muted text at 80 % --- */
 .visor-light.visor-hc .visor-search,
 .visor-light.visor-hc .visor-view-header {
-  border-bottom: 1px solid #1d1d1f;
+  border-color: #1d1d1f;
 }
 .visor-light.visor-hc .visor-dock,
 .visor-light.visor-hc .visor-column.divided {
-  border-left: 1px solid #1d1d1f;
+  border-color: #1d1d1f;
 }
 .visor-light.visor-hc .visor-search-icon,
 .visor-light.visor-hc .visor-dock-button,

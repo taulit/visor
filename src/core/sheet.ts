@@ -414,7 +414,13 @@ export class Sheet implements SearchMount {
     layer.connect('queue-relayout', () => this.scheduleMeasure());
   }
 
-  private buildScroll(child: St.BoxLayout): St.ScrollView {
+  /**
+   * A scroll view clips its child to the child's content box, so the padding
+   * that leaves room for the hover area of the rows sits one level further in.
+   */
+  private buildScroll(content: St.BoxLayout): St.ScrollView {
+    const child = new St.BoxLayout({ vertical: true, x_expand: true });
+    child.add_child(content);
     return new St.ScrollView({
       style_class: 'visor-scroll',
       hscrollbar_policy: St.PolicyType.NEVER,

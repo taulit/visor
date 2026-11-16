@@ -96,6 +96,7 @@ export class Content implements NotchContent, RegistryListener {
   destroy(): void {
     this.host = null;
     // Modules first: their disable() may still touch widgets they built.
+    this.registry.setOpen(false);
     this.registry.destroy();
     this.sheet.destroy();
     this.peek.destroy();
