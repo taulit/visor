@@ -166,10 +166,15 @@ export interface SearchSource {
 export interface Command {
   /** Words that trigger the command, in every supported language: ['timer']. */
   keyword: string[];
-  /** Shown while typing: 'timer 25m Pizza'. */
+  /** Example shown while the arguments are incomplete: 'timer 25m Pizza'. */
   hint: string;
-  /** Results to show for the arguments typed so far, or nothing when Enter runs the command directly. */
-  run(args: string): Promise<Result[] | void>;
+  /**
+   * Called while the user types, so it must not change anything. Returns what
+   * Enter would do for these arguments as results, each with its own
+   * activate(). An empty list means the arguments are incomplete; then the
+   * hint is shown.
+   */
+  resolve(args: string): Result[] | Promise<Result[]>;
 }
 
 /** UI building blocks. Modules use only these, so everything follows the theme. */

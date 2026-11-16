@@ -3,6 +3,7 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import type { VisorApi } from './api.js';
 import { Content } from './core/content.js';
 import { Notch } from './core/notch.js';
+import { builtinModules } from './modules/index.js';
 
 export default class VisorExtension extends Extension {
   /** Module API. Other extensions reach it through `stateObj.api`. */
@@ -17,6 +18,7 @@ export default class VisorExtension extends Extension {
     this.notch = new Notch(settings, this.content);
     this.content.setHost(this.notch);
     this.api = this.content.api;
+    for (const module of builtinModules()) this.api.register(module);
   }
 
   override disable(): void {
