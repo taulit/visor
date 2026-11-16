@@ -1,0 +1,66 @@
+/* ---- Notch: the neck in the panel, the body, the ears and the shadow below it ---- */
+
+/* The neck carries the classes of the stock clock button, which give it the
+   font and the colour of the panel. Only its box is Visor's own. */
+#panel .visor-neck {
+  padding: 0 6px;
+}
+
+.visor-neck-pill {
+  padding: 0 8px;
+  margin: 3px 0;
+  border-radius: 999px;
+  spacing: 8px;
+  transition-duration: 150ms;
+}
+
+/* Keyboard focus looks like the focused stock clock. Hovering is answered by the hint. */
+.visor-neck.visor-dark:focus .visor-neck-pill,
+#panel:overview .visor-neck:focus .visor-neck-pill {
+  box-shadow: inset 0 0 0 100px rgba(250, 250, 251, 0.17);
+}
+
+.visor-neck.visor-light:focus .visor-neck-pill {
+  box-shadow: inset 0 0 0 100px rgba(34, 34, 38, 0.17);
+}
+
+.visor-neck.visor-hc:focus .visor-neck-pill {
+  box-shadow: inset 0 0 0 2px -st-accent-color;
+}
+
+.visor-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.visor-dot.unread {
+  background-color: -st-accent-color;
+}
+
+/* Amber: something waits for the user. */
+.visor-dot.waiting {
+  background-color: #f6a33b;
+}
+
+/* The colour of the body is the colour of the panel, set inline. The lower
+   corners belong to the state; St shrinks them while the body is still flat. */
+.visor-body.hint,
+.visor-shadow.hint {
+  border-radius: 0 0 8px 8px;
+}
+
+.visor-body.peek,
+.visor-shadow.peek {
+  border-radius: 0 0 24px 24px;
+}
+
+.visor-body.open,
+.visor-shadow.open {
+  border-radius: 0 0 30px 30px;
+}
+
+/* A box of the size of the body behind it, only there to cast the shadow. */
+.visor-shadow {
+  box-shadow: 0 34px 70px -24px rgba(0, 0, 0, 0.75);
+}
