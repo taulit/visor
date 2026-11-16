@@ -35,11 +35,6 @@ export class Peek {
     private callbacks: PeekCallbacks,
   ) {}
 
-  /** The built row, or null as long as nobody asked for it. */
-  get widget(): St.Widget | null {
-    return this.actor;
-  }
-
   hasChips(): boolean {
     return this.candidates().length > 0;
   }

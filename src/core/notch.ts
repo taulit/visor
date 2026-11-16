@@ -162,7 +162,6 @@ export class Notch implements NotchHost {
     // UI cover the notch. The layout manager hides it in fullscreen.
     Main.layoutManager.addChrome(this.root, { trackFullscreen: true });
     Main.uiGroup.set_child_above_sibling(this.root, Main.layoutManager.panelBox);
-    global.focus_manager.add_group(this.root);
 
     this.motion = new Motion(this.neck);
 
@@ -800,7 +799,6 @@ export class Notch implements NotchHost {
     this.shown = null;
 
     this.root.disconnectObject(this);
-    global.focus_manager.remove_group(this.root);
     Main.layoutManager.removeChrome(this.root);
     this.root.destroy();
 

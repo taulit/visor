@@ -33,11 +33,11 @@ export class Content implements NotchContent, RegistryListener {
     this.registry = new Registry(settings, extension);
     this.api = this.registry.api;
     this.sheet = new Sheet(this.registry, settings, s => extension.gettext(s), {
-      changed: () => this.contentChanged(this.sheet.widget),
+      changed: () => this.host?.contentChanged(),
     });
     this.peek = new Peek(this.registry, {
       activate: () => this.host?.open(),
-      changed: () => this.contentChanged(this.peek.widget),
+      changed: () => this.host?.contentChanged(),
     });
     this.registry.setListener(this);
   }
@@ -157,14 +157,5 @@ export class Content implements NotchContent, RegistryListener {
 
   close(): void {
     this.host?.close();
-  }
-
-  /**
-   * Tells the notch to measure again. A size the notch may have set on the
-   * widget is dropped first, so it sees the natural size and not its own old one.
-   */
-  private contentChanged(widget: St.Widget | null): void {
-    widget?.set_size(-1, -1);
-    this.host?.contentChanged();
   }
 }
