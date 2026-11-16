@@ -113,6 +113,8 @@ export class Notch implements NotchHost {
   private current: Shape = { halfWidth: 0, height: 0, ear: 0, reveal: 1 };
   private target: Shape = this.current;
   private clipWidth = 0;
+  /** Radius of the lower corners of the body, from the stylesheet. */
+  private corner = 0;
   private overNeck = false;
   private overBody = false;
   private pointerInside = false;
@@ -499,6 +501,7 @@ export class Notch implements NotchHost {
     this.target = target;
 
     this.drawEars(Math.max(from.ear, target.ear));
+    this.corner = this.body.get_theme_node().get_border_radius(St.Corner.BOTTOMLEFT);
     this.place(from);
 
     // The shadow never follows a moving edge.
@@ -526,15 +529,29 @@ export class Notch implements NotchHost {
     );
   }
 
-  /** Per frame: sizes the background, moves the clip and the ears. No content is laid out. */
-  private place(shape: Shape): void {
+  /**
+   * Per frame: sizes the background, moves the clip and the ears. No content
+   * is laid out. While the body moves, its edges cut through the content, and
+   * a clip is a rectangle: it is drawn in far enough to fit into the rounded
+   * corners. At rest the content keeps clear of the corners by itself.
+   */
+  private place(shape: Shape, moving = true): void {
     this.current = shape;
     const halfWidth = Math.max(0, Math.round(shape.halfWidth));
     const height = Math.max(0, Math.round(shape.height));
 
     this.body.set_position(-halfWidth, 0);
     this.body.set_size(halfWidth * 2, height);
-    this.clip.set_clip(this.clipWidth / 2 - halfWidth, 0, halfWidth * 2, height);
+    // St draws a corner no larger than the body. The corner of a square
+    // drawn in by this much lies on the arc.
+    const radius = Math.min(this.corner, halfWidth, height);
+    const inset = moving ? Math.ceil(radius * (1 - Math.SQRT1_2)) : 0;
+    this.clip.set_clip(
+      this.clipWidth / 2 - halfWidth + inset,
+      0,
+      Math.max(0, halfWidth * 2 - inset * 2),
+      Math.max(0, height - inset),
+    );
 
     // Scaled from the size they were drawn at; an ear is never higher than the body.
     const size = this.earRadius || 1;
@@ -567,7 +584,7 @@ export class Notch implements NotchHost {
     }
     // At rest the ears are drawn at their own size, not scaled.
     this.drawEars(this.target.ear);
-    this.place(this.target);
+    this.place(this.target, false);
     if (state === 'hint') return;
 
     const halfWidth = Math.round(this.target.halfWidth);

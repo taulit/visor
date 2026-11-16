@@ -13,9 +13,9 @@ row='(s => s.filter((_, i) => i % 5 === 0).map(([t, w, h]) => `${t}:${w}x${h}`).
 echo "--- idle -> open"
 open="$(shell_eval "visorTest.sample(visor.notch, () => visor.notch.open(), 900)")"
 shell_eval "$row($open)"
-final="$(shell_eval "(s => s.at(-1).slice(1))($open)")"
+final="$(shell_eval "(s => s.at(-1).slice(1, 3))($open)")"
 echo "final size: $final, largest: $(shell_eval "(s => [Math.max(...s.map(e => e[1])), Math.max(...s.map(e => e[2]))])($open)")"
-first="$(shell_eval "(s => s[0].slice(1))($open)")"
+first="$(shell_eval "(s => s[0].slice(1, 3))($open)")"
 full="$(shell_eval "(s => s.at(-1)[2])($open)")"
 
 if [[ "$animated" == true ]]; then
@@ -25,11 +25,14 @@ if [[ "$animated" == true ]]; then
     check 'width overshoots the target' "(s => Math.max(...s.map(e => e[1])) > s.at(-1)[1])($open)" true
     check 'overshoot stays below 4 %' "(s => Math.max(...s.map(e => e[2])) < s.at(-1)[2] * 1.04)($open)" true
     check 'at rest after 620 ms' "(s => s.filter(e => e[0] > 660).every(e => e[2] === s.at(-1)[2]))($open)" true
+    # The corners have a radius of 30: a rectangle fits into them 9 px further in.
+    check 'while it grows, the clip of the content stays inside the rounded corners' "(s => s.filter(e => e[0] < 500 && e[2] >= 30).every(e => e[3] === e[1] - 18 && e[4] === e[2] - 9))($open)" true
 else
     check 'first sample is the final size' "JSON.stringify($first) === JSON.stringify($final)" true
     check 'only one size seen' "(s => new Set(s.map(e => e[2])).size)($open)" 1
 fi
 check 'no timeline left' 'visor.notch.motion.running' false
+check 'at rest the clip is as large as the body' "(s => s.at(-1)[3] === s.at(-1)[1] && s.at(-1)[4] === s.at(-1)[2])($open)" true
 check 'shadow is shown once settled' 'visor.notch.shadow.visible' true
 
 echo "--- open -> idle (ease-out quint, 400 ms)"

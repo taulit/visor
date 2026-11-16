@@ -71,7 +71,8 @@ shell_eval '(() => {
         },
         // Wider than the hint, so the width of the peek state comes from the chip.
         chip: { icon: "dialog-information-symbolic", text: "The chip of the probe module", priority: 1 },
-        // Calls start(), then records [ms, width, height] of the body every 8 ms.
+        // Calls start(), then records [ms, width, height] of the body and the
+        // width and height of the clip of the content every 8 ms.
         sample(notch, start, duration) {
             return new Promise(resolve => {
                 const t0 = now();
@@ -79,7 +80,8 @@ shell_eval '(() => {
                 start();
                 GLib.timeout_add(GLib.PRIORITY_HIGH, 8, () => {
                     const ms = Math.round((now() - t0) / 1000);
-                    out.push([ms, notch.body.visible ? notch.body.width : 0, notch.body.visible ? notch.body.height : 0]);
+                    const [, , clipWidth, clipHeight] = notch.clip.get_clip();
+                    out.push([ms, notch.body.visible ? notch.body.width : 0, notch.body.visible ? notch.body.height : 0, clipWidth, clipHeight]);
                     if (ms < duration)
                         return true;
                     resolve(out);
