@@ -1,0 +1,271 @@
+<!doctype html>
+<!-- PROTOTYP, wegwerfen: Notizen-App (eigene GTK4/libadwaita-App), 3 Layout-Varianten + Schnellnotiz.
+     ?variant=1..3, ← / → zum Wechseln -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notizen-App Prototyp</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#3584e4;--font:"Adwaita Sans",Inter,Cantarell,system-ui,sans-serif;--spring:linear(0,.006,.025 2.8%,.101 6.1%,.539 18.9%,.721 25.3%,.849 31.5%,.937 38.1%,.968 41.8%,.991 45.7%,1.006 50.1%,1.015 55%,1.017 63.9%,1.001);--ease:cubic-bezier(.22,1,.36,1)}
+.desk{--wall1:#0b1020;--wall2:#1b1433;--bar:#000;--bar-fg:#fff;
+ --win:#222226;--view:#1d1d20;--side:#2e2e32;--head:#2e2e32;--fg:#f5f5f7;--muted:rgba(245,245,247,.62);--faint:rgba(245,245,247,.38);
+ --hover:rgba(255,255,255,.07);--sel:rgba(255,255,255,.11);--hair:rgba(255,255,255,.08);--pop:#38383d;--card:#2a2a2e}
+.desk.light{--wall1:#d9e2f1;--wall2:#efe3ee;--bar:#f6f5f4;--bar-fg:#1e1e1e;
+ --win:#fafafb;--view:#ffffff;--side:#ebebed;--head:#ffffff;--fg:#1d1d1f;--muted:rgba(29,29,31,.62);--faint:rgba(29,29,31,.4);
+ --hover:rgba(0,0,0,.05);--sel:rgba(0,0,0,.09);--hair:rgba(0,0,0,.09);--pop:#ffffff;--card:#f4f4f6}
+*{box-sizing:border-box}body{margin:0}
+.stage{position:relative;width:100%;overflow:hidden;border-radius:12px}
+.desk{position:absolute;top:0;left:0;width:1440px;height:900px;transform-origin:0 0;overflow:hidden;font-family:var(--font);color:var(--fg);-webkit-font-smoothing:antialiased;
+ background:linear-gradient(160deg,var(--wall1),var(--wall2))}
+.desk ::selection{background:color-mix(in oklab,var(--accent) 40%,transparent)}
+.desk [contenteditable],.desk input{caret-color:var(--accent)}
+.desk :focus-visible{outline:2px solid color-mix(in oklab,var(--accent) 70%,transparent);outline-offset:1px;border-radius:6px}
+button{font:inherit;color:inherit}.ic{flex:none;display:block}
+.bar{position:absolute;top:0;left:0;right:0;height:32px;background:var(--bar);color:var(--bar-fg);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600}
+.bar .acts{position:absolute;left:12px;display:flex;gap:5px}.bar .acts i{display:block;height:7px;border-radius:4px;background:var(--bar-fg)}.bar .acts i:first-child{width:20px}.bar .acts i:last-child{width:7px;opacity:.5}
+
+/* window */
+.win{position:absolute;left:140px;top:72px;width:1160px;height:760px;background:var(--win);border-radius:15px;overflow:hidden;
+ box-shadow:0 24px 60px -12px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.06);display:flex}
+.pane{display:flex;flex-direction:column;min-width:0;position:relative}
+.hb{height:47px;flex:none;display:flex;align-items:center;gap:4px;padding:0 8px}
+.hb .title{flex:1;text-align:center;font-weight:700;font-size:14px}
+.fb{width:34px;height:34px;border-radius:8px;border:0;background:none;display:grid;place-items:center;cursor:pointer;color:var(--fg);flex:none}
+.fb:hover{background:var(--hover)}.fb.on{background:var(--sel)}
+.close{width:24px;height:24px;border-radius:50%;background:var(--sel);border:0;display:grid;place-items:center;cursor:pointer;margin:0 4px}
+.side{width:230px;background:var(--side);flex:none}
+.list{width:330px;background:var(--win);flex:none;border-right:1px solid var(--hair)}
+.side+.list{border-left:1px solid var(--hair)}
+.edit{flex:1;background:var(--view)}
+.scroll{flex:1;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--sel) transparent}
+
+/* sidebar */
+.srow{display:flex;align-items:center;gap:11px;height:38px;padding:0 12px;margin:1px 8px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer}
+.srow:hover{background:var(--hover)}.srow.on{background:var(--sel)}
+.srow .n{margin-left:auto;font-size:12px;color:var(--faint);font-weight:500}
+.srow .ic{color:var(--muted)}
+.shead{font-size:12px;font-weight:700;color:var(--faint);padding:16px 20px 6px}
+
+/* list */
+.search{margin:2px 12px 8px;height:34px;border-radius:8px;background:var(--hover);display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--faint)}
+.search input{flex:1;background:none;border:0;outline:0;color:var(--fg);font:14px var(--font);min-width:0}
+.search input::placeholder{color:var(--faint)}
+.search input:focus-visible{outline:0}
+.lhead{font-size:12px;font-weight:700;color:var(--faint);padding:12px 20px 4px;display:flex;align-items:center;gap:6px}
+.nr{display:flex;gap:10px;padding:10px 12px;margin:0 8px;border-radius:10px;cursor:pointer;position:relative}
+.nr:hover{background:var(--hover)}.nr.on{background:color-mix(in oklab,var(--accent) 26%,transparent)}
+.nr+.nr::before{content:"";position:absolute;top:0;left:12px;right:12px;height:1px;background:var(--hair)}
+.nr.on::before,.nr.on+.nr::before{display:none}
+.nr .t{font-size:14px;font-weight:700;letter-spacing:-.005em}
+.nr .m{font-size:12.5px;color:var(--muted);margin-top:2px}
+.nr .m b{font-weight:600;color:var(--fg);opacity:.85;margin-right:6px}
+.nr .f{font-size:11.5px;color:var(--faint);margin-top:3px;display:flex;align-items:center;gap:4px}
+.thumb{width:44px;height:44px;border-radius:8px;flex:none;align-self:center}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.grow{flex:1;min-width:0}
+.chips{display:flex;gap:6px;padding:0 12px 8px;overflow:auto;scrollbar-width:none}
+.chip{height:28px;padding:0 11px;border-radius:999px;border:0;background:var(--hover);font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--muted)}
+.chip.on{background:var(--fg);color:var(--view)}
+
+/* editor */
+.doc{max-width:700px;margin:0 auto;padding:18px 48px 120px}
+.date{text-align:center;font-size:12px;color:var(--faint);margin-bottom:14px}
+.doc [contenteditable]{outline:0}
+.h1{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0 0 10px}
+.h2{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:22px 0 6px}
+.p{font-size:15.5px;line-height:1.6;margin:0 0 6px}
+.li{font-size:15.5px;line-height:1.6;display:flex;gap:10px}.li::before{content:"•";color:var(--muted)}
+.ck{display:flex;align-items:flex-start;gap:12px;font-size:15.5px;line-height:1.6;padding:3px 0}
+.ck .box{width:21px;height:21px;border-radius:50%;border:1.6px solid var(--faint);flex:none;margin-top:2px;display:grid;place-items:center;cursor:pointer;background:none;padding:0;color:#fff;transition:background .2s,border-color .2s,transform .3s var(--spring)}
+.ck .box:active{transform:scale(.85)}
+.ck.done .box{background:var(--accent);border-color:var(--accent)}
+.ck.done .tx{color:var(--faint);text-decoration:line-through}
+.tbl{border-collapse:collapse;margin:12px 0;font-size:14.5px;width:100%}
+.tbl td{border:1px solid var(--hair);padding:8px 12px}.tbl tr:first-child td{font-weight:700;background:var(--hover)}
+.tbl td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.img{height:220px;border-radius:12px;margin:12px 0}
+.lnk{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in oklab,var(--accent) 40%,transparent)}
+.tag{color:var(--accent);font-weight:600}
+.empty{height:100%;display:grid;place-items:center;color:var(--faint);font-size:14px}
+
+/* floating format bar */
+.fmt{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);display:flex;gap:2px;padding:5px;border-radius:14px;background:var(--pop);box-shadow:0 10px 30px -6px rgba(0,0,0,.5),0 0 0 1px var(--hair)}
+.fmt .fb{width:38px;height:36px}
+.fmt .sep{width:1px;background:var(--hair);margin:6px 4px}
+.popo{position:absolute;left:50%;bottom:70px;transform:translateX(-50%) translateY(6px) scale(.97);opacity:0;pointer-events:none;background:var(--pop);border-radius:14px;padding:6px;width:250px;box-shadow:0 14px 40px -8px rgba(0,0,0,.55),0 0 0 1px var(--hair);transition:.25s var(--ease)}
+.popo.show{opacity:1;transform:translateX(-50%);pointer-events:auto}
+.popo button{display:flex;width:100%;border:0;background:none;padding:8px 12px;border-radius:9px;cursor:pointer;text-align:left}
+.popo button:hover{background:var(--hover)}
+.popo .row{display:flex;gap:4px;padding:6px 6px 2px;border-top:1px solid var(--hair);margin-top:4px}
+.popo .row button{justify-content:center;font-weight:700}
+
+/* gallery */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:8px 24px 30px}
+.gc{cursor:pointer}
+.gc .card{height:200px;border-radius:14px;background:var(--card);box-shadow:0 0 0 1px var(--hair);padding:14px;overflow:hidden;position:relative;font-size:11.5px;line-height:1.5;color:var(--muted);transition:transform .35s var(--spring)}
+.gc:hover .card{transform:translateY(-2px)}
+.gc .card .h{font-size:13px;font-weight:800;color:var(--fg);margin-bottom:6px}
+.gc .card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:50px;background:linear-gradient(transparent,var(--card))}
+.gc .t{font-size:13.5px;font-weight:700;margin:10px 2px 0;text-align:center}
+.gc .m{font-size:12px;color:var(--faint);text-align:center}
+.gsec{font-size:13px;font-weight:700;color:var(--faint);padding:14px 26px 2px;grid-column:1/-1}
+
+/* quick note */
+.qn{position:absolute;right:40px;bottom:40px;width:380px;height:300px;background:var(--view);border-radius:14px;box-shadow:0 30px 70px -14px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.06);
+ display:flex;flex-direction:column;transform:translateY(20px) scale(.96);opacity:0;pointer-events:none;transition:.45s var(--spring);z-index:10}
+.qn.show{transform:none;opacity:1;pointer-events:auto}
+.qn .hb{height:42px}
+.qn .body{flex:1;padding:4px 18px 14px;font-size:15px;line-height:1.55;outline:0}
+.qn .ft{display:flex;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid var(--hair);font-size:12px;color:var(--faint)}
+.btn{height:30px;padding:0 13px;border-radius:8px;border:0;background:var(--sel);font-size:12.5px;font-weight:700;cursor:pointer}
+.btn.pri{background:var(--accent);color:#fff}
+
+/* prototype chrome */
+.below{font:13px/1.5 system-ui,sans-serif;margin-top:10px}
+.proto{display:flex;align-items:center;gap:4px;padding:5px;background:#fde047;color:#111;border-radius:999px;width:max-content;max-width:100%;margin:0 auto;font-weight:600;flex-wrap:wrap;justify-content:center}
+.proto button{border:0;background:rgba(0,0,0,.08);height:30px;min-width:30px;border-radius:999px;cursor:pointer;padding:0 10px;font-weight:700;color:#111}
+.proto button:hover{background:rgba(0,0,0,.16)}
+.proto .lab{padding:0 8px;min-width:210px;text-align:center}
+.proto .acc-d{width:16px;height:16px;min-width:16px;padding:0;border-radius:50%}.proto .acc-d.on{box-shadow:0 0 0 2px #111}
+.desc{margin-top:10px;border:1px dashed #c9a800;border-radius:12px;padding:10px 14px;background:color-mix(in oklab,#fde047 8%,transparent)}
+.desc .io{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;opacity:.85}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"><div class="desk" id="desk">
+ <div class="bar"><div class="acts"><i></i><i></i></div>16. Nov&nbsp;&nbsp;13:24</div>
+ <div class="win" id="win"></div>
+ <div class="qn" id="qn"></div>
+</div></div>
+<div class="below">
+ <div class="proto"><button id="prev">‹</button><span class="lab" id="lab"></span><button id="next">›</button>
+  <button id="qbtn">Schnellnotiz</button><button id="thm">Hell/Dunkel</button><span id="accs" style="display:flex;gap:5px;padding:0 6px"></span></div>
+ <div class="desc" id="desc"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const I={
+ search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+ pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+ side:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',
+ folder:'<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>',
+ notes:'<path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><path d="M15 3v6h6"/>',
+ trash:'<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+ hash:'<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ checklist:'<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8M13 12h8M13 18h8"/>',
+ table:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M12 3v18"/>',
+ img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
+ link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+ share:'<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/>',
+ more:'<circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/>',
+ x:'<path d="M18 6 6 18M6 6l12 12"/>',
+ back:'<path d="m15 18-6-6 6-6"/>',
+ grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+ listv:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+ pin:'<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ sync:'<path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>',
+};
+const ic=(n,s=16,sw=2)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${I[n]||''}</svg>`;
+const G1='linear-gradient(135deg,#e66100,#f6d32d)',G2='linear-gradient(135deg,#26a269,#8ff0a4)',G3='linear-gradient(135deg,#613583,#c061cb)';
+
+let S={v:0,folder:'all',sel:2,q:'',fmt:false,qn:false,gOpen:false};
+const NOTES=[
+ {id:1,f:'privat',pin:1,d:'11:02',title:'Einkauf',b:[['ck','Milch',0],['ck','Geschenk für Jukek',0],['ck','Kaffeebohnen',1],['ck','Backpapier',0]]},
+ {id:2,f:'arbeit',pin:1,d:'09:40',title:'Ausschreibung – offene Fragen',tags:['ausschreibung'],b:[['p','Abgabe am Freitag. Stand nach dem Call mit Frau K.:'],['h2','Offen'],['ck','Kostenschätzung finalisieren',0],['ck','Kapitel 4 gegenlesen lassen',0],['ck','Referenzen anfragen',1],['h2','Kosten'],['tbl',[['Posten','Betrag'],['Konzept','4.800 €'],['Umsetzung','18.200 €'],['Betrieb (12 Mon.)','3.600 €']]],['p','<span class="tag">#ausschreibung</span>']]},
+ {id:3,f:'arbeit',d:'Gestern',title:'Notch-Ideen',b:[['p','Was die Notch können soll, ohne zu überladen:'],['li','Hover deutet die Notch an'],['li','Nur zeigen, was gerade läuft'],['li','Module: Jetzt, Ausblick oder Dock'],['p','Notizen als eigene App, siehe <a class="lnk">Notch-Konzept</a>.']]},
+ {id:4,f:'privat',d:'Freitag',title:'Geschenkideen Jukek',img:G3,b:[['img',G3],['li','Konzertkarten'],['li','Gutes Buch über Architektur'],['li','Siebträger-Kurs']]},
+ {id:5,f:'privat',d:'12.11.',title:'Shakshuka',img:G1,tags:['rezepte'],b:[['img',G1],['p','Für 2 Personen, 25 Minuten.'],['ck','2 Paprika, 1 Zwiebel',0],['ck','1 Dose Tomaten',0],['ck','4 Eier, Feta, Kreuzkümmel',0],['p','<span class="tag">#rezepte</span>']]},
+ {id:6,f:'arbeit',d:'12.11.',title:'Sprint Review 12.11.',b:[['p','Demo lief gut. Feedback:'],['li','Ladezeiten im Dashboard'],['li','Export als CSV gewünscht'],['p','Nächster Termin Do 15:00.']]},
+ {id:7,f:'privat',d:'08.11.',title:'Lesestoff',img:G2,b:[['p','<a class="lnk">GNOME Human Interface Guidelines</a>'],['p','<a class="lnk">libadwaita: Adaptive Layouts</a>'],['p','„The Design of Everyday Things“, Kapitel 3']]},
+];
+const FOLDERS=[['all','notes','Alle Notizen'],['arbeit','folder','Arbeit'],['privat','folder','Privat']];
+const TAGS=['ausschreibung','rezepte'];
+const cnt=f=>NOTES.filter(n=>f==='all'||n.f===f||(n.tags||[]).includes(f.replace('#',''))).length;
+const visible=()=>NOTES.filter(n=>(S.folder==='all'||n.f===S.folder||(n.tags||[]).includes(S.folder.replace('#','')))&&(!S.q||(n.title+' '+n.b.map(x=>typeof x[1]==='string'?x[1]:'').join(' ')).toLowerCase().includes(S.q.toLowerCase())));
+const snip=n=>{const ck=n.b.filter(x=>x[0]==='ck'&&!x[2]).map(x=>x[1]);if(ck.length)return ck.join(', ');const p=n.b.find(x=>x[0]==='p'||x[0]==='li');return p?p[1].replace(/<[^>]+>/g,''):'Kein weiterer Text'};
+const fname=f=>({all:'Alle Notizen',arbeit:'Arbeit',privat:'Privat'}[f]||f);
+
+function sidebar(){return `<div class="pane side"><div class="hb"><button class="fb" title="Seitenleiste">${ic('side',17)}</button><div class="grow"></div><button class="fb" title="Synchronisiert">${ic('sync',16)}</button></div>
+ <div class="scroll">${FOLDERS.map(f=>`<div class="srow ${S.folder===f[0]?'on':''}" data-folder="${f[0]}">${ic(f[1],17)}${f[2]}<span class="n">${cnt(f[0])}</span></div>`).join('')}
+ <div class="shead">Schlagwörter</div>${TAGS.map(t=>`<div class="srow ${S.folder==='#'+t?'on':''}" data-folder="#${t}">${ic('hash',16)}${t}<span class="n">${cnt('#'+t)}</span></div>`).join('')}
+ <div class="shead">Mehr</div><div class="srow">${ic('clock',17)}Heute bearbeitet<span class="n">2</span></div><div class="srow">${ic('trash',17)}Zuletzt gelöscht<span class="n">3</span></div></div></div>`}
+function noteRow(n){return `<div class="nr ${S.sel===n.id?'on':''}" data-note="${n.id}"><div class="grow"><div class="t ell">${n.title}</div><div class="m ell"><b>${n.d}</b>${snip(n)}</div>${S.folder==='all'&&S.v!==1?`<div class="f">${ic('folder',11)} ${fname(n.f)}</div>`:''}</div>${n.img?`<span class="thumb" style="background:${n.img}"></span>`:''}</div>`}
+function listBody(){const l=visible(),p=l.filter(n=>n.pin),r=l.filter(n=>!n.pin);
+ if(!l.length)return '<div class="empty" style="height:200px">Keine Treffer</div>';
+ return `${p.length?`<div class="lhead">${ic('pin',12)} Angeheftet</div>${p.map(noteRow).join('')}`:''}${r.length?`<div class="lhead">Notizen</div>${r.map(noteRow).join('')}`:''}`}
+function list(chips){return `<div class="pane list"><div class="hb"><div class="title" style="text-align:left;padding-left:12px">${fname(S.folder)}</div><button class="fb" data-act="new" title="Neue Notiz">${ic('pencil',17)}</button></div>
+ <div class="search">${ic('search',15)}<input id="q" placeholder="Suchen" value="${S.q}"></div>
+ ${chips?`<div class="chips">${[['all','Alle'],['arbeit','Arbeit'],['privat','Privat'],...TAGS.map(t=>['#'+t,'#'+t])].map(c=>`<button class="chip ${S.folder===c[0]?'on':''}" data-folder="${c[0]}">${c[1]}</button>`).join('')}</div>`:''}
+ <div class="scroll" id="lb">${listBody()}</div></div>`}
+function block(x,i){const ce=`contenteditable="true" data-b="${i}"`;
+ switch(x[0]){
+  case 'h2':return `<div class="h2" ${ce}>${x[1]}</div>`;
+  case 'p':return `<div class="p" ${ce}>${x[1]}</div>`;
+  case 'li':return `<div class="li"><span ${ce} style="flex:1;outline:0">${x[1]}</span></div>`;
+  case 'ck':return `<div class="ck ${x[2]?'done':''}"><button class="box" data-chk="${i}" aria-label="Erledigt">${x[2]?ic('check',12,3):''}</button><span class="tx" ${ce} style="flex:1">${x[1]}</span></div>`;
+  case 'tbl':return `<table class="tbl">${x[1].map(r=>`<tr>${r.map(c=>`<td contenteditable="true">${c}</td>`).join('')}</tr>`).join('')}</table>`;
+  case 'img':return `<div class="img" style="background:${x[1]}"></div>`;
+ }}
+function editor(withBack){const n=NOTES.find(x=>x.id===S.sel);
+ return `<div class="pane edit"><div class="hb">${withBack?`<button class="fb" data-act="gback">${ic('back',18)}</button>`:''}<div class="grow"></div>${n?`<button class="fb" data-act="pin" title="Anheften">${ic('pin',16)}</button><button class="fb" title="Teilen">${ic('share',16)}</button><button class="fb">${ic('more',17)}</button>`:''}<button class="close" title="Schließen">${ic('x',12,2.6)}</button></div>
+ <div class="scroll">${n?`<div class="doc"><div class="date">16. November 2026 um ${n.d.includes(':')?n.d:'10:12'}</div><div class="h1" contenteditable="true" data-title="1">${n.title}</div>${n.b.map(block).join('')}</div>`:'<div class="empty">Keine Notiz ausgewählt</div>'}</div>
+ ${n?`<div class="popo ${S.fmt?'show':''}"><button style="font-size:22px;font-weight:800">Titel</button><button style="font-size:17px;font-weight:700">Überschrift</button><button style="font-size:14px">Text</button><button style="font:13px ui-monospace,monospace">Monospace</button><div class="row"><button>B</button><button style="font-style:italic">I</button><button style="text-decoration:underline">U</button><button style="text-decoration:line-through">S</button></div></div>
+ <div class="fmt"><button class="fb ${S.fmt?'on':''}" data-act="fmt" title="Format" style="font-weight:800;font-size:15px">Aa</button><button class="fb" data-act="addck" title="Checkliste">${ic('checklist',17)}</button><button class="fb" title="Tabelle">${ic('table',17)}</button><button class="fb" title="Bild">${ic('img',17)}</button><button class="fb" title="Link">${ic('link',17)}</button><span class="sep"></span><button class="fb" data-act="new" title="Neue Notiz">${ic('pencil',17)}</button></div>`:''}</div>`}
+function gallery(){const l=visible(),sec=(t,a)=>a.length?`<div class="gsec">${t}</div>${a.map(n=>`<div class="gc" data-note="${n.id}" data-act="gopen"><div class="card">${n.img?`<div style="height:70px;border-radius:8px;background:${n.img};margin-bottom:6px"></div>`:''}${n.b.filter(x=>x[0]!=='img'&&x[0]!=='tbl').slice(0,6).map(x=>x[0]==='ck'?`<div style="display:flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:50%;flex:none;${x[2]?'background:var(--accent)':'border:1.3px solid var(--faint)'}"></span>${x[1]}</div>`:`<div>${x[1].replace(/<[^>]+>/g,'')}</div>`).join('')}</div><div class="t ell">${n.title}</div><div class="m">${n.d}</div></div>`).join('')}`:'';
+ return `<div class="pane edit" style="background:var(--win)"><div class="hb"><button class="fb">${ic('side',17)}</button><div class="title">${fname(S.folder)}</div><button class="fb on" title="Galerie">${ic('grid',16)}</button><button class="fb" title="Liste">${ic('listv',16)}</button><button class="fb" data-act="new">${ic('pencil',17)}</button><button class="close">${ic('x',12,2.6)}</button></div>
+ <div class="search" style="max-width:420px;margin:2px auto 6px;width:100%">${ic('search',15)}<input id="q" placeholder="Suchen" value="${S.q}"></div>
+ <div class="chips" style="justify-content:center">${[['all','Alle'],['arbeit','Arbeit'],['privat','Privat'],...TAGS.map(t=>['#'+t,'#'+t])].map(c=>`<button class="chip ${S.folder===c[0]?'on':''}" data-folder="${c[0]}">${c[1]}</button>`).join('')}</div>
+ <div class="scroll"><div class="gal">${sec('Angeheftet',l.filter(n=>n.pin))}${sec('Notizen',l.filter(n=>!n.pin))}</div></div></div>`}
+
+const V=[
+ {name:'Drei Spalten (Klassiker)',idea:'Wie Notizen auf iPad/Mac: Ordner und Schlagwörter links, Liste in der Mitte, Editor rechts. Unten schwebt die Formatleiste. Bei schmalem Fenster klappt die Seitenleiste weg (AdwOverlaySplitView), auf dem Handy wird es eine Navigation.',inn:'Ordner, Schlagwörter, „Heute bearbeitet“, „Zuletzt gelöscht“, Angeheftet, Vorschaubilder, Checklisten, Tabellen, Bilder, Links',out:'—',
+  r:()=>sidebar()+list(false)+editor()},
+ {name:'Zwei Spalten (schlank)',idea:'Keine Seitenleiste: Ordner und Schlagwörter sind Filter-Chips über der Liste. Mehr Platz zum Schreiben, weniger Struktur. Passt, wenn du eher wenige Ordner hast.',inn:'wie 1, Ordner als Chips',out:'Seitenleiste, Ordnerbaum',
+  r:()=>list(true)+editor()},
+ {name:'Galerie',idea:'Notizen als Vorschau-Karten wie in der iOS-Galerieansicht. Klick schiebt den Editor rein (AdwNavigationView). Umschaltbar zwischen Galerie und Liste.',inn:'Karten mit echter Vorschau, Filter-Chips, Navigation per Zurück',out:'Liste und Editor gleichzeitig',
+  r:()=>S.gOpen?editor(true):gallery()},
+];
+
+function render(){$('#win').innerHTML=V[S.v].r();wire();
+ $('#lab').textContent=`${S.v+1} / ${V.length} · ${V[S.v].name}`;
+ $('#desc').innerHTML=`<b>${S.v+1}. ${V[S.v].name}.</b> ${V[S.v].idea}<div class="io"><div><b>Drin:</b> ${V[S.v].inn}</div><div><b>Nicht drin:</b> ${V[S.v].out}</div></div><div style="margin-top:6px;opacity:.75">Probier: Notiz wählen, Text direkt bearbeiten, Haken setzen, „Aa“ unten, Suche, Ordner/Chips, „Schnellnotiz“ in der gelben Leiste. Speicherformat in allen Varianten: Markdown-Dateien.</div>`;
+ try{const u=new URL(location.href);u.searchParams.set('variant',S.v+1);history.replaceState(null,'',u)}catch(e){}}
+function wire(){const q=$('#q');if(q)q.oninput=()=>{S.q=q.value;const lb=$('#lb');if(lb)lb.innerHTML=listBody();else{const pos=q.selectionStart;render();const nq=$('#q');nq.focus();nq.setSelectionRange(pos,pos)}};
+ const n=NOTES.find(x=>x.id===S.sel);
+ document.querySelectorAll('[data-b]').forEach(el=>el.oninput=()=>{n.b[+el.dataset.b][1]=el.innerHTML;n.d='Gerade eben';const lb=$('#lb');if(lb)lb.innerHTML=listBody()});
+ const t=document.querySelector('[data-title]');if(t)t.oninput=()=>{n.title=t.innerText;n.d='Gerade eben';const lb=$('#lb');if(lb)lb.innerHTML=listBody()}}
+$('#win').addEventListener('click',e=>{const f=e.target.closest('[data-folder]');if(f){S.folder=f.dataset.folder;render();return}
+ const ck=e.target.closest('[data-chk]');if(ck){const n=NOTES.find(x=>x.id===S.sel);n.b[+ck.dataset.chk][2]^=1;render();return}
+ const a=e.target.closest('[data-act]');const nr=e.target.closest('[data-note]');
+ if(a){const k=a.dataset.act;
+  if(k==='gopen'){S.sel=+nr.dataset.note;S.gOpen=true;render();return}
+  if(k==='gback'){S.gOpen=false;render();return}
+  if(k==='fmt'){S.fmt=!S.fmt;render();return}
+  if(k==='pin'){const n=NOTES.find(x=>x.id===S.sel);n.pin=!n.pin;render();return}
+  if(k==='addck'){const n=NOTES.find(x=>x.id===S.sel);n.b.push(['ck','',0]);render();const els=document.querySelectorAll('.ck .tx');els[els.length-1]?.focus();return}
+  if(k==='new'){const id=Date.now();NOTES.unshift({id,f:S.folder.startsWith('#')||S.folder==='all'?'privat':S.folder,d:'Gerade eben',title:'',b:[['p','']]});S.sel=id;S.gOpen=true;render();document.querySelector('[data-title]')?.focus();return}
+ }
+ if(nr){S.sel=+nr.dataset.note;S.fmt=false;render()}});
+$('#win').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('.ck')){e.preventDefault();const n=NOTES.find(x=>x.id===S.sel);const i=+e.target.dataset.b;n.b.splice(i+1,0,['ck','',0]);render();document.querySelector(`[data-b="${i+1}"]`)?.focus()}});
+function qn(){$('#qn').innerHTML=`<div class="hb"><span style="font-weight:700;font-size:13px;padding-left:10px">Schnellnotiz</span><div class="grow"></div><button class="close" data-q="x">${ic('x',12,2.6)}</button></div>
+ <div class="body" contenteditable="true" id="qb" data-ph="1">Idee: Hover-Vorschau zeigt auch die letzte Notiz?</div>
+ <div class="ft">${ic('folder',12)} Privat · automatisch gespeichert<div class="grow"></div><button class="btn" data-q="open">Öffnen</button><button class="btn pri" data-q="x">Fertig</button></div>`}
+qn();$('#qn').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;S.qn=false;$('#qn').classList.remove('show');if(b.dataset.q==='open'||b.textContent==='Fertig'){const t=$('#qb').innerText.trim();if(t){NOTES.unshift({id:Date.now(),f:'privat',d:'Gerade eben',title:t.split('\n')[0].slice(0,40),b:[['p',t]]});render()}}});
+$('#qbtn').onclick=()=>{S.qn=!S.qn;$('#qn').classList.toggle('show',S.qn);if(S.qn)setTimeout(()=>{const b=$('#qb');b.focus();document.getSelection().selectAllChildren(b);document.getSelection().collapseToEnd()},100)};
+function go(d){S.v=(S.v+d+V.length)%V.length;S.gOpen=false;S.fmt=false;render()}
+$('#prev').onclick=()=>go(-1);$('#next').onclick=()=>go(1);
+document.addEventListener('keydown',e=>{const t=e.target;if(t.isContentEditable||t.matches('input'))return;if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)});
+$('#thm').onclick=()=>$('#desk').classList.toggle('light');
+const ACC=['#3584e4','#2190a4','#3a944a','#c88800','#ed5b00','#e62d42','#d56199','#9141ac'];
+$('#accs').innerHTML=ACC.map((c,i)=>`<button class="acc-d ${i?'':'on'}" style="background:${c}" data-c="${c}"></button>`).join('');
+$('#accs').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;document.documentElement.style.setProperty('--accent',b.dataset.c);document.querySelectorAll('.acc-d').forEach(x=>x.classList.toggle('on',x===b))};
+const stage=$('#stage');function fit(){const s=Math.min(1,stage.clientWidth/1440);$('#desk').style.transform=`scale(${s})`;stage.style.height=900*s+'px'}
+new ResizeObserver(fit).observe(stage);fit();
+const p=new URLSearchParams(location.search).get('variant');S.v=Math.max(0,Math.min(V.length-1,(parseInt(p)||1)-1));
+render();
+</script>
+</body>
+</html>
