@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-16 21:56+0100\n"
+"POT-Creation-Date: 2026-11-16 22:24+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: build/core/sheet.js:151 build/core/sheet.js:500
+#: build/core/sheet.js:147 build/core/sheet.js:500
 msgid "Modules"
 msgstr ""
 
-#: build/core/sheet.js:278
+#: build/core/sheet.js:276
 msgid "Search, calculate or run a command …"
 msgstr ""
 
-#: build/core/sheet.js:279
+#: build/core/sheet.js:277
 msgid "Search"
 msgstr ""
 
-#: build/core/sheet.js:301 build/core/sheet.js:371
+#: build/core/sheet.js:299 build/core/sheet.js:371
 msgid "Now"
 msgstr ""
 
-#: build/core/sheet.js:315
+#: build/core/sheet.js:313
 msgid "Back"
 msgstr ""
 
