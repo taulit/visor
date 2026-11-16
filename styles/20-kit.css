@@ -138,37 +138,21 @@
 .visor-button .visor-button-icon {
   icon-size: 13px;
 }
-.visor-button.primary {
-  background-color: -st-accent-color;
-  color: #ffffff;
-}
-.visor-button.primary:hover {
-  background-color: st-mix(-st-accent-color, #ffffff, 88%);
-}
-.visor-button.primary:active {
-  background-color: st-mix(-st-accent-color, #000000, 88%);
-}
-.visor-button.ghost {
-  background-color: transparent;
-}
-.visor-button.link {
-  height: 20px;
-  padding: 0;
-  border-radius: 4px;
-  background-color: transparent;
-  color: -st-accent-color;
-}
-.visor-button.link:hover {
-  color: st-mix(-st-accent-color, #ffffff, 75%);
-}
+/*
+ * The focus ring is an inset shadow. St draws one only where there is a
+ * background, so whatever has none gets the look of its hover state with the
+ * focus (see the tokens), and a link a background too faint to see.
+ */
 .visor-button:focus,
 .visor-icon-button:focus,
 .visor-toggle:focus,
 .visor-chip:focus {
   box-shadow: inset 0 0 0 2px -st-accent-color;
 }
-.visor-button.link:focus {
-  box-shadow: 0 0 0 2px -st-accent-color;
+.visor-button.link {
+  height: 20px;
+  padding: 0;
+  border-radius: 4px;
 }
 
 /* --- Round icon button --- */
@@ -195,15 +179,16 @@
   border-radius: 11px;
   transition-duration: 200ms;
 }
+.visor-toggle-track {
+  width: 34px;
+  height: 18px;
+}
 .visor-toggle-knob {
   width: 18px;
   height: 18px;
   border-radius: 9px;
   background-color: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-.visor-toggle:checked {
-  background-color: -st-accent-color;
 }
 
 /* --- Empty --- */
@@ -227,22 +212,6 @@
 .visor-chip-icon {
   icon-size: 12px;
 }
-.visor-chip.waiting,
-.visor-chip.waiting:hover {
-  background-color: rgba(246, 163, 59, 0.22);
-  color: #f6a33b;
-}
-.visor-chip.accent,
-.visor-chip.accent:hover {
-  background-color: -st-accent-color;
-  color: #ffffff;
-}
-.visor-chip.accent:focus {
-  box-shadow: inset 0 0 0 2px #ffffff;
-}
-.visor-button.primary:focus {
-  box-shadow: inset 0 0 0 2px #ffffff;
-}
 
 /* --- Colours on a dark panel --- */
 .visor-dark .visor-sheet,
@@ -264,7 +233,9 @@
   color: rgba(245, 245, 247, 0.6);
 }
 .visor-dark .visor-row:hover,
+.visor-dark .visor-row:focus,
 .visor-dark .visor-button.ghost:hover,
+.visor-dark .visor-button.ghost:focus,
 .visor-dark .visor-chip {
   background-color: rgba(255, 255, 255, 0.07);
 }
@@ -276,6 +247,7 @@
 .visor-dark .visor-progress,
 .visor-dark .visor-button,
 .visor-dark .visor-icon-button:hover,
+.visor-dark .visor-icon-button:focus,
 .visor-dark .visor-toggle,
 .visor-dark .visor-chip:hover {
   background-color: rgba(255, 255, 255, 0.12);
@@ -289,6 +261,7 @@
 }
 .visor-dark .visor-button,
 .visor-dark .visor-button.ghost:hover,
+.visor-dark .visor-button.ghost:focus,
 .visor-dark .visor-row-detail {
   color: #f5f5f7;
 }
@@ -326,7 +299,9 @@
   color: rgba(29, 29, 31, 0.6);
 }
 .visor-light .visor-row:hover,
+.visor-light .visor-row:focus,
 .visor-light .visor-button.ghost:hover,
+.visor-light .visor-button.ghost:focus,
 .visor-light .visor-chip {
   background-color: rgba(0, 0, 0, 0.05);
 }
@@ -338,6 +313,7 @@
 .visor-light .visor-progress,
 .visor-light .visor-button,
 .visor-light .visor-icon-button:hover,
+.visor-light .visor-icon-button:focus,
 .visor-light .visor-toggle,
 .visor-light .visor-chip:hover {
   background-color: rgba(0, 0, 0, 0.09);
@@ -351,6 +327,7 @@
 }
 .visor-light .visor-button,
 .visor-light .visor-button.ghost:hover,
+.visor-light .visor-button.ghost:focus,
 .visor-light .visor-row-detail {
   color: #1d1d1f;
 }
@@ -396,4 +373,67 @@
 }
 .visor-light.visor-hc .visor-progress-fill {
   background-color: rgba(29, 29, 31, 0.8);
+}
+
+/*
+ * Colours that are the same on both panels. The panel class is in the
+ * selectors so these rules win over the tokens above.
+ */
+.visor-dark .visor-button.primary,
+.visor-light .visor-button.primary,
+.visor-dark .visor-chip.accent,
+.visor-light .visor-chip.accent,
+.visor-dark .visor-chip.accent:hover,
+.visor-light .visor-chip.accent:hover {
+  background-color: -st-accent-color;
+  color: #ffffff;
+}
+.visor-dark .visor-button.primary:hover,
+.visor-light .visor-button.primary:hover {
+  background-color: st-mix(-st-accent-color, #ffffff, 88%);
+}
+.visor-dark .visor-button.primary:active,
+.visor-light .visor-button.primary:active {
+  background-color: st-mix(-st-accent-color, #000000, 88%);
+}
+.visor-dark .visor-button.primary:focus,
+.visor-light .visor-button.primary:focus,
+.visor-dark .visor-chip.accent:focus,
+.visor-light .visor-chip.accent:focus {
+  box-shadow: inset 0 0 0 2px #ffffff;
+}
+.visor-dark .visor-button.ghost,
+.visor-light .visor-button.ghost {
+  background-color: transparent;
+}
+.visor-dark .visor-button.link,
+.visor-light .visor-button.link,
+.visor-dark .visor-button.link:hover,
+.visor-light .visor-button.link:hover,
+.visor-dark .visor-button.link:active,
+.visor-light .visor-button.link:active {
+  background-color: transparent;
+  color: -st-accent-color;
+}
+.visor-dark .visor-button.link:hover {
+  color: st-mix(-st-accent-color, #ffffff, 75%);
+}
+.visor-light .visor-button.link:hover {
+  color: st-mix(-st-accent-color, #000000, 80%);
+}
+.visor-dark .visor-toggle:checked,
+.visor-light .visor-toggle:checked {
+  background-color: -st-accent-color;
+}
+.visor-dark .visor-chip.waiting,
+.visor-light .visor-chip.waiting,
+.visor-dark .visor-chip.waiting:hover,
+.visor-light .visor-chip.waiting:hover {
+  background-color: rgba(246, 163, 59, 0.22);
+  color: #f6a33b;
+}
+.visor-dark .visor-button.link:focus,
+.visor-light .visor-button.link:focus {
+  background-color: rgba(128, 128, 128, 0.02);
+  box-shadow: inset 0 0 0 2px -st-accent-color;
 }

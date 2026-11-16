@@ -53,6 +53,28 @@ const ROW_OUTSET = 8;
 const SPINNER_SIZE = 14;
 const TOGGLE_TRAVEL = 16;
 
+/**
+ * Text from a module, as a string. A value of another type in a string
+ * property of an actor ends the running call in a way no `catch` sees.
+ */
+function str(value: unknown): string {
+  if (typeof value === 'string') return value;
+  return value === undefined || value === null ? '' : String(value);
+}
+
+/** The text fields of a row as strings; everything else as it came. */
+function cleanRow(props: RowProps): RowProps {
+  return {
+    ...props,
+    title: str(props.title),
+    subtitle: str(props.subtitle),
+    detail: str(props.detail),
+    meta: str(props.meta),
+    value: str(props.value),
+    lead: str(props.lead),
+  };
+}
+
 function scaleFactor(): number {
   return St.ThemeContext.get_for_stage(global.stage).scale_factor;
 }
@@ -65,11 +87,6 @@ function fade(actor: Clutter.Actor, visible: boolean): void {
     return;
   }
   actor.ease({ opacity, duration: FADE_MS, mode: Clutter.AnimationMode.EASE_OUT_QUAD });
-}
-
-function hasKeyFocusInside(actor: Clutter.Actor): boolean {
-  const focus = global.stage.get_key_focus();
-  return focus !== null && focus !== global.stage && actor.contains(focus);
 }
 
 function isActivateKey(symbol: number): boolean {
@@ -146,6 +163,8 @@ class ActionButton {
     this.actor = new St.Button({
       style_class: this.kind === 'icon' ? 'visor-icon-button' : 'visor-button',
       can_focus: true,
+      // As wide as its text, also where the container would stretch it.
+      x_align: Clutter.ActorAlign.START,
       y_align: Clutter.ActorAlign.CENTER,
       accessible_role: Atk.Role.PUSH_BUTTON,
     });
@@ -183,12 +202,14 @@ class ActionButton {
       this.variant = variant;
     }
     if (this.icon) {
-      if (action.icon && this.icon.icon_name !== action.icon) this.icon.icon_name = action.icon;
-      this.icon.visible = Boolean(action.icon);
+      const icon = str(action.icon);
+      if (icon && this.icon.icon_name !== icon) this.icon.icon_name = icon;
+      this.icon.visible = icon !== '';
     }
-    if (this.label && this.label.text !== action.label) this.label.text = action.label;
-    if (this.kind === 'icon' && this.actor.accessible_name !== action.label)
-      this.actor.accessible_name = action.label;
+    const label = str(action.label);
+    if (this.label && this.label.text !== label) this.label.text = label;
+    if (this.kind === 'icon' && this.actor.accessible_name !== label)
+      this.actor.accessible_name = label;
   }
 }
 
@@ -321,6 +342,8 @@ function leadKind(props: RowProps): LeadKind {
 function setIcon(icon: St.Icon, value: string | Gio.Icon): void {
   if (typeof value === 'string') {
     if (icon.icon_name !== value) icon.icon_name = value;
+  } else if (!(value instanceof Gio.Icon)) {
+    throw new TypeError('An icon is a name or a Gio.Icon');
   } else if (icon.gicon !== value && !(icon.gicon?.equal(value) ?? false)) {
     icon.gicon = value;
   }
@@ -369,6 +392,8 @@ export class Row implements KitRow {
   private props: RowProps;
   private expanded = false;
   private revealed = false;
+  /** The part of the row that has the keyboard focus. */
+  private focused: Clutter.Actor | null = null;
   private status = 'normal';
 
   constructor(
@@ -376,7 +401,7 @@ export class Row implements KitRow {
     private guard: Guard,
     options: RowOptions = {},
   ) {
-    this.props = props;
+    this.props = cleanRow(props);
     this.actor = new St.Widget({ layout_manager: new OutsetLayout(), x_expand: true });
     this.frame = new St.BoxLayout({
       style_class: 'visor-row',
@@ -393,6 +418,8 @@ export class Row implements KitRow {
       style_class: 'visor-row-main',
       x_expand: true,
       can_focus: true,
+      // Only reactive actors get key events, also when they have the focus.
+      reactive: true,
       accessible_role: Atk.Role.LIST_ITEM,
     });
     this.line.add_child(this.main);
@@ -428,7 +455,7 @@ export class Row implements KitRow {
   }
 
   update(props: RowProps): void {
-    this.props = props;
+    this.props = cleanRow(props);
     this.apply();
   }
 
@@ -714,17 +741,28 @@ export class Row implements KitRow {
     else this.chevron.remove_accessible_state(Atk.StateType.EXPANDED);
   }
 
+  /**
+   * Remembers which part of the row has the keyboard focus. Asking the stage
+   * does not work here: while an actor is told that it lost the focus, the
+   * stage still names it.
+   */
   private watchFocus(actor: Clutter.Actor): void {
-    actor.connect('key-focus-in', () => this.syncReveal());
-    actor.connect('key-focus-out', () => this.syncReveal());
+    actor.connect('key-focus-in', () => {
+      this.focused = actor;
+      this.syncReveal();
+    });
+    actor.connect('key-focus-out', () => {
+      if (this.focused === actor) this.focused = null;
+      this.syncReveal();
+    });
   }
 
   /** Shows the secondary actions while the pointer is on the row or the keyboard focus is in it. */
   private syncReveal(): void {
-    if (this.main.has_key_focus()) this.frame.add_style_pseudo_class('focus');
+    if (this.focused === this.main) this.frame.add_style_pseudo_class('focus');
     else this.frame.remove_style_pseudo_class('focus');
 
-    const revealed = this.frame.hover || hasKeyFocusInside(this.frame);
+    const revealed = this.frame.hover || this.focused !== null;
     if (revealed === this.revealed && !this.chevron) return;
     this.revealed = revealed;
     if (this.actionsBox) fade(this.actionsBox, revealed);
@@ -769,6 +807,8 @@ class Section implements KitSection {
   private title: St.Label;
   private linksBox: St.BoxLayout;
   private links: ActionList;
+  /** The link that has the keyboard focus. */
+  private focused: Clutter.Actor | null = null;
 
   constructor(props: { title: string; links?: Action[] }, guard: Guard) {
     this.actor = new St.BoxLayout({
@@ -778,12 +818,12 @@ class Section implements KitSection {
       reactive: true,
       track_hover: true,
       accessible_role: Atk.Role.PANEL,
-      accessible_name: props.title,
+      accessible_name: str(props.title),
     });
     const header = new St.BoxLayout({ style_class: 'visor-section-header' });
     this.title = new St.Label({
       style_class: 'visor-section-title',
-      text: props.title,
+      text: str(props.title),
       x_expand: true,
       y_align: Clutter.ActorAlign.CENTER,
     });
@@ -806,8 +846,14 @@ class Section implements KitSection {
       this.linksBox,
       guard,
       button => {
-        button.connect('key-focus-in', () => this.syncLinks());
-        button.connect('key-focus-out', () => this.syncLinks());
+        button.connect('key-focus-in', () => {
+          this.focused = button;
+          this.syncLinks();
+        });
+        button.connect('key-focus-out', () => {
+          if (this.focused === button) this.focused = null;
+          this.syncLinks();
+        });
       },
       'link',
     );
@@ -821,7 +867,7 @@ class Section implements KitSection {
   }
 
   private syncLinks(): void {
-    fade(this.linksBox, this.actor.hover || hasKeyFocusInside(this.linksBox));
+    fade(this.linksBox, this.actor.hover || this.focused !== null);
   }
 }
 
@@ -833,11 +879,14 @@ class Toggle implements KitToggle {
     props: { label: string; active: boolean; onChange(active: boolean): void },
     guard: Guard,
   ) {
-    this.knob = new St.Widget({
-      style_class: 'visor-toggle-knob',
-      x_align: Clutter.ActorAlign.START,
-      y_align: Clutter.ActorAlign.CENTER,
+    this.knob = new St.Widget({ style_class: 'visor-toggle-knob' });
+    // The track has the size of the inside of the switch and a fixed layout,
+    // so the knob starts at its edge whatever the button does with its child.
+    const track = new St.Widget({
+      style_class: 'visor-toggle-track',
+      layout_manager: new Clutter.FixedLayout(),
     });
+    track.add_child(this.knob);
     this.actor = new St.Button({
       style_class: 'visor-toggle',
       toggle_mode: true,
@@ -846,8 +895,8 @@ class Toggle implements KitToggle {
       y_align: Clutter.ActorAlign.CENTER,
       x_align: Clutter.ActorAlign.END,
       accessible_role: Atk.Role.CHECK_BOX,
-      accessible_name: props.label,
-      child: this.knob,
+      accessible_name: str(props.label),
+      child: track,
     });
     this.place(false);
     this.actor.connect('clicked', () => {
@@ -911,8 +960,9 @@ export class Chip {
 
   update(chip: PeekChip, tone: PeekChip['tone'] = chip.tone): void {
     setIcon(this.icon, chip.icon);
-    if (this.label.text !== chip.text) this.label.text = chip.text;
-    this.label.visible = chip.text !== '';
+    const text = str(chip.text);
+    if (this.label.text !== text) this.label.text = text;
+    this.label.visible = text !== '';
     const next = tone ?? 'normal';
     if (next !== this.tone) {
       if (this.tone !== 'normal') this.actor.remove_style_class_name(this.tone);
@@ -935,7 +985,7 @@ export function createKit(guard: Guard): Kit {
       ).actor,
     toggle: props => new Toggle(props, guard),
     progress: props => new Progress(props.value, props.tone),
-    empty: text => new St.Label({ style_class: 'visor-empty', text, x_expand: true }),
+    empty: text => new St.Label({ style_class: 'visor-empty', text: str(text), x_expand: true }),
     chip: chip => new Chip(chip, false).actor,
   };
 }
