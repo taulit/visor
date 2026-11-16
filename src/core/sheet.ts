@@ -9,7 +9,7 @@ import St from 'gi://St';
 
 import { ensureActorVisibleInScrollView } from 'resource:///org/gnome/shell/misc/animationUtils.js';
 
-import type { Kit, KitSection, KitToggle, Slot } from '../api.js';
+import type { Kit, KitSection, RowProps, Slot } from '../api.js';
 import { diffIds } from '../lib/diff.js';
 import { badgeText } from '../lib/modules.js';
 import { leftColumnWidth, sheetWidth } from '../lib/widths.js';
@@ -58,7 +58,8 @@ interface ModuleList {
   slot: Slot;
   box: St.BoxLayout;
   shown: string;
-  toggles: Map<string, KitToggle>;
+  /** The row of each module and what it shows now. */
+  rows: Map<string, { row: Row; props: () => RowProps }>;
 }
 
 function scaleFactor(): number {
@@ -83,6 +84,7 @@ export class Sheet implements SearchMount {
 
   private viewPage: St.BoxLayout | null = null;
   private viewTitle: St.Label | null = null;
+  private viewActions: St.BoxLayout | null = null;
   private viewScroll: St.ScrollView | null = null;
   private viewBox: St.BoxLayout | null = null;
   private views = new Map<string, Built>();
@@ -235,6 +237,7 @@ export class Sheet implements SearchMount {
     this.view = widget ? id : null;
     for (const child of this.viewBox!.get_children()) child.visible = child === widget;
     this.viewTitle!.text = title;
+    this.syncViewActions();
     this.mainPage!.visible = widget === null;
     this.viewPage!.visible = widget !== null;
     if (widget) {
@@ -289,6 +292,7 @@ export class Sheet implements SearchMount {
     }
     this.root = this.layer = this.mainPage = this.entry = this.dock = this.scroll = null;
     this.left = this.right = this.viewPage = this.viewTitle = this.viewScroll = this.viewBox = null;
+    this.viewActions = null;
     this.nowSection = null;
     this.modulesView = this.overlay = this.overlayChild = null;
     this.dockItems = [];
@@ -386,6 +390,11 @@ export class Sheet implements SearchMount {
       y_align: Clutter.ActorAlign.CENTER,
     });
     header.add_child(this.viewTitle);
+    this.viewActions = new St.BoxLayout({
+      style_class: 'visor-view-actions',
+      y_align: Clutter.ActorAlign.CENTER,
+    });
+    header.add_child(this.viewActions);
     this.viewBox = new St.BoxLayout({ style_class: 'visor-view', vertical: true, x_expand: true });
     this.viewScroll = this.buildScroll(this.viewBox);
     viewPage.add_child(this.viewScroll);
@@ -454,7 +463,7 @@ export class Sheet implements SearchMount {
       const box = new St.BoxLayout({ vertical: true, x_expand: true });
       section.body.add_child(box);
       view.add_child(section.actor);
-      this.moduleLists.push({ slot, box, shown: '\u0000', toggles: new Map() });
+      this.moduleLists.push({ slot, box, shown: '\u0000', rows: new Map() });
     }
     this.viewBox!.add_child(view);
   }
@@ -641,35 +650,41 @@ export class Sheet implements SearchMount {
       if (shown !== list.shown) {
         list.shown = shown;
         list.box.destroy_all_children();
-        list.toggles.clear();
+        list.rows.clear();
         for (const entry of entries) this.addModuleRow(list, entry);
         if (entries.length === 0) list.box.add_child(this.kit!.empty(_('No modules')));
       }
-      for (const [id, toggle] of list.toggles) toggle.active = !this.registry.isDisabled(id);
+      for (const { row, props } of list.rows.values()) row.update(props());
+    }
+  }
+
+  /** The buttons a dock module wants in the header of its view. */
+  private syncViewActions(): void {
+    const box = this.viewActions!;
+    box.destroy_all_children();
+    const entry = this.view === null ? null : this.registry.get(this.view);
+    const actions = entry?.module.viewActions;
+    if (!entry || !Array.isArray(actions)) return;
+    const kit = createKit(entry.guard);
+    for (const action of actions) {
+      const button = entry.guard.build(() => kit.button(action));
+      if (button) box.add_child(button);
     }
   }
 
   private addModuleRow(list: ModuleList, entry: ModuleEntry): void {
     const { id, name, icon } = entry.module;
-    const toggle = this.kit!.toggle({
-      label: String(name),
-      active: !this.registry.isDisabled(id),
-      onChange: active => this.registry.setEnabled(id, active),
+    const props = (): RowProps => ({
+      icon: String(icon),
+      title: String(name),
+      toggle: {
+        active: !this.registry.isDisabled(id),
+        onChange: active => this.registry.setEnabled(id, active),
+      },
     });
-    const row = ownGuard.build(
-      () =>
-        new Row(
-          {
-            icon: String(icon),
-            title: String(name),
-            activate: () => this.registry.setEnabled(id, this.registry.isDisabled(id)),
-          },
-          ownGuard,
-          { trailing: toggle.actor },
-        ),
-    );
+    const row = ownGuard.build(() => new Row(props(), ownGuard));
     if (!row) return;
-    list.toggles.set(id, toggle);
+    list.rows.set(id, { row, props });
     list.box.add_child(row.actor);
   }
 

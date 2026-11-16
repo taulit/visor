@@ -102,6 +102,9 @@
   font-size: 14px;
   font-weight: 600;
 }
+.visor-view-actions {
+  spacing: 6px;
+}
 .visor-view {
   padding-top: 14px;
 }
