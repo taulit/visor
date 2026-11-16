@@ -6,3 +6,4 @@ dist/
 schemas/gschemas.compiled
 .shell-test/
 .DS_Store
+.shell-src/

@@ -1,0 +1,10 @@
+{
+  "uuid": "visor@taulit.github.io",
+  "name": "Visor",
+  "description": "Dynamic Island & Notch for GNOME",
+  "shell-version": ["50", "51"],
+  "url": "https://github.com/taulit/visor",
+  "settings-schema": "org.gnome.shell.extensions.visor",
+  "gettext-domain": "visor",
+  "version-name": "0.1.0"
+}
