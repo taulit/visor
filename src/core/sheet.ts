@@ -117,11 +117,6 @@ export class Sheet implements SearchMount {
     );
   }
 
-  /** The built panel, or null as long as nobody asked for it. */
-  get widget(): St.Widget | null {
-    return this.root;
-  }
-
   getActor(): St.Widget {
     if (!this.root) {
       this.building = true;
@@ -313,6 +308,8 @@ export class Sheet implements SearchMount {
       style_class: 'visor-sheet',
       layout_manager: new Clutter.BinLayout(),
       accessible_role: Atk.Role.PANEL,
+      // Key events bubble only through reactive actors, see the handler below.
+      reactive: true,
     }));
     const layer = (this.layer = new St.Widget({
       layout_manager: new Clutter.BinLayout(),
@@ -405,6 +402,8 @@ export class Sheet implements SearchMount {
     if (this.overlayChild) this.setOverlay(this.overlayChild);
 
     // Tab and the arrow keys walk through everything that can take the focus.
+    // The focus manager does that by itself only for events that reach the
+    // stage, and under the modal grab of the open notch none does.
     const focusManager = St.FocusManager.get_for_stage(global.stage);
     focusManager.add_group(root);
     root.connect('key-press-event', (_actor, event) =>
