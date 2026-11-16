@@ -71,5 +71,6 @@ fi
 shell_eval 'visor.notch.dispatch({type: "leave"})' >/dev/null
 pause 800
 check 'back in idle, quiet' '[visor.notch.state, visor.notch.body.visible, visor.notch.motion.running, visor.notch.timers.size]' '["idle",false,false,0]'
+check_log 'no shell warnings during the test'
 
 finish

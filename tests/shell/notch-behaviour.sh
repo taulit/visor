@@ -259,5 +259,11 @@ shell_eval "visor.notch.open()" >/dev/null
 check 'disable while open: everything handed back' "(visor.disable(), [Object.hasOwn(Main.panel, 'toggleCalendar'), Object.hasOwn(Main.panel, 'closeCalendar'), Main.panel.toggleCalendar === Object.getPrototypeOf(Main.panel).toggleCalendar, Main.wm._allowedKeybindings['open-shortcut'] === Shell.ActionMode.NONE, Main.messageTray._bannerBlocked, Main.panel.menuManager.activeMenu == null, Main.actionMode === Shell.ActionMode.NORMAL, Main.panel.statusArea.dateMenu.container.visible, Main.panel._centerBox.get_n_children()])" '[false,false,true,true,false,true,true,true,1]'
 shell_eval 'visor.enable()' >/dev/null
 check 'enabled again' "$quiet" '["idle",false,false,0]'
+# The dot of an event makes the neck wider, and the flash comes after the
+# layout but before the notch has followed: the row of chips, built right
+# then, has to be on the stage before it is measured.
+check 'first peek ever, right after the neck got wider' "(async () => { visorTest.register(); const neck = $n.neck; const allocated = new Promise(r => { const id = neck.connect('notify::allocation', () => { neck.disconnect(id); r(); }); }); visorTest.ctx.attention('waiting'); await allocated; const pending = neck.has_allocation() && neck.width !== $n.neckWidth; $n.flash(); return [pending, $n.state, visor.content.peek.actor.get_stage() !== null]; })()" '[true,"peek",true]'
+shell_eval "$n.close()" >/dev/null
+check_log 'no shell warnings during the test'
 
 finish

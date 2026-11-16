@@ -9,7 +9,6 @@ source "$VISOR_REPO/tests/shell/lib.sh"
 uuid='visor@taulit.github.io'
 count='(function n(a) { let c = 1; for (const k of a.get_children()) c += n(k); return c; })(global.stage)'
 reenable="(Main.extensionManager.disableExtension('$uuid'), Main.extensionManager.enableExtension('$uuid'))"
-log_before="$(wc -l <"$HOME/shell.log")"
 
 shell_eval "$reenable" >/dev/null
 shell_eval 'visorTest.register()' >/dev/null
@@ -34,9 +33,7 @@ check 'disabled mid-animation: modal and date menu handed back' '[Main.actionMod
 shell_eval "Main.extensionManager.enableExtension('$uuid')" >/dev/null
 pause 300
 check "actors after use and re-enable equal a fresh enable ($fresh)" "$count" "$fresh"
-noise="$(tail -n "+$((log_before + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|has been already disposed' || true)"
-check 'no shell warnings while in use' "$(printf '%s' "${#noise}")" 0
-[[ -z "$noise" ]] || echo "$noise" | head -n 20
+check_log 'no shell warnings while in use'
 
 bash "$VISOR_REPO/scripts/leak-test.sh" --inside "${1:-10}" || failures=$((failures + 1))
 finish

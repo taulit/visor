@@ -4,6 +4,7 @@
 source "$VISOR_REPO/scripts/lib/shell.sh"
 
 failures=0
+log_start="$(wc -l <"$HOME/shell.log")"
 
 # check NAME JS EXPECTED: compares the JSON result of JS with EXPECTED.
 check() {
@@ -13,6 +14,19 @@ check() {
         printf 'ok    %s  (%s)\n' "$1" "$got"
     else
         printf 'FAIL  %s: expected %s, got %s\n' "$1" "$3" "$got"
+        failures=$((failures + 1))
+    fi
+}
+
+# check_log NAME: fails when the shell logged a warning or an error since the test began.
+check_log() {
+    local noise
+    noise="$(tail -n "+$((log_start + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|has been already disposed' || true)"
+    if [[ -z "$noise" ]]; then
+        printf 'ok    %s\n' "$1"
+    else
+        printf 'FAIL  %s:\n' "$1"
+        head -n 20 <<<"$noise"
         failures=$((failures + 1))
     fi
 }
