@@ -2,9 +2,9 @@
 <schemalist gettext-domain="visor">
   <schema id="org.gnome.shell.extensions.visor" path="/org/gnome/shell/extensions/visor/">
     <key name="open-shortcut" type="as">
-      <default>['&lt;Super&gt;v']</default>
-      <summary>Open shortcut</summary>
-      <description>Keyboard shortcuts that open the Visor island.</description>
+      <default>[]</default>
+      <summary>Additional shortcut</summary>
+      <description>Extra keyboard shortcuts that open Visor. The shortcut of the shell for the notification list (Super+V by default) always opens it.</description>
     </key>
     <key name="hover-preview" type="b">
       <default>true</default>
