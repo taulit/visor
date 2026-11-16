@@ -60,6 +60,7 @@ about state changes. The content asks the notch to open, close, flash or re-meas
 ## Testing
 
 - Pure logic (no `gi://` imports) is tested with Vitest: `pnpm test`.
-- Everything else runs in a sandboxed headless shell: `scripts/nested.sh`, `scripts/shell-shot.sh <scenario>`,
-  `scripts/leak-test.sh`. The test helper in `tests/shell-helper/` exports `io.github.taulit.Visor.Debug`
-  (`Eval`, `Screenshot`); in `Eval`, `visor` is the running extension object.
+- Everything else runs in a sandboxed headless shell (`scripts/nested.sh`): `pnpm test:shell` runs the tests in
+  `tests/shell/` and the leak test, `scripts/shots.sh` takes the screenshots in `docs/screenshots/`,
+  `scripts/shell-shot.sh <scenario>` a single one. The test helper in `tests/shell-helper/` exports
+  `io.github.taulit.Visor.Debug` (`Eval`, `Screenshot`); in `Eval`, `visor` is the running extension object.

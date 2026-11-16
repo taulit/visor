@@ -16,6 +16,7 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:shell": "bash scripts/shell-tests.sh",
     "pot": "bash scripts/update-pot.sh"
   },
   "devDependencies": {
