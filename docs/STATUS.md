@@ -10,13 +10,13 @@ Session 1 (Visor). Other sessions read only this file. Plan: [design/plan](desig
 
 ## Phases
 
-| Phase | Content                                                                                      | State     | PR  |
-| ----- | -------------------------------------------------------------------------------------------- | --------- | --- |
-| V0    | Tooling, repo, CI, `docs/verified.md`, headless shell and screenshots                        | in review | –   |
-| V1    | Core: panel integration, states, spring, theme, clock, shortcuts, registry, kit, empty sheet | next      | –   |
-| V2    | Modules: notifications, up next, media, timers, downloads. Search. Freeze API                | open      | –   |
-| V3    | T3 Code, peek chips, settings, SDK, `visor-module-template`                                  | open      | –   |
-| V4    | Hardening: budgets, accessibility, translations, reviews, EGO checklist, packages, README    | open      | –   |
+| Phase | Content                                                                                      | State       | PR                                           |
+| ----- | -------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------- |
+| V0    | Tooling, repo, CI, `docs/verified.md`, headless shell and screenshots                        | in review   | [#1](https://github.com/taulit/visor/pull/1) |
+| V1    | Core: panel integration, states, spring, theme, clock, shortcuts, registry, kit, empty sheet | in progress | –                                            |
+| V2    | Modules: notifications, up next, media, timers, downloads. Search. Freeze API                | open        | –                                            |
+| V3    | T3 Code, peek chips, settings, SDK, `visor-module-template`                                  | open        | –                                            |
+| V4    | Hardening: budgets, accessibility, translations, reviews, EGO checklist, packages, README    | open        | –                                            |
 
 ## Done
 
