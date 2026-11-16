@@ -44,10 +44,11 @@
 }
 
 /* The colour of the body is the colour of the panel, set inline. The lower
-   corners belong to the state; St shrinks them while the body is still flat. */
+   corners belong to the state; St shrinks them while the body is still flat.
+   The hint is 8 px high: an ear of 4 px runs straight into a corner of 4 px. */
 .visor-body.hint,
 .visor-shadow.hint {
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 4px 4px;
 }
 
 .visor-body.peek,

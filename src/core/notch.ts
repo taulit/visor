@@ -55,7 +55,7 @@ const PEEK_HEIGHT = 56;
 const SHEET_MAX_HEIGHT = 820;
 const SHEET_SCREEN_MARGIN = 120;
 const EAR = 16;
-const EAR_HINT = 7;
+const EAR_HINT = 4;
 /** Content comes in from 6 px above at 97 % of its size. */
 const REVEAL_LIFT = 6;
 const REVEAL_SCALE = 0.97;
