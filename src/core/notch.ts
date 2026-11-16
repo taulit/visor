@@ -10,6 +10,7 @@
 //   └─ root                  0 × 0 at the centre of the panel's lower edge
 //      ├─ shadow             shown once the size has settled
 //      ├─ ear, ear           concave corners in the colour of the panel
+//      ├─ seam               covers the line some themes draw along the panel's lower edge
 //      ├─ body               the background; the only actor that is resized per frame
 //      └─ clip               has the final size at once, only its clip rectangle grows
 //         └─ peek, sheet     from the content, laid out once
@@ -95,6 +96,7 @@ export class Notch implements NotchHost {
   private root: St.Widget;
   private shadow: St.Widget;
   private ears: [Ear, Ear];
+  private seam: St.Widget;
   private body: St.Widget;
   private clip: Clutter.Actor;
   /** The content widget that belongs to the current state. */
@@ -107,6 +109,7 @@ export class Notch implements NotchHost {
 
   private scale = 1;
   private neckWidth = 0;
+  private earRadius = 0;
   private current: Shape = { halfWidth: 0, height: 0, ear: 0, reveal: 1 };
   private target: Shape = this.current;
   private clipWidth = 0;
@@ -146,10 +149,12 @@ export class Notch implements NotchHost {
     });
     this.shadow = new St.Widget({ style_class: 'visor-shadow', visible: false });
     this.ears = [new Ear('left'), new Ear('right')];
+    this.seam = new St.Widget({ visible: false });
     this.body = new St.Widget({ style_class: 'visor-body', reactive: true, visible: false });
     this.clip = new Clutter.Actor({ layout_manager: new Clutter.FixedLayout() });
     this.root.add_child(this.shadow);
     for (const ear of this.ears) this.root.add_child(ear.actor);
+    this.root.add_child(this.seam);
     this.root.add_child(this.body);
     this.root.add_child(this.clip);
 
@@ -176,6 +181,8 @@ export class Notch implements NotchHost {
       (_actor: Clutter.Actor, event: Clutter.Event) => this.onTouch(event, 'activate'),
       'notify::visible',
       () => this.onRootVisible(),
+      'destroy',
+      () => this.abandon(),
       this,
     );
     this.neck.connectObject(
@@ -191,6 +198,8 @@ export class Notch implements NotchHost {
       (_actor: Clutter.Actor, event: Clutter.Event) => this.onNeckKey(event),
       'notify::allocation',
       () => this.queueSync(),
+      'destroy',
+      () => this.abandon(),
       this,
     );
 
@@ -435,7 +444,7 @@ export class Notch implements NotchHost {
         this.layout(halfWidth * 2, height);
         peek.set_position(
           Math.floor(halfWidth - natural / 2),
-          Math.max(0, Math.floor((height - naturalHeight) / 2)),
+          Math.floor((height - naturalHeight) / 2),
         );
         return { halfWidth, height, ear: EAR * s, reveal: 1 };
       }
@@ -490,10 +499,14 @@ export class Notch implements NotchHost {
       : this.current;
     this.target = target;
 
+    this.drawEars(Math.max(from.ear, target.ear));
+    this.place(from);
+
     // The shadow never follows a moving edge.
     this.shadow.remove_all_transitions();
     this.shadow.hide();
     this.body.show();
+    this.seam.show();
     for (const ear of this.ears) ear.actor.show();
 
     this.motion.start(
@@ -524,14 +537,20 @@ export class Notch implements NotchHost {
     this.body.set_size(halfWidth * 2, height);
     this.clip.set_clip(this.clipWidth / 2 - halfWidth, 0, halfWidth * 2, height);
 
-    // Drawn once at full size and scaled; an ear is never higher than the body.
-    const size = EAR * this.scale;
+    // Scaled from the size they were drawn at; an ear is never higher than the body.
+    const size = this.earRadius || 1;
     const factor = Math.max(0, Math.min(shape.ear, height)) / size;
     const [left, right] = this.ears;
     left.actor.set_position(-halfWidth - size, 0);
     left.actor.set_scale(factor, factor);
-    right.actor.set_position(halfWidth, 0);
+    right.actor.set_position(halfWidth - 1, 0);
     right.actor.set_scale(factor, factor);
+
+    // One row of the panel, from ear tip to ear tip: the light stock theme
+    // draws a hairline there that would cut the notch off from the panel.
+    const reach = halfWidth + Math.round(factor * size);
+    this.seam.set_position(-reach, -1);
+    this.seam.set_size(reach * 2, 1);
 
     if (this.shown) {
       const scale = mix(REVEAL_SCALE, 1, shape.reveal);
@@ -547,11 +566,17 @@ export class Notch implements NotchHost {
       this.hideAll();
       return;
     }
+    // At rest the ears are drawn at their own size, not scaled.
+    this.drawEars(this.target.ear);
+    this.place(this.target);
     if (state === 'hint') return;
 
     const halfWidth = Math.round(this.target.halfWidth);
     this.shadow.set_position(-halfWidth, 0);
     this.shadow.set_size(halfWidth * 2, Math.round(this.target.height));
+    // It falls on what is below the panel, never on the panel itself.
+    const spread = 200 * this.scale;
+    this.shadow.set_clip(-spread, 0, halfWidth * 2 + spread * 2, this.target.height + spread);
     this.shadow.opacity = 0;
     this.shadow.show();
     this.shadow.ease({
@@ -566,6 +591,7 @@ export class Notch implements NotchHost {
     this.shadow.remove_all_transitions();
     this.shadow.hide();
     this.body.hide();
+    this.seam.hide();
     for (const ear of this.ears) ear.actor.hide();
     for (const child of this.clip.get_children()) {
       child.remove_all_transitions();
@@ -577,7 +603,8 @@ export class Notch implements NotchHost {
 
   /** Follows the neck and the panel, one frame later and outside of their layout pass. */
   private queueSync(): void {
-    if (this.syncLater) return;
+    // `destroyed` is also set when the shell takes the actors away at shutdown.
+    if (this.syncLater || this.destroyed) return;
     this.syncLater = global.compositor.get_laters().add(Meta.LaterType.BEFORE_REDRAW, () => {
       this.syncLater = 0;
       this.syncPosition();
@@ -603,7 +630,16 @@ export class Notch implements NotchHost {
 
   private syncScale(): void {
     this.scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
-    for (const ear of this.ears) ear.actor.set_size(EAR * this.scale, EAR * this.scale);
+  }
+
+  /**
+   * The ears are drawn at `radius` and scaled down from there while they
+   * move. Redrawn when a state begins and when it has settled, never per frame.
+   */
+  private drawEars(radius: number): void {
+    if (radius <= 0 || radius === this.earRadius) return;
+    this.earRadius = radius;
+    for (const ear of this.ears) ear.setRadius(radius);
   }
 
   // -------------------------------------------------------------------- theme
@@ -629,6 +665,7 @@ export class Notch implements NotchHost {
       for (const name of classes) actor.add_style_class_name(name);
     }
     this.body.set_style(`background-color: ${css};`);
+    this.seam.set_style(`background-color: ${css};`);
     // The shadow is cast by a box of its own that hides behind the body.
     this.shadow.set_style(`background-color: ${css};`);
     for (const ear of this.ears) ear.setColor(color);
@@ -726,7 +763,8 @@ export class Notch implements NotchHost {
 
   // ------------------------------------------------------------------ destroy
 
-  destroy(): void {
+  /** Stops everything that would touch the actors later. */
+  private abandon(): void {
     this.destroyed = true;
     for (const id of this.timers.values()) GLib.Source.remove(id);
     this.timers.clear();
@@ -734,6 +772,10 @@ export class Notch implements NotchHost {
     this.syncLater = 0;
     this.queue.length = 0;
     this.motion.destroy();
+  }
+
+  destroy(): void {
+    this.abandon();
     this.keybindings.destroy();
 
     // Releases the grab and gives the banners back if the notch is open.
