@@ -113,7 +113,7 @@ describe('isAllDay', () => {
 
 describe('pickUpcoming', () => {
   const event = (name: string, start: Date, end: Date) => ({ name, start, end });
-  const names = (events: { name: string }[]): string[] => events.map((e) => e.name);
+  const names = (events: { name: string }[]): string[] => events.map(e => e.name);
 
   it('puts running events first, then orders by start', () => {
     const events = [
@@ -143,7 +143,7 @@ describe('pickUpcoming', () => {
   });
 
   it('limits the number', () => {
-    const events = [1, 2, 3, 4, 5].map((i) => event(`e${i}`, at(13, 15 + i), at(13, 16 + i)));
+    const events = [1, 2, 3, 4, 5].map(i => event(`e${i}`, at(13, 15 + i), at(13, 16 + i)));
     expect(names(pickUpcoming(events, now))).toEqual(['e1', 'e2', 'e3']);
     expect(names(pickUpcoming(events, now, 2))).toEqual(['e1', 'e2']);
   });

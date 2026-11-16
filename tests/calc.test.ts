@@ -155,11 +155,11 @@ describe('isCalculation', () => {
     '1 +',
   ];
 
-  it.each(yes)('"%s" is a calculation', (input) => {
+  it.each(yes)('"%s" is a calculation', input => {
     expect(isCalculation(input, 'en-US')).toBe(true);
   });
 
-  it.each(no)('"%s" is not a calculation', (input) => {
+  it.each(no)('"%s" is not a calculation', input => {
     expect(isCalculation(input, 'en-US')).toBe(false);
   });
 

@@ -57,7 +57,7 @@ describe('parseQuery', () => {
     expect(parse('1.234,5 + 1', 'de-DE').calc).toEqual({ value: 1235.5 });
   });
 
-  it.each(['2024', 'pi', 'e', 'log', 'firefox', '3 apples'])('"%s" is no calculation', (input) => {
+  it.each(['2024', 'pi', 'e', 'log', 'firefox', '3 apples'])('"%s" is no calculation', input => {
     expect(parse(input).calc).toBeNull();
   });
 

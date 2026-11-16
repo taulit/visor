@@ -139,7 +139,7 @@ describe('parseCurrencyQuery', () => {
     '€ in usd',
   ];
 
-  it.each(no)('rejects "%s"', (input) => {
+  it.each(no)('rejects "%s"', input => {
     expect(parseCurrencyQuery(input, 'EUR', 'en-US')).toBeNull();
   });
 });
