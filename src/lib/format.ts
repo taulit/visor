@@ -8,3 +8,14 @@ export function formatDuration(ms: number): string {
   if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}:${ss}`;
   return `${minutes}:${ss}`;
 }
+
+/**
+ * Shorten `text` to at most `max` characters, the last one being `…` when something was cut.
+ * Counts code points, so a surrogate pair (emoji, rare CJK) is never split.
+ */
+export function truncate(text: string, max: number): string {
+  const chars = Array.from(text);
+  if (chars.length <= max) return text;
+  if (!(max >= 1)) return '';
+  return `${chars.slice(0, max - 1).join('')}…`;
+}
