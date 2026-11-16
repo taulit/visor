@@ -1,0 +1,762 @@
+// The open panel: search row with the dock, "Now" on the left, the sections of
+// the 'ahead' modules on the right, and the views of the dock modules.
+import Atk from 'gi://Atk';
+import Clutter from 'gi://Clutter';
+import type Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Meta from 'gi://Meta';
+import St from 'gi://St';
+
+import { ensureActorVisibleInScrollView } from 'resource:///org/gnome/shell/misc/animationUtils.js';
+
+import type { Kit, KitSection, KitToggle, Slot } from '../api.js';
+import { diffIds } from '../lib/diff.js';
+import { badgeText } from '../lib/modules.js';
+import { leftColumnWidth, sheetWidth } from '../lib/widths.js';
+import { createKit, ownGuard, Row } from './kit.js';
+import type { ModuleEntry, Registry } from './registry.js';
+
+/** Name of the built-in view that lists the modules. No module can have this id. */
+const MODULES_VIEW = ':modules';
+const SEARCH_DEBOUNCE_MS = 40;
+
+/** What the search needs from the sheet. The search itself is not part of the sheet. */
+export interface SearchMount {
+  /** Text of the search entry. */
+  readonly query: string;
+  /** Called with the text of the entry, 40 ms after the last key. */
+  setQueryHandler(handler: ((query: string) => void) | null): void;
+  /** Shows a widget right below the search row, above the columns. Null takes it away. */
+  setOverlay(widget: St.Widget | null): void;
+  clearQuery(): void;
+}
+
+export interface SheetCallbacks {
+  /** The width or the height the sheet asks for changed. */
+  changed(): void;
+}
+
+interface NowGroup {
+  generation: number;
+  box: St.BoxLayout;
+  rows: Map<string, Row>;
+}
+
+interface Built {
+  generation: number;
+  widget: St.Widget;
+}
+
+interface DockItem {
+  id: string;
+  actor: St.Widget;
+  button: St.Button;
+  badge: St.Label;
+}
+
+interface ModuleList {
+  slot: Slot;
+  box: St.BoxLayout;
+  shown: string;
+  toggles: Map<string, KitToggle>;
+}
+
+function scaleFactor(): number {
+  return St.ThemeContext.get_for_stage(global.stage).scale_factor;
+}
+
+export class Sheet implements SearchMount {
+  private kit: Kit | null = null;
+  private root: St.Widget | null = null;
+  /** Everything inside the padding; its height is what the sheet asks for. */
+  private layer: St.Widget | null = null;
+  private mainPage: St.BoxLayout | null = null;
+  private entry: St.Entry | null = null;
+  private dock: St.BoxLayout | null = null;
+  private dockItems: DockItem[] = [];
+  private scroll: St.ScrollView | null = null;
+  private left: St.BoxLayout | null = null;
+  private right: St.BoxLayout | null = null;
+  private nowSection: KitSection | null = null;
+  private nowGroups = new Map<string, NowGroup>();
+  private sections = new Map<string, Built>();
+
+  private viewPage: St.BoxLayout | null = null;
+  private viewTitle: St.Label | null = null;
+  private viewScroll: St.ScrollView | null = null;
+  private viewBox: St.BoxLayout | null = null;
+  private views = new Map<string, Built>();
+  private view: string | null = null;
+  private modulesView: St.BoxLayout | null = null;
+  private moduleLists: ModuleList[] = [];
+
+  private overlay: St.Bin | null = null;
+  private overlayChild: St.Widget | null = null;
+  private queryHandler: ((query: string) => void) | null = null;
+  private reportedQuery = '';
+  private debounce = 0;
+
+  private isOpen = false;
+  private building = false;
+  private measureLater = 0;
+  private lastHeight = -1;
+
+  constructor(
+    private registry: Registry,
+    private settings: Gio.Settings,
+    private gettext: (s: string) => string,
+    private callbacks: SheetCallbacks,
+  ) {
+    settings.connectObject(
+      'changed::width',
+      () => {
+        this.layout();
+        this.notify();
+      },
+      this,
+    );
+  }
+
+  /** The built panel, or null as long as nobody asked for it. */
+  get widget(): St.Widget | null {
+    return this.root;
+  }
+
+  getActor(): St.Widget {
+    if (!this.root) {
+      this.building = true;
+      try {
+        this.build();
+        this.sync();
+      } finally {
+        this.building = false;
+      }
+    }
+    return this.root!;
+  }
+
+  /** Width of the panel in stage pixels. */
+  width(): number {
+    const css = sheetWidth(
+      this.settings.get_string('width'),
+      this.twoColumns(),
+      this.view !== null,
+    );
+    return css * scaleFactor();
+  }
+
+  // --- search ---
+
+  get query(): string {
+    return this.entry?.get_text() ?? '';
+  }
+
+  setQueryHandler(handler: ((query: string) => void) | null): void {
+    this.queryHandler = handler;
+  }
+
+  setOverlay(widget: St.Widget | null): void {
+    this.overlayChild = widget;
+    if (!this.overlay) return;
+    this.overlay.set_child(widget);
+    this.overlay.visible = widget !== null;
+  }
+
+  clearQuery(): void {
+    if (!this.entry) return;
+    this.entry.set_text('');
+    this.reportQuery();
+  }
+
+  // --- state ---
+
+  /** The panel opened: the keyboard goes to the search entry, or into the view asked for. */
+  opened(view?: string): void {
+    this.isOpen = true;
+    this.lastHeight = -1;
+    this.getActor();
+    global.stage.connectObject('notify::key-focus', () => this.followFocus(), this);
+    if (!(view && this.showView(view))) this.entry?.grab_key_focus();
+  }
+
+  /** The panel closed: back to the main view with an empty search. */
+  closed(): void {
+    this.isOpen = false;
+    global.stage.disconnectObject(this);
+    this.cancelMeasure();
+    if (!this.root) return;
+    this.clearQuery();
+    if (this.view !== null) this.showView(null);
+  }
+
+  /** Escape: first clears the search, then leaves a view. False when there was nothing to do. */
+  handleEscape(): boolean {
+    if (this.query !== '') {
+      this.clearQuery();
+      return true;
+    }
+    if (this.view !== null) {
+      this.showView(null);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Shows the view of a dock module, the list of modules, or with null the
+   * main view. False when there is no such view.
+   */
+  showView(id: string | null): boolean {
+    if (!this.root) return false;
+    const _ = this.gettext;
+    let widget: St.Widget | null = null;
+    let title = '';
+    if (id === MODULES_VIEW) {
+      title = _('Modules');
+      if (!this.modulesView) this.buildModulesView();
+      this.syncModulesView();
+      widget = this.modulesView;
+    } else if (id !== null) {
+      const entry = this.registry.get(id);
+      if (!entry?.active || entry.module.slot !== 'dock') return false;
+      title = entry.module.name;
+      let built = this.views.get(id);
+      if (built && built.generation !== entry.generation) {
+        built.widget.destroy();
+        this.views.delete(id);
+        built = undefined;
+      }
+      if (!built) {
+        const view = this.registry.buildView(entry);
+        if (!view) return false;
+        built = { generation: entry.generation, widget: view };
+        this.views.set(id, built);
+        this.viewBox!.add_child(view);
+      }
+      widget = built.widget;
+    }
+
+    const previous = this.view;
+    this.view = widget ? id : null;
+    for (const child of this.viewBox!.get_children()) child.visible = child === widget;
+    this.viewTitle!.text = title;
+    this.mainPage!.visible = widget === null;
+    this.viewPage!.visible = widget !== null;
+    if (widget) {
+      this.clearQuery();
+      this.viewScroll!.vadjustment.value = 0;
+    }
+    if (this.isOpen) {
+      if (!widget) this.entry!.grab_key_focus();
+      else if (!widget.navigate_focus(null, St.DirectionType.TAB_FORWARD, false))
+        this.viewPage!.navigate_focus(null, St.DirectionType.TAB_FORWARD, false);
+    }
+    if (previous !== this.view) this.notify();
+    return widget !== null || id === null;
+  }
+
+  // --- content ---
+
+  /** Modules were added, removed, turned on or off, or reordered. */
+  sync(): void {
+    if (!this.root) return;
+    this.syncNowGroups();
+    this.syncSections();
+    this.syncDock();
+    this.syncViews();
+    this.syncModulesView();
+    this.layout();
+  }
+
+  /** The rows of one 'now' module changed. */
+  rowsChanged(entry: ModuleEntry): void {
+    if (!this.root) return;
+    const hadRows = this.left!.visible;
+    this.syncRows(entry);
+    if (hadRows !== this.nowCount() > 0) this.layout();
+  }
+
+  badgeChanged(entry: ModuleEntry): void {
+    const item = this.dockItems.find(other => other.id === entry.module.id);
+    if (item) this.applyBadge(item, entry);
+  }
+
+  destroy(): void {
+    this.settings.disconnectObject(this);
+    global.stage.disconnectObject(this);
+    this.cancelMeasure();
+    if (this.debounce) GLib.source_remove(this.debounce);
+    this.debounce = 0;
+    this.queryHandler = null;
+    if (this.root) {
+      St.FocusManager.get_for_stage(global.stage).remove_group(this.root);
+      this.root.destroy();
+    }
+    this.root = this.layer = this.mainPage = this.entry = this.dock = this.scroll = null;
+    this.left = this.right = this.viewPage = this.viewTitle = this.viewScroll = this.viewBox = null;
+    this.nowSection = null;
+    this.modulesView = this.overlay = this.overlayChild = null;
+    this.dockItems = [];
+    this.moduleLists = [];
+    this.nowGroups.clear();
+    this.sections.clear();
+    this.views.clear();
+  }
+
+  // --- building ---
+
+  private build(): void {
+    const _ = this.gettext;
+    const kit = (this.kit = createKit(ownGuard));
+
+    const root = (this.root = new St.Widget({
+      style_class: 'visor-sheet',
+      layout_manager: new Clutter.BinLayout(),
+      accessible_role: Atk.Role.PANEL,
+    }));
+    const layer = (this.layer = new St.Widget({
+      layout_manager: new Clutter.BinLayout(),
+      x_expand: true,
+      y_expand: true,
+    }));
+    root.add_child(layer);
+
+    // Main view: search row, then the columns.
+    const mainPage = (this.mainPage = new St.BoxLayout({
+      vertical: true,
+      x_expand: true,
+      y_expand: true,
+    }));
+    layer.add_child(mainPage);
+
+    const searchRow = new St.BoxLayout({ style_class: 'visor-search' });
+    mainPage.add_child(searchRow);
+    searchRow.add_child(
+      new St.Icon({
+        style_class: 'visor-search-icon',
+        icon_name: 'edit-find-symbolic',
+        y_align: Clutter.ActorAlign.CENTER,
+      }),
+    );
+    const entry = (this.entry = new St.Entry({
+      style_class: 'visor-search-entry',
+      hint_text: _('Search, calculate or run a command …'),
+      accessible_name: _('Search'),
+      can_focus: true,
+      x_expand: true,
+      y_align: Clutter.ActorAlign.CENTER,
+    }));
+    searchRow.add_child(entry);
+    entry.clutter_text.connect('text-changed', () => this.queryChanged());
+    entry.clutter_text.connect('key-press-event', (_actor, event) => {
+      if (event.get_key_symbol() !== Clutter.KEY_Down) return Clutter.EVENT_PROPAGATE;
+      this.scroll!.navigate_focus(null, St.DirectionType.TAB_FORWARD, false);
+      return Clutter.EVENT_STOP;
+    });
+    this.dock = new St.BoxLayout({ style_class: 'visor-dock', y_align: Clutter.ActorAlign.CENTER });
+    searchRow.add_child(this.dock);
+
+    const columns = new St.BoxLayout({ style_class: 'visor-columns', x_expand: true });
+    this.scroll = this.buildScroll(columns);
+    mainPage.add_child(this.scroll);
+    this.left = new St.BoxLayout({ style_class: 'visor-column', vertical: true });
+    this.right = new St.BoxLayout({ style_class: 'visor-column', vertical: true, x_expand: true });
+    columns.add_child(this.left);
+    columns.add_child(this.right);
+    this.nowSection = kit.section({ title: _('Now') });
+    this.left.add_child(this.nowSection.actor);
+
+    // A module view: header with back button and title, then the view.
+    const viewPage = (this.viewPage = new St.BoxLayout({
+      vertical: true,
+      x_expand: true,
+      y_expand: true,
+      visible: false,
+    }));
+    layer.add_child(viewPage);
+    const header = new St.BoxLayout({ style_class: 'visor-view-header' });
+    viewPage.add_child(header);
+    header.add_child(
+      kit.iconButton({
+        icon: 'go-previous-symbolic',
+        label: _('Back'),
+        run: () => this.showView(null),
+      }),
+    );
+    this.viewTitle = new St.Label({
+      style_class: 'visor-view-title',
+      x_expand: true,
+      y_align: Clutter.ActorAlign.CENTER,
+    });
+    header.add_child(this.viewTitle);
+    this.viewBox = new St.BoxLayout({ style_class: 'visor-view', vertical: true, x_expand: true });
+    this.viewScroll = this.buildScroll(this.viewBox);
+    viewPage.add_child(this.viewScroll);
+
+    // Where the search puts its results.
+    this.overlay = new St.Bin({
+      style_class: 'visor-search-overlay',
+      x_expand: true,
+      y_expand: true,
+      y_align: Clutter.ActorAlign.START,
+      visible: false,
+    });
+    layer.add_child(this.overlay);
+    if (this.overlayChild) this.setOverlay(this.overlayChild);
+
+    // Tab and the arrow keys walk through everything that can take the focus.
+    const focusManager = St.FocusManager.get_for_stage(global.stage);
+    focusManager.add_group(root);
+    root.connect('key-press-event', (_actor, event) =>
+      focusManager.navigate_from_event(event) ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE,
+    );
+    // Whatever changes the height inside ends up here, also what modules do in their own widgets.
+    layer.connect('queue-relayout', () => this.scheduleMeasure());
+  }
+
+  /**
+   * A scroll view clips its child to the child's content box, so the padding
+   * that leaves room for the hover area of the rows sits one level further in.
+   */
+  private buildScroll(content: St.BoxLayout): St.ScrollView {
+    const child = new St.BoxLayout({ vertical: true, x_expand: true });
+    child.add_child(content);
+    return new St.ScrollView({
+      style_class: 'visor-scroll',
+      hscrollbar_policy: St.PolicyType.NEVER,
+      vscrollbar_policy: St.PolicyType.AUTOMATIC,
+      overlay_scrollbars: true,
+      x_expand: true,
+      y_expand: true,
+      child,
+    });
+  }
+
+  private buildModulesView(): void {
+    const _ = this.gettext;
+    const kit = this.kit!;
+    const view = (this.modulesView = new St.BoxLayout({
+      style_class: 'visor-modules',
+      x_expand: true,
+    }));
+    (view.layout_manager as Clutter.BoxLayout).homogeneous = true;
+    const groups: [Slot, string, string][] = [
+      ['now', _('Now'), _('Shows up only while something is running.')],
+      ['ahead', _('Up Next'), _('A short section next to “Now”.')],
+      ['dock', _('Dock'), _('A view of its own behind an icon.')],
+    ];
+    for (const [slot, title, hint] of groups) {
+      const section = kit.section({ title });
+      section.actor.x_expand = true;
+      section.actor.y_align = Clutter.ActorAlign.START;
+      const label = new St.Label({ style_class: 'visor-modules-hint', text: hint, x_expand: true });
+      label.clutter_text.line_wrap = true;
+      section.body.add_child(label);
+      const box = new St.BoxLayout({ vertical: true, x_expand: true });
+      section.body.add_child(box);
+      view.add_child(section.actor);
+      this.moduleLists.push({ slot, box, shown: '\u0000', toggles: new Map() });
+    }
+    this.viewBox!.add_child(view);
+  }
+
+  // --- keeping the widgets in step with the registry ---
+
+  private nowCount(): number {
+    let count = 0;
+    for (const entry of this.registry.active('now')) count += entry.rows.length;
+    return count;
+  }
+
+  private aheadEntries(): ModuleEntry[] {
+    return this.registry
+      .active('ahead')
+      .filter(entry => typeof entry.module.buildSection === 'function');
+  }
+
+  private twoColumns(): boolean {
+    return this.nowCount() > 0 && this.aheadEntries().length > 0;
+  }
+
+  private syncNowGroups(): void {
+    const body = this.nowSection!.body;
+    const entries = this.registry.active('now');
+    const current = new Map(entries.map(entry => [entry.module.id, entry]));
+    for (const [id, group] of this.nowGroups) {
+      if (current.get(id)?.generation === group.generation) continue;
+      group.box.destroy();
+      this.nowGroups.delete(id);
+    }
+    entries.forEach((entry, index) => {
+      let group = this.nowGroups.get(entry.module.id);
+      if (!group) {
+        group = {
+          generation: entry.generation,
+          box: new St.BoxLayout({ vertical: true, x_expand: true }),
+          rows: new Map(),
+        };
+        this.nowGroups.set(entry.module.id, group);
+        body.add_child(group.box);
+      }
+      if (body.get_child_at_index(index) !== group.box) body.set_child_at_index(group.box, index);
+      this.syncRows(entry);
+    });
+  }
+
+  private syncRows(entry: ModuleEntry): void {
+    const group = this.nowGroups.get(entry.module.id);
+    if (!group || group.generation !== entry.generation) return;
+    const diff = diffIds(
+      [...group.rows.keys()],
+      entry.rows.map(row => row.id),
+    );
+    for (const id of diff.removed) {
+      group.rows.get(id)!.actor.destroy();
+      group.rows.delete(id);
+    }
+    const rows = new Map<string, Row>();
+    let index = 0;
+    for (const props of entry.rows) {
+      let row = group.rows.get(props.id) ?? null;
+      // Broken data in one row must not cost the module its other rows.
+      if (row) entry.guard.call(() => row!.update(props));
+      else row = entry.guard.build(() => new Row(props, entry.guard));
+      if (!row) continue;
+      if (row.actor.get_parent() !== group.box) group.box.add_child(row.actor);
+      if (group.box.get_child_at_index(index) !== row.actor)
+        group.box.set_child_at_index(row.actor, index);
+      rows.set(props.id, row);
+      index++;
+    }
+    group.rows = rows;
+    group.box.visible = rows.size > 0;
+  }
+
+  private syncSections(): void {
+    const right = this.right!;
+    const entries = this.aheadEntries();
+    const current = new Map(entries.map(entry => [entry.module.id, entry]));
+    for (const [id, built] of this.sections) {
+      if (current.get(id)?.generation === built.generation) continue;
+      built.widget.destroy();
+      this.sections.delete(id);
+    }
+    let index = 0;
+    for (const entry of entries) {
+      let built = this.sections.get(entry.module.id);
+      if (!built) {
+        const widget = this.registry.buildSection(entry);
+        if (!widget) continue;
+        built = { generation: entry.generation, widget };
+        this.sections.set(entry.module.id, built);
+        right.add_child(widget);
+      }
+      if (right.get_child_at_index(index) !== built.widget)
+        right.set_child_at_index(built.widget, index);
+      index++;
+    }
+  }
+
+  private syncDock(): void {
+    const _ = this.gettext;
+    const dock = this.dock!;
+    const entries = this.registry
+      .active('dock')
+      .filter(entry => typeof entry.module.buildView === 'function');
+    const wanted = [...entries.map(entry => entry.module.id), MODULES_VIEW];
+    const diff = diffIds(
+      this.dockItems.map(item => item.id),
+      wanted,
+    );
+    if (diff.changed) {
+      const focused = this.dockItems.find(item => item.button.has_key_focus())?.id;
+      for (const item of this.dockItems) item.actor.destroy();
+      this.dockItems = wanted.map(id => {
+        const module = this.registry.get(id)?.module;
+        const item = this.buildDockItem(
+          id,
+          module?.name ?? _('Modules'),
+          module?.icon ?? 'view-grid-symbolic',
+        );
+        dock.add_child(item.actor);
+        return item;
+      });
+      this.dockItems.find(item => item.id === focused)?.button.grab_key_focus();
+    }
+    for (const item of this.dockItems) {
+      const entry = this.registry.get(item.id);
+      if (entry) this.applyBadge(item, entry);
+    }
+  }
+
+  private buildDockItem(id: string, name: string, icon: string): DockItem {
+    const button = new St.Button({
+      style_class: 'visor-dock-button',
+      can_focus: true,
+      accessible_role: Atk.Role.PUSH_BUTTON,
+      accessible_name: name,
+      child: new St.Icon({ style_class: 'visor-dock-icon', icon_name: icon }),
+    });
+    button.connect('clicked', () => this.showView(id));
+    const badge = new St.Label({
+      style_class: 'visor-dock-badge',
+      x_align: Clutter.ActorAlign.END,
+      y_align: Clutter.ActorAlign.START,
+      x_expand: true,
+      y_expand: true,
+      visible: false,
+    });
+    const actor = new St.Widget({ layout_manager: new Clutter.BinLayout() });
+    actor.add_child(button);
+    actor.add_child(badge);
+    return { id, actor, button, badge };
+  }
+
+  private applyBadge(item: DockItem, entry: ModuleEntry): void {
+    const text = badgeText(entry.badge);
+    item.badge.visible = text !== null;
+    if (text !== null) item.badge.text = text;
+    const name = text === null ? entry.module.name : `${entry.module.name}, ${text}`;
+    if (item.button.accessible_name !== name) item.button.accessible_name = name;
+  }
+
+  private syncViews(): void {
+    for (const [id, built] of this.views) {
+      const entry = this.registry.get(id);
+      if (entry?.active && entry.generation === built.generation) continue;
+      if (this.view === id) this.showView(null);
+      built.widget.destroy();
+      this.views.delete(id);
+    }
+  }
+
+  private syncModulesView(): void {
+    if (!this.modulesView) return;
+    const _ = this.gettext;
+    const all = this.registry.all();
+    for (const list of this.moduleLists) {
+      const entries = all.filter(entry => entry.module.slot === list.slot);
+      const shown = entries
+        .map(({ module }) => `${module.id}\u0000${module.name}\u0000${module.icon}`)
+        .join('\u0001');
+      if (shown !== list.shown) {
+        list.shown = shown;
+        list.box.destroy_all_children();
+        list.toggles.clear();
+        for (const entry of entries) this.addModuleRow(list, entry);
+        if (entries.length === 0) list.box.add_child(this.kit!.empty(_('No modules')));
+      }
+      for (const [id, toggle] of list.toggles) toggle.active = !this.registry.isDisabled(id);
+    }
+  }
+
+  private addModuleRow(list: ModuleList, entry: ModuleEntry): void {
+    const { id, name, icon } = entry.module;
+    const toggle = this.kit!.toggle({
+      label: String(name),
+      active: !this.registry.isDisabled(id),
+      onChange: active => this.registry.setEnabled(id, active),
+    });
+    const row = ownGuard.build(
+      () =>
+        new Row(
+          {
+            icon: String(icon),
+            title: String(name),
+            activate: () => this.registry.setEnabled(id, this.registry.isDisabled(id)),
+          },
+          ownGuard,
+          { trailing: toggle.actor },
+        ),
+    );
+    if (!row) return;
+    list.toggles.set(id, toggle);
+    list.box.add_child(row.actor);
+  }
+
+  /** One or two columns, and how wide the left one is. */
+  private layout(): void {
+    if (!this.root) return;
+    const hasNow = this.nowCount() > 0;
+    const hasAhead = this.aheadEntries().length > 0;
+    const left = this.left!;
+    const right = this.right!;
+    left.visible = hasNow;
+    right.visible = hasAhead;
+    this.scroll!.visible = hasNow || hasAhead;
+    if (hasNow && hasAhead) {
+      const width = sheetWidth(this.settings.get_string('width'), true);
+      left.x_expand = false;
+      left.width = leftColumnWidth(width) * scaleFactor();
+      right.add_style_class_name('divided');
+    } else {
+      left.width = -1;
+      left.x_expand = true;
+      right.remove_style_class_name('divided');
+    }
+    this.notify();
+  }
+
+  // --- search entry ---
+
+  private queryChanged(): void {
+    if (this.debounce) GLib.source_remove(this.debounce);
+    this.debounce = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SEARCH_DEBOUNCE_MS, () => {
+      this.debounce = 0;
+      this.reportQuery();
+      return GLib.SOURCE_REMOVE;
+    });
+  }
+
+  private reportQuery(): void {
+    if (this.debounce) GLib.source_remove(this.debounce);
+    this.debounce = 0;
+    const { query } = this;
+    if (query === this.reportedQuery) return;
+    this.reportedQuery = query;
+    const handler = this.queryHandler;
+    if (handler) ownGuard.call(() => handler(query));
+  }
+
+  // --- focus and size ---
+
+  /** Scrolls so that whatever got the keyboard focus is visible. */
+  private followFocus(): void {
+    const focus = global.stage.get_key_focus();
+    if (!focus) return;
+    for (const scroll of [this.scroll, this.viewScroll]) {
+      if (scroll?.mapped && scroll !== focus && scroll.contains(focus))
+        ensureActorVisibleInScrollView(scroll, focus);
+    }
+  }
+
+  private scheduleMeasure(): void {
+    if (this.measureLater || !this.isOpen) return;
+    this.measureLater = global.compositor.get_laters().add(Meta.LaterType.BEFORE_REDRAW, () => {
+      this.measureLater = 0;
+      this.measure();
+      return GLib.SOURCE_REMOVE;
+    });
+  }
+
+  private cancelMeasure(): void {
+    if (this.measureLater) global.compositor.get_laters().remove(this.measureLater);
+    this.measureLater = 0;
+  }
+
+  private measure(): void {
+    const layer = this.layer;
+    if (!layer?.mapped) return;
+    const width = layer.allocation.get_width();
+    if (width <= 0) return;
+    const [, height] = layer.get_preferred_height(width);
+    if (height === this.lastHeight) return;
+    this.lastHeight = height;
+    this.notify();
+  }
+
+  private notify(): void {
+    // While the notch is fetching the sheet it measures it anyway.
+    if (!this.building) this.callbacks.changed();
+  }
+}

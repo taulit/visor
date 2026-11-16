@@ -21,11 +21,21 @@ export interface VisorModule {
   /** Symbolic icon name. */
   icon: string;
   slot: Slot;
+  /** Called when the module is registered and not turned off, and again when the user turns it back on. */
   enable(ctx: ModuleContext): void;
+  /** The context is dead after this. Visor removes rows, chip, badge, section and view of the module itself. */
   disable(): void;
-  /** Slot 'ahead': called once, the first time the panel opens. */
+  /**
+   * Slot 'ahead': called once per enable(), the first time the panel opens.
+   * Visor owns the returned widget and destroys it when the module is disabled.
+   * Hide the widget to take the section out of the panel.
+   */
   buildSection?(): St.Widget;
-  /** Slot 'dock': called once, on the first click on the dock icon. */
+  /**
+   * Slot 'dock': called once per enable(), on the first click on the dock icon.
+   * The view is shown below a header with a back button and the module name.
+   * Visor owns the returned widget and destroys it when the module is disabled.
+   */
   buildView?(): St.Widget;
   /** Results of this module in the search. */
   search?: SearchSource;
@@ -53,7 +63,7 @@ export interface ModuleContext {
   readonly isOpen: boolean;
   /** Calls back when the panel opens or closes. Returns a function that removes the callback. */
   onOpenChanged(callback: (open: boolean) => void): () => void;
-  /** Opens the panel, with a dock module optionally on its view. */
+  /** Opens the panel, optionally on the view of the dock module with this id. */
   open(view?: string): void;
   close(): void;
   /** gettext of the extension that owns the module. */
@@ -63,38 +73,66 @@ export interface ModuleContext {
 export interface Action {
   /** Text of the button, or accessible name of an icon button. */
   label: string;
-  /** Symbolic icon name. With an icon and no style the action is an icon button. */
+  /**
+   * Symbolic icon name. With an icon and no style (or 'filled') the action is
+   * a round icon button; with an icon and another style the icon sits before the text.
+   */
   icon?: string;
-  /** 'primary' is the accent button, 'ghost' has no background, 'filled' is the round play button. */
-  style?: 'default' | 'primary' | 'ghost' | 'filled';
+  /**
+   * 'primary' is the accent button, 'ghost' has no background, 'link' is accent
+   * text without a background, 'filled' is the round play button.
+   */
+  style?: 'default' | 'primary' | 'ghost' | 'link' | 'filled';
   run(): void;
 }
 
-export interface NowRow {
-  id: string;
-  icon: string | Gio.Icon;
+/** One row. Every field can change in KitRow.update(); the row is changed in place. */
+export interface RowProps {
+  /**
+   * Symbolic icon name, or an image such as an app icon or cover art.
+   * A row has an icon, a `lead` text, or neither.
+   */
+  icon?: string | Gio.Icon;
+  /**
+   * How the icon is drawn: 'symbolic' (17 px in the text colour, the default
+   * for names), 'app' (28 px, the default for a Gio.Icon) or 'cover'
+   * (a 36 px picture with round corners; needs a Gio.FileIcon).
+   */
+  iconStyle?: 'symbolic' | 'app' | 'cover';
+  /** Short text in place of the icon, in a column of its own: a time or a day, such as '15:00'. */
+  lead?: string;
   title: string;
   subtitle?: string;
+  /** One line in monospace after the subtitle, such as the command an agent asks about. */
+  detail?: string;
+  /** Small quiet text on the right, such as a time or a size. Makes room for `actions` while they show. */
+  meta?: string;
   /** Large number on the right, such as the remaining time of a timer. */
   value?: string;
-  /** 'waiting' tints the row amber: it waits for the user. */
+  /** 'waiting' tints the row amber: it waits for the user. 'done' makes it quieter. */
   status?: 'normal' | 'waiting' | 'done';
-  /** Click on the row. */
+  /** Click on the row, or Enter while it has the focus. */
   activate?: () => void;
-  /** Always visible on the right. */
+  /** The main button, always visible on the right. Enter runs it when the row has no `activate`. */
   primary?: Action;
-  /** Always visible icon buttons on the right, such as media controls. */
+  /** Always visible on the right, before `primary`: media controls, or a ghost button such as 'Deny'. */
   controls?: Action[];
   /** Appear on hover or keyboard focus of the row. */
   actions?: Action[];
-  /** One line below the title in monospace, such as the command an agent asks about. */
-  detail?: string;
-  /** Content shown when the row is expanded. Built on first expand. */
+  /**
+   * Content shown below the row when it is expanded. Built on first expand.
+   * A row without `activate` expands on click; every expandable row has an arrow that does it.
+   */
   expand?: () => St.Widget;
-  /** 0..1, or 'indeterminate' when the end is unknown. */
+  /** 0..1 draws a thin line under the text, 'indeterminate' a small spinner when the end is unknown. */
   progress?: number | 'indeterminate';
   /** Colour of the progress line. */
   progressTone?: 'muted' | 'accent';
+}
+
+/** A row in "Now". Rows are matched by id between two calls of now.set(). */
+export interface NowRow extends RowProps {
+  id: string;
 }
 
 export interface PeekChip {
@@ -137,11 +175,13 @@ export interface Command {
 /** UI building blocks. Modules use only these, so everything follows the theme. */
 export interface Kit {
   section(props: { title: string; links?: Action[] }): KitSection;
-  row(props: NowRow): KitRow;
+  row(props: RowProps): KitRow;
   button(action: Action): St.Widget;
   iconButton(action: Action & { icon: string }): St.Widget;
+  /** A switch without visible text; `label` is its accessible name. */
   toggle(props: { label: string; active: boolean; onChange(active: boolean): void }): KitToggle;
   progress(props: { value: number | 'indeterminate'; tone?: 'muted' | 'accent' }): KitProgress;
+  /** Quiet line for a section without content, such as 'No new notifications'. */
   empty(text: string): St.Widget;
   chip(chip: PeekChip): St.Widget;
 }
@@ -150,17 +190,19 @@ export interface KitSection {
   actor: St.Widget;
   /** Add rows and other content here. */
   body: St.Widget;
-  /** Links on the right of the title; they appear on hover. */
+  /** Links on the right of the title; they appear on hover or keyboard focus of the section. */
   setLinks(links: Action[]): void;
 }
 
 export interface KitRow {
   actor: St.Widget;
-  update(props: NowRow): void;
+  /** Changes the row in place: hover, focus and the expanded state stay. */
+  update(props: RowProps): void;
 }
 
 export interface KitToggle {
   actor: St.Widget;
+  /** Setting it moves the switch without calling onChange. */
   active: boolean;
 }
 

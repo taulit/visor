@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-16 17:07+0100\n"
+"POT-Creation-Date: 2026-11-16 21:56+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -14,6 +14,50 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: build/core/sheet.js:151 build/core/sheet.js:500
+msgid "Modules"
+msgstr "Module"
+
+#: build/core/sheet.js:278
+msgid "Search, calculate or run a command …"
+msgstr "Suchen, rechnen oder Befehl ausführen …"
+
+#: build/core/sheet.js:279
+msgid "Search"
+msgstr "Suchen"
+
+#: build/core/sheet.js:301 build/core/sheet.js:371
+msgid "Now"
+msgstr "Jetzt"
+
+#: build/core/sheet.js:315
+msgid "Back"
+msgstr "Zurück"
+
+#: build/core/sheet.js:371
+msgid "Shows up only while something is running."
+msgstr "Zeigt sich nur, solange etwas läuft."
+
+#: build/core/sheet.js:372
+msgid "Up Next"
+msgstr "Als Nächstes"
+
+#: build/core/sheet.js:372
+msgid "A short section next to “Now”."
+msgstr "Kurzer Abschnitt neben „Jetzt“."
+
+#: build/core/sheet.js:373
+msgid "Dock"
+msgstr "Dock"
+
+#: build/core/sheet.js:373
+msgid "A view of its own behind an icon."
+msgstr "Eigene Ansicht hinter einem Symbol."
+
+#: build/core/sheet.js:571
+msgid "No modules"
+msgstr "Keine Module"
 
 #: build/prefs.js:5
 msgid "General"
