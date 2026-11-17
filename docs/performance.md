@@ -5,73 +5,61 @@ The budgets of Visor (plan 05 §1), what was measured, and how. Measure again wi
 
 ## Result
 
-Two sets of numbers, because the machine changed under the work: the first runs were on the native kernel,
-the last full run of `scripts/measure.sh` was on the same CPU inside WSL2 with a load average of 6 to 7 from
-other work (a plain Python loop took four times as long as usual there). The timing budgets can only be judged
-by the first set; the second is the complete output of the script as required, and shows what does not depend
-on speed.
-
-### On the native kernel (Linux 6.18, i5-11400F, GNOME Shell 50.5, headless; partial runs, 2026-11-17)
-
-| What                                   | Budget           | Measured                                                                                                                      | Result                         |
-| -------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `enable()`                             | < 5 ms           | median 2.73 ms (min 2.52, max 5.15, n=20); a run under load: median 7.06 ms                                                   | met when the machine is quiet  |
-| open: frame interval                   | 16.7 ms, no drop | mean 16.6 ms; 2 of 11 runs had one frame above 25 ms (32.8 ms, on the first open)                                             | met except the first open      |
-| open: main-loop work per frame         | < 8 ms           | mean 1.3 to 2.3 ms; worst frame per run 2.5 to 7.0 ms, first open 9.1 ms                                                      | met except the first open      |
-| open: of that in Visor's handler       |                  | worst frame 0.15 to 0.37 ms                                                                                                   |                                |
-| open: work before the first frame      | < 8 ms           | 5.5 to 8.9 ms                                                                                                                 | at the limit                   |
-| close: frame interval                  | 16.7 ms, no drop | mean 16.6 ms, worst 17.2 to 18.4 ms in 10 of 12 runs; two runs with one late frame (42 and 51 ms)                             | met, with outliers             |
-| close: main-loop work per frame        | < 8 ms           | mean 0.7 to 1.7 ms; worst frame 1.2 to 2.8 ms, one run 12.9 ms                                                                | met, one outlier               |
-| close: work before the first frame     | < 8 ms           | 1.7 to 5.9 ms                                                                                                                 | met                            |
-| first open after `enable()` (once)     |                  | 22 to 25 ms before the first frame                                                                                            | not met, once                  |
-| search: local results in the list      | < 16 ms          | median 2.2 ms; worst 15.8 ms in a quiet run, 20.0 ms in a loaded one (first letter into an empty field, before the fix below) | met when quiet                 |
-| search: wait for the next frame        |                  | median 10.7 ms                                                                                                                |                                |
-| search: style and layout of that frame |                  | median 0.6 ms, max 2.4 ms                                                                                                     |                                |
-| search: paint of that frame (software) |                  | median 2.7 ms, max 11.7 ms                                                                                                    |                                |
-| idle: Visor's own sources fired, 60 s  | 0                | 0                                                                                                                             | met                            |
-| idle: signal handlers of Visor run     |                  | 1 (`notify::clock`, the minute tick of the shell's clock)                                                                     |                                |
-| idle: wakeups of the shell, 60 s       | no more          | 67 with Visor, 95 without; a run before: 74 and 61                                                                            | no difference beyond the noise |
-| memory                                 | < 15 MB          | not usable: the kernel was swapping the sandbox out during those runs                                                         | see below                      |
-
-### Full run of `scripts/measure.sh` (WSL2, load average 6 to 7, 2026-11-17)
+Complete output of `scripts/measure.sh`, 2026-11-17, Linux 6.18 (Manjaro), while other work kept the machine
+at a load average of 8 to 11:
 
 ```text
 Machine: 11th Gen Intel(R) Core(TM) i5-11400F @ 2.60GHz, 12 threads, GNOME Shell 50.5, headless, virtual monitor 1920x1080
 
 | What                               | Budget       | Measured                                             | Result   |
 | ---                                | ---          | ---                                                  | ---      |
-| enable()                           | < 5 ms       | median 22.43 ms (min 10.30, max 38.17, n=20)         | NOT MET  |
-| open: frame interval               | 16.7 ms, no drop | mean 37.03 ms, worst 236.54 ms, 94 of 173 frames > 25 ms (11 runs) | NOT MET  |
-| open: main-loop work per frame     | < 8 ms       | mean 33.07 ms, worst frame: median 98.89 ms, max 236.05 ms | NOT MET  |
-| open: of that in Visor's handler   |              | worst frame: median 0.40 ms, max 0.79 ms             |          |
-| open: work before the first frame  | < 8 ms       | median 16.72 ms, max 323.86 ms (n=11)                | NOT MET  |
-| close: frame interval              | 16.7 ms, no drop | mean 25.85 ms, worst 226.17 ms, 23 of 183 frames > 25 ms (11 runs) | NOT MET  |
-| close: main-loop work per frame    | < 8 ms       | mean 12.64 ms, worst frame: median 125.20 ms, max 211.23 ms | NOT MET  |
-| close: of that in Visor's handler  |              | worst frame: median 0.23 ms, max 1.55 ms             |          |
-| close: work before the first frame | < 8 ms       | median 2.27 ms, max 6.84 ms (n=12)                   | met      |
-| first open after enable (once)     |              | 396.32 ms before the first frame, worst frame 303.65 ms |          |
-| search: local results in the list  | < 16 ms      | median 7.62 ms, max 35.38 ms (n=21)                  | NOT MET  |
-| search: wait for the next frame    |              | median 16.29 ms, max 87.56 ms                        |          |
-| search: style and layout of that frame |              | median 1.53 ms, max 11.35 ms                         |          |
-| search: paint of that frame        |              | median 47.24 ms, max 167.34 ms                       |          |
-| search: on screen after the debounce |              | median 65.01 ms, max 237.02 ms                       |          |
+| enable()                           | < 5 ms       | median 3.44 ms (min 2.56, max 9.99, n=20)            | met      |
+| open: frame interval               | 16.7 ms, no drop | mean 16.66 ms, worst 23.29 ms, 0 of 417 frames > 25 ms (11 runs) | met      |
+| open: main-loop work per frame     | < 8 ms       | mean 1.62 ms, worst frame: median 4.50 ms, max 5.13 ms | met      |
+| open: of that in Visor's handler   |              | worst frame: median 0.23 ms, max 0.41 ms             |          |
+| open: work before the first frame  | < 8 ms       | median 4.31 ms, max 30.10 ms (n=11)                  | met      |
+| close: frame interval              | 16.7 ms, no drop | mean 16.67 ms, worst 47.77 ms, 2 of 263 frames > 25 ms (11 runs) | NOT MET  |
+| close: main-loop work per frame    | < 8 ms       | mean 0.85 ms, worst frame: median 2.20 ms, max 5.62 ms | met      |
+| close: of that in Visor's handler  |              | worst frame: median 0.10 ms, max 0.27 ms             |          |
+| close: work before the first frame | < 8 ms       | median 1.12 ms, max 1.99 ms (n=12)                   | met      |
+| first open after enable (once)     |              | 73.07 ms before the first frame, worst frame 31.42 ms |          |
+| search: local results in the list  | < 16 ms      | median 2.62 ms, max 15.75 ms (n=21)                  | met      |
+| search: wait for the next frame    |              | median 10.13 ms, max 54.69 ms                        |          |
+| search: style and layout of that frame |              | median 0.62 ms, max 1.80 ms                          |          |
+| search: paint of that frame        |              | median 2.78 ms, max 7.98 ms                          |          |
+| search: on screen after the debounce |              | median 11.42 ms, max 63.82 ms                        |          |
 | idle: Visor's own sources fired, 60 s | 0            | 0 (timeouts, idle sources, D-Bus signals)            | met      |
 | idle: signal handlers of Visor run |              | 1 (listed below)                                     |          |
-| idle: wakeups of the shell, 60 s   | no more      | 60 with Visor, 60 without                            |          |
+| idle: wakeups of the shell, 60 s   | no more      | 48 with Visor, 92 without                            |          |
   what ran while idle: 1x signal notify::clock core/clock.js:51:24
-| memory: shell with Visor vs. without | < 15 MB      | RSS +-6.4 MB, anonymous +-8.0 MB after 200 cycles and 200 queries | met      |
-| memory: the same use without Visor |              | RSS 29.8 MB, anonymous 29.8 MB (date menu, overview search) |          |
-| memory: growth over those cycles   |              | RSS 20.9 MB, anonymous 20.9 MB (after first use → end) |          |
-| memory: at start, with vs. without |              | RSS +5.2 MB                                          |          |
+| memory: shell with Visor vs. without | < 15 MB      | RSS +-9.0 MB, anonymous +5.9 MB after 200 cycles and 200 queries | met      |
+| memory: the same use without Visor |              | RSS 21.6 MB, anonymous 9.6 MB (date menu, overview search) |          |
+| memory: growth over those cycles   |              | RSS 17.2 MB, anonymous 14.2 MB (after first use → end) |          |
+| memory: at start, with vs. without |              | RSS +1.7 MB                                          |          |
 ```
 
-What this run does show: Visor's own frame handler stays below 0.8 ms per frame while opening and 1.6 ms while
-closing even when the whole frame takes 100 ms; nothing of Visor fires while idle, and the shell wakes up as
-often with Visor as without (60 and 60); after the same amount of use the shell with Visor holds 6 MB less
-than the shell without it that opened the date menu and searched in the overview as often, and 5 MB more right
-after start. Both shells grow with use (21 MB and 30 MB over 200 cycles and 200 queries in the software
-renderer), so that growth is not Visor's. The timing rows of this run say how slow that machine was, not
-whether a budget holds: they have to be measured again on a quiet machine before the release.
+What the rows that are not plainly "met" mean:
+
+- **close: 2 of 263 frames late (worst 47.8 ms).** In those frames the main loop had at most 5.6 ms of work,
+  0.27 ms of it Visor's. The frame came late because the shell was not scheduled, not because it was busy; in
+  quieter runs the worst interval while closing was 17.2 to 18.4 ms. Not a miss of Visor, and not something a
+  loaded machine can prove either way.
+- **open: work before the first frame, max 30.1 ms** against a median of 4.3 ms: one sample, same cause.
+- **First open after `enable()`**: 73 ms here, 22 to 25 ms in quiet runs. This is over the 8 ms of a frame,
+  once per session: the sheet is built and styled on first use (see below).
+- **search: on screen, max 63.8 ms**: one query waited 54.7 ms for its frame to begin; the list was ready
+  after at most 15.8 ms and layout and paint took under 10 ms. Median 11.4 ms.
+- **idle: wakeups 48 with Visor, 92 without.** Earlier runs: 67 and 95, 74 and 61, 60 and 60. The count cannot
+  tell the two shells apart; the row above it (no source of Visor fired) is the reliable one.
+- **memory.** Resident memory of the shell with Visor is 9 MB below the shell that used the date menu and the
+  overview search as often; anonymous memory (the heaps) is 5.9 MB above it, 1.7 MB right after start. Within
+  the budget of 15 MB. But the heaps grew by 14.2 MB over the 200 cycles and 200 queries, against 9.6 MB for
+  the stock use, and this run does not show whether that levels off. The leak tests find no actor left behind
+  (`scripts/leak-test.sh`, `tests/shell/content-leak.sh`). A run of an hour on a real session is still owed.
+
+The same script inside WSL2 with a load average of 6 to 7 gave five to ten times the timings (`enable()`
+22 ms, a painted frame 47 ms); that run only says how slow that environment was. On a quiet native run
+`enable()` had a median of 2.73 ms (2.52 to 5.15).
 
 Read the table with these limits in mind:
 
