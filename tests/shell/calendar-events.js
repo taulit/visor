@@ -9,28 +9,67 @@
 //    { "uid": "birthday", "summary": "Birthday", "allDay": 1 }]
 //   start: minutes from now. allDay: days from today.
 //   "remove": true takes the event with that uid away.
+// Prints "done" when everything is written.
 import ECal from 'gi://ECal?version=2.0';
 import EDataServer from 'gi://EDataServer?version=1.2';
+import GLib from 'gi://GLib';
 import ICalGLib from 'gi://ICalGLib?version=4.0';
 import System from 'system';
 
 const pad = n => String(n).padStart(2, '0');
-const utc = date => date.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+const utc = date =>
+  date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d+Z$/, 'Z');
 const day = date => `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
-const text = value => String(value).replace(/([\\,;])/g, '\\$1').replace(/\n/g, '\\n');
+const text = value =>
+  String(value)
+    .replace(/([\\,;])/g, '\\$1')
+    .replace(/\n/g, '\\n');
 
-const registry = EDataServer.SourceRegistry.new_sync(null);
-const client = ECal.Client.connect_sync(
-  registry.ref_builtin_calendar(),
-  ECal.ClientSourceType.EVENTS,
-  30,
-  null,
-);
+// A source registry that is still alive when gjs exits crashes it there, and
+// one from new_sync() cannot be taken down before. So: asynchronous, inside a
+// main loop, and disposed before leaving.
+const call = (start, finish) =>
+  new Promise((resolve, reject) => {
+    start((_source, result) => {
+      try {
+        resolve(finish(result));
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
 
-for (const event of JSON.parse(System.programArgs[0] ?? '[]')) {
+async function main() {
+  const registry = await call(
+    done => EDataServer.SourceRegistry.new(null, done),
+    result => EDataServer.SourceRegistry.new_finish(result),
+  );
+  const client = await call(
+    done =>
+      ECal.Client.connect(
+        registry.ref_builtin_calendar(),
+        ECal.ClientSourceType.EVENTS,
+        30,
+        null,
+        done,
+      ),
+    result => ECal.Client.connect_finish(result),
+  );
+  try {
+    for (const event of JSON.parse(System.programArgs[0] ?? '[]')) write(client, event);
+  } finally {
+    client.run_dispose();
+    registry.run_dispose();
+  }
+}
+
+function write(client, event) {
   if (event.remove) {
     client.remove_object_sync(event.uid, null, ECal.ObjModType.ALL, ECal.OperationFlags.NONE, null);
-    continue;
+    return;
   }
   const now = new Date();
   const lines = ['BEGIN:VEVENT', `UID:${event.uid}`, `DTSTAMP:${utc(now)}`];
@@ -53,3 +92,15 @@ for (const event of JSON.parse(System.programArgs[0] ?? '[]')) {
     null,
   );
 }
+
+const loop = new GLib.MainLoop(null, false);
+let status = 0;
+main()
+  .then(() => globalThis.print('done'))
+  .catch(e => {
+    globalThis.printerr(`calendar-events: ${e}`);
+    status = 1;
+  })
+  .finally(() => loop.quit());
+loop.run();
+System.exit(status);

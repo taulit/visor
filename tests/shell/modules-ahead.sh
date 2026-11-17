@@ -53,7 +53,7 @@ heard() {
 check_heard() {
     if heard "$2" "$3"; then echo "ok    $1"; else echo "FAIL  $1: $(tr '\n' ' ' <"$HOME/$2.out")"; fail=1; fi
 }
-events() { gjs -m "$repo/tests/shell/calendar-events.js" "$1" >/dev/null 2>&1; }
+events() { [[ "$(gjs -m "$repo/tests/shell/calendar-events.js" "$1" 2>/dev/null)" == done ]] || { echo "FAIL  writing events: $1"; fail=1; }; }
 
 shell_wait_for 'visor !== null && visor.api !== null'
 log_before="$(wc -l <"$HOME/shell.log")"
@@ -114,6 +114,12 @@ run "(() => {
     };
 })()"
 
+# A new virtual pointer starts in the top left corner, which is the hot corner.
+run 'new Gio.Settings({ schema_id: "org.gnome.desktop.interface" }).set_boolean("enable-hot-corners", false)'
+run 'T.away().then(() => T.away())'
+run 'Main.overview.hide()'
+shell_wait_for '!Main.overview.visible'
+
 note='T.notifications().length'
 state='visor.notch.state'
 
@@ -130,7 +136,7 @@ check 'the dot next to the clock is on' \
 wait_check 'the banner of the shell shows too, below the body of the notch' \
     "(() => { const body = visor.notch.body; const [, by] = body.get_transformed_position(); const [, ny] = T.tray._bannerBin.get_transformed_position(); return T.tray.visible && T.tray._banner !== null && ny >= by + body.height && T.tray.translation_y === body.height || [T.tray.visible, ny, by, body.height, T.tray.translation_y].join(); })()"
 check 'a click would hit the chip where the chip is and the banner where the banner is' \
-    "(() => { const chip = visor.content.getPeek().get_child_at_index(0); return visor.notch.root.contains(T.picked(chip)) && T.tray.contains(T.picked(T.tray._bannerBin)); })()"
+    "(() => { const chip = visor.content.getPeek().get_child_at_index(0); const name = a => a?.style_class || a?.name || String(a); return visor.notch.root.contains(T.picked(chip)) && T.tray._bannerBin.contains(T.picked(T.tray._bannerBin)) || [name(T.picked(chip)), name(T.picked(T.tray._bannerBin))].join(); })()"
 check 'the shell acknowledged it for its banner, Visor still counts it as unread' \
     "T.byTitle('Quarterly report').acknowledged === true && T.chip('notifications').text === '1'"
 check 'two and a half seconds later it still flashes' \
@@ -145,7 +151,7 @@ check 'the row shows the app icon, "App · body" and the time' \
     "(() => { const row = T.row('Quarterly report'); const icon = T.find('visor-row-icon', row)[0]; return icon.has_style_class_name('app') && icon.gicon !== null && T.texts('Notifications', 'visor-row-subtitle').join() === T.tray.getSources()[0].title + ' · The numbers are in' && T.texts('Notifications', 'visor-row-meta').join() === 'now' || [T.texts('Notifications', 'visor-row-subtitle'), T.texts('Notifications', 'visor-row-meta')].join(); })()"
 check 'opening marks it as seen: no dot, no chip, the banner is gone' \
     "T.content.attention === null && T.chip('notifications') === null && !visor.notch.clock.dot.visible && !T.tray.visible"
-run "globalThis.activated = 0; T.byTitle('Quarterly report').connect('activated', () => activated++)"
+run "(() => { globalThis.activated = 0; T.byTitle('Quarterly report').connect('activated', () => activated++); })()"
 check 'a click on the row activates the notification and closes the panel' \
     "T.click(T.find('visor-row-title', T.row('Quarterly report'))[0]).then(() => activated === 1 && $state === 'idle' && Main.actionMode === Shell.ActionMode.NORMAL || [activated, $state].join())"
 check_heard 'the app hears its default action on the bus' mail 'action default'
@@ -174,7 +180,7 @@ check 'opening the panel acknowledges all of them' \
 
 echo "# clear all"
 check 'the link shows when the pointer is on the section' \
-    "(async () => { const links = T.find('visor-section-links', T.section('Notifications'))[0]; const before = links.opacity; await T.move(T.find('visor-section-title', T.section('Notifications'))[0]); return before === 0 && links.opacity === 255 && T.button('Clear all') !== null || [before, links.opacity].join(); })()"
+    "(async () => { const links = T.find('visor-section-links', T.section('Notifications'))[0]; await T.away(); const before = links.opacity; await T.move(T.find('visor-section-title', T.section('Notifications'))[0]); return before === 0 && links.opacity === 255 && T.button('Clear all') !== null || [before, links.opacity].join(); })()"
 check 'a click on it empties the tray and the list' \
     "T.click(T.button('Clear all')).then(() => T.wait(200)).then(() => $note === 0 && T.titles('Notifications') === '' && T.find('visor-empty', T.section('Notifications'))[0].mapped && T.button('Clear all') === null || [$note, T.titles('Notifications')].join())"
 check_heard 'the app hears that its notification was dismissed' quiet 'closed 2'
@@ -214,7 +220,7 @@ check 'the expanded list is collapsed again the next time' \
 run 'T.dnd.set_boolean("show-banners", true)'
 check 'the switch went back with the setting' "!T.find('visor-toggle', T.section('Notifications'))[0].checked"
 run 'visor.notch.close()'
-run 'for (const n of T.notifications()) n.destroy()'
+run 'T.notifications().forEach(n => n.destroy())'
 run 'T.away()'
 
 echo "# banner and peek together"
@@ -230,13 +236,13 @@ check 'a click on the banner activates the notification' \
 check_heard 'the app hears the default action' banner 'action default'
 check 'the chip is still there and a click on it opens the panel' \
     "(async () => { await T.move(visor.notch.neck); await T.wait(500); await T.click(visor.content.getPeek().get_child_at_index(0)); return $state === 'open' && T.titles('Notifications') === 'Backup finished' || [$state, T.chips()].join(); })()"
-run 'for (const n of T.notifications()) n.destroy()'
+run 'T.notifications().forEach(n => n.destroy())'
 run 'visor.notch.close()'
 run 'T.away()'
 check 'idle again: the banners are where the shell puts them' "$state === 'idle' && T.tray.translation_y === 0"
 
 echo "# up next (events in the calendar of the sandbox, written through ECal)"
-run "globalThis.U = { module: T.registry.get('upcoming').module, clock: date => String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0'), event: uid => U.module.source.getEvents(new Date(), new Date(Date.now() + 8 * 86400000)).find(e => e.id.split('\\n')[1] === uid) }"
+run "globalThis.U = { module: T.registry.get('upcoming').module, clock: date => String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0'), event: uid => U.module.source.getEvents(new Date(), new Date(Date.now() + 8 * 86400000)).find(e => e.id.split(String.fromCharCode(10))[1] === uid) }"
 check 'no events: no chip, and the section says so' \
     "(async () => { visor.notch.open(); await T.wait(300); const empty = T.find('visor-empty', T.section('Up Next'))[0]; return T.chip('upcoming') === null && T.titles('Up Next') === '' && empty.mapped && empty.text === 'Nothing else today'; })()"
 events '[{"uid":"review","summary":"Sprint Review","start":5,"minutes":60,"location":"https://meet.google.com/abc-defg-hij"},
@@ -273,6 +279,8 @@ check 'its lead is "Now", its second line says until when' \
 wait_check 'both events with a link have "Join", the one without has none' \
     "T.button('Join', T.row('Standup')) !== null && T.button('Join', T.row('Sprint Review')) !== null && T.find('visor-button', T.row('Planning')).length === 0 && T.texts('Up Next', 'visor-row-subtitle')[0].endsWith(' · Zoom')"
 check 'the chip names the running event' "T.chip('upcoming').text === 'Now Standup'"
+check 'nothing of Evolution stays in the shell after the lookups' \
+    "U.module.links.session === null && U.module.links.running === 0 && U.module.links.cache.size >= 3"
 check 'the clock format setting is honoured' \
     "(async () => { const s = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' }); s.set_string('clock-format', '12h'); await T.wait(100); const lead = T.texts('Up Next', 'visor-row-lead')[1]; s.set_string('clock-format', '24h'); await T.wait(100); return /^\\d{1,2}:\\d\\d [AP]M$/.test(lead) && T.texts('Up Next', 'visor-row-lead')[1] === U.clock(U.event('review').date) || lead; })()"
 check 'one timeout runs while the panel is open, for the next change of a row' "U.module.wake !== 0"

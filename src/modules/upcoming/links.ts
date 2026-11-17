@@ -2,6 +2,11 @@
 // neither location nor description (docs/verified.md, section 9), so they are
 // read through Evolution's libraries: loaded on first use, asynchronous only,
 // and without them there is simply no Join button.
+//
+// The connection to Evolution lives only as long as a lookup runs. A source
+// registry that is still alive when the shell exits crashes it there (seen
+// with libedataserver 3.58 under gjs 1.88), and one that is disposed while
+// the shell runs does not.
 import type Gio from 'gi://Gio';
 
 import type ECal from 'gi://ECal?version=2.0';
@@ -34,13 +39,22 @@ function call<T>(
   });
 }
 
+/** What one round of lookups opened. */
+interface Session {
+  registry: Promise<EDataServer.SourceRegistry>;
+  clients: Map<string, Promise<ECal.Client>>;
+  /** Registry and clients as they came into being, for taking them down. */
+  opened: { run_dispose(): void }[];
+}
+
 export class MeetingLinks {
   /** By event id. Null: looked at, no link. */
   private cache = new Map<string, MeetingLink | null>();
   private loading = new Set<string>();
   private libraries: Promise<Libraries> | null = null;
-  private registry: Promise<EDataServer.SourceRegistry> | null = null;
-  private clients = new Map<string, Promise<ECal.Client>>();
+  private session: Session | null = null;
+  /** Lookups that still run. */
+  private running = 0;
   private complained = false;
 
   /** `found` is called when a link turned up for an event asked about before. */
@@ -62,13 +76,12 @@ export class MeetingLinks {
   destroy(): void {
     this.cache.clear();
     this.loading.clear();
-    this.clients.clear();
-    this.registry = null;
     this.libraries = null;
   }
 
   private async load(id: string): Promise<void> {
     let link: MeetingLink | null = null;
+    this.running++;
     try {
       link = await this.find(id);
     } catch (e) {
@@ -76,6 +89,8 @@ export class MeetingLinks {
         this.complained = true;
         console.debug(`Visor: no Join buttons, reading the event failed: ${e}`);
       }
+    } finally {
+      if (--this.running === 0) this.closeSession();
     }
     if (this.cancellable.is_cancelled()) return;
     this.loading.delete(id);
@@ -111,21 +126,44 @@ export class MeetingLinks {
   }
 
   private client(sourceUid: string): Promise<ECal.Client> {
-    let client = this.clients.get(sourceUid);
+    this.session ??= this.openSession();
+    const session = this.session;
+    let client = session.clients.get(sourceUid);
     if (!client) {
-      client = this.connect(sourceUid);
-      this.clients.set(sourceUid, client);
+      client = this.connect(session, sourceUid);
+      session.clients.set(sourceUid, client);
     }
     return client;
   }
 
-  private async connect(sourceUid: string): Promise<ECal.Client> {
-    const { EDataServer: eds, ECal: ecal } = await this.loadLibraries();
-    this.registry ??= call(
-      done => eds.SourceRegistry.new(this.cancellable, done),
-      result => eds.SourceRegistry.new_finish(result),
+  private openSession(): Session {
+    const opened: Session['opened'] = [];
+    const registry = this.loadLibraries().then(({ EDataServer: eds }) =>
+      call(
+        done => eds.SourceRegistry.new(this.cancellable, done),
+        result => {
+          const created = eds.SourceRegistry.new_finish(result);
+          opened.push(created);
+          return created;
+        },
+      ),
     );
-    const source = (await this.registry).ref_source(sourceUid);
+    // Whoever asks for a client hears about a failure; nobody else has to.
+    registry.catch(() => {});
+    return { registry, clients: new Map(), opened };
+  }
+
+  /** The last lookup is over: nothing of Evolution stays in the shell. */
+  private closeSession(): void {
+    const session = this.session;
+    this.session = null;
+    if (!session) return;
+    for (const object of session.opened.reverse()) object.run_dispose();
+  }
+
+  private async connect(session: Session, sourceUid: string): Promise<ECal.Client> {
+    const { ECal: ecal } = await this.loadLibraries();
+    const source = (await session.registry).ref_source(sourceUid);
     if (!source) throw new Error(`no calendar ${sourceUid}`);
     return call(
       done =>
@@ -136,7 +174,11 @@ export class MeetingLinks {
           this.cancellable,
           done,
         ),
-      result => ecal.Client.connect_finish(result),
+      result => {
+        const client = ecal.Client.connect_finish(result);
+        session.opened.push(client);
+        return client;
+      },
     );
   }
 
