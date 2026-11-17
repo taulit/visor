@@ -16,19 +16,19 @@ export type Slot = 'now' | 'ahead' | 'dock';
 export interface VisorModule {
   /** Unique, lower case letters, digits and dashes: 'notes'. */
   id: string;
-  /** Translated name, shown in the settings and as tooltip of the dock icon. */
+  /** Translated name: title of the module's view, entry in the Modules view, accessible name of the dock icon. */
   name: string;
   /** Symbolic icon name. */
   icon: string;
   slot: Slot;
   /** Called when the module is registered and not turned off, and again when the user turns it back on. */
   enable(ctx: ModuleContext): void;
-  /** The context is dead after this. Visor removes rows, chip, badge, section and view of the module itself. */
+  /** Calls that change something through the context do nothing after this. Visor removes rows, chip, badge, section and view of the module itself. Must cope with an enable() that threw halfway. */
   disable(): void;
   /**
-   * Slot 'ahead': called once per enable(), the first time the panel opens.
+   * Slot 'ahead': called once per enable(): the first time the panel opens, or at once if it has been open before.
    * Visor owns the returned widget and destroys it when the module is disabled.
-   * Hide the widget to take the section out of the panel.
+   * A hidden widget leaves a gap; the right column stays.
    */
   buildSection?(): St.Widget;
   /**
@@ -54,7 +54,7 @@ export interface ModuleContext {
   kit: Kit;
   /** Slot 'now': the rows of this module. Rows are matched by id, so set() can be called often. */
   now: { set(rows: NowRow[]): void; clear(): void };
-  /** The chip of this module in the peek state. flash() also shows the peek state for a moment. */
+  /** The chip of this module in the peek state. flash() also shows the peek state for three seconds, unless the user turned that off, Do Not Disturb is on or a window is in fullscreen. */
   peek: { set(chip: PeekChip | null): void; flash(chip: PeekChip): void };
   /** Number on the dock icon, null removes it. */
   badge(count: number | null): void;
@@ -126,7 +126,7 @@ export interface RowProps {
   actions?: Action[];
   /**
    * Content shown below the row when it is expanded. Built on first expand.
-   * A row without `activate` expands on click; every expandable row has an arrow that does it.
+   * A row without `activate` and `toggle` expands on click; every expandable row has an arrow that does it. Pass the same function on every update(), a new one rebuilds the content.
    */
   expand?: () => St.Widget;
   /** 0..1 draws a thin line under the text, 'indeterminate' a small spinner when the end is unknown. */
