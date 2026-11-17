@@ -18,8 +18,8 @@ First release. Nothing has been published yet: the date is set when the tag `v1.
 - **Settings window.** General (shortcut, hover preview and delay, flashes, width), Modules (switch and order per module, modules of other extensions, T3 Code pairing) and About.
 - **Module API v1 and SDK.** A frozen API for modules that are extensions of their own, the npm package `@taulit/visor-module` with `connectVisor()` and generated types (`sdk/`, not yet published), and a module template (`examples/module-template/`).
 - **Translations.** German, Spanish, French, Brazilian Portuguese, Italian, Polish, Russian, Simplified Chinese and Japanese. All but German are machine translated. See [docs/translating.md](docs/translating.md).
-- **Tooling.** TypeScript compiled to readable ESM, ESLint, Prettier, Vitest, a sandboxed headless GNOME Shell for tests, leak test and screenshots (`scripts/nested.sh`), GitHub Actions CI, the store ZIP (`pnpm pack:zip`).
-- **Documents.** README with a generated module table, [docs/ego-checklist.md](docs/ego-checklist.md), [docs/release-checklist.md](docs/release-checklist.md) and the recipe for the AUR package `gnome-shell-extension-visor` in [build-aux/aur](build-aux/aur/README.md).
+- **Tooling.** TypeScript compiled to readable ESM, ESLint, Prettier, Vitest, a sandboxed headless GNOME Shell for tests, leak test and screenshots (`scripts/nested.sh`), GitHub Actions CI, the store ZIP (`pnpm pack:zip`), a nightly shell test in a Fedora 44 container and a release workflow that drafts the GitHub release with notes from `git-cliff` when a `v*` tag is pushed (neither has run on GitHub yet), screenshots in the dark and light scheme with the accents blue and green.
+- **Documents.** README with a generated module table, [CONTRIBUTING.md](CONTRIBUTING.md), [docs/ego-checklist.md](docs/ego-checklist.md), [docs/release-checklist.md](docs/release-checklist.md) and the recipe for the AUR package `gnome-shell-extension-visor` in [build-aux/aur](build-aux/aur/README.md).
 
 ### Network and privacy
 
