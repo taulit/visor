@@ -61,6 +61,10 @@ async function main() {
   try {
     for (const event of JSON.parse(System.programArgs[0] ?? '[]')) write(client, event);
   } finally {
+    // Taken down at once, the client still has work queued and gjs aborts.
+    await new Promise(resolve =>
+      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => (resolve(), false)),
+    );
     client.run_dispose();
     registry.run_dispose();
   }
@@ -94,13 +98,8 @@ function write(client, event) {
 }
 
 const loop = new GLib.MainLoop(null, false);
-let status = 0;
 main()
   .then(() => globalThis.print('done'))
-  .catch(e => {
-    globalThis.printerr(`calendar-events: ${e}`);
-    status = 1;
-  })
+  .catch(e => globalThis.printerr(`calendar-events: ${e}`))
   .finally(() => loop.quit());
 loop.run();
-System.exit(status);

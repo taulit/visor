@@ -23,6 +23,7 @@ source "$repo/scripts/scenarios/content-lib.sh"
 
 fail=0
 # check NAME JS: passes when JS evaluates to true; anything else is printed.
+# gdbus reads backslashes in JS as escapes of its own, so the JS has none.
 check() {
     local got
     got="$(shell_eval "$2" 2>&1)" || true
@@ -258,8 +259,8 @@ check '"Tomorrow" fits its column and the titles line up' \
 wait_check 'the event inside the join window with a link gets "Join", the later one does not' \
     "T.button('Join', T.row('Sprint Review')) !== null && T.find('visor-button', T.section('Up Next')).length === 1"
 check 'the second lines: time left and service, time left, all day' \
-    "(() => { const got = T.texts('Up Next', 'visor-row-subtitle').join('|'); return /^in [45] min · Google Meet\\|in (39|40) min\\|all day$/.test(got) || got; })()"
-check 'no chip yet: nothing starts within 15 minutes or runs... except the review in 5' \
+    "(() => { const got = T.texts('Up Next', 'visor-row-subtitle').join('|'); return /^in [45] min · Google Meet[|]in (39|40) min[|]all day$/.test(got) || got; })()"
+check 'the event that starts within 15 minutes has a chip: time and title' \
     "T.chip('upcoming').text === U.clock(U.event('review').date) + ' Sprint Review' && T.chip('upcoming').priority === 60 && T.chip('upcoming').icon === 'x-office-calendar-symbolic'"
 check '"Join" opens the link and closes the panel' \
     "(async () => { const original = Gio.AppInfo.launch_default_for_uri; let opened = null; Gio.AppInfo.launch_default_for_uri = uri => { opened = uri; return true; }; try { await T.click(T.button('Join', T.row('Sprint Review'))); } finally { Gio.AppInfo.launch_default_for_uri = original; } return opened === 'https://meet.google.com/abc-defg-hij' && $state === 'idle' || [opened, $state].join(); })()"
@@ -282,7 +283,7 @@ check 'the chip names the running event' "T.chip('upcoming').text === 'Now Stand
 check 'nothing of Evolution stays in the shell after the lookups' \
     "U.module.links.session === null && U.module.links.running === 0 && U.module.links.cache.size >= 3"
 check 'the clock format setting is honoured' \
-    "(async () => { const s = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' }); s.set_string('clock-format', '12h'); await T.wait(100); const lead = T.texts('Up Next', 'visor-row-lead')[1]; s.set_string('clock-format', '24h'); await T.wait(100); return /^\\d{1,2}:\\d\\d [AP]M$/.test(lead) && T.texts('Up Next', 'visor-row-lead')[1] === U.clock(U.event('review').date) || lead; })()"
+    "(async () => { const s = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' }); s.set_string('clock-format', '12h'); await T.wait(100); const lead = T.texts('Up Next', 'visor-row-lead')[1]; s.set_string('clock-format', '24h'); await T.wait(100); return /^[0-9]{1,2}:[0-9][0-9].[AP]M$/.test(lead) && T.texts('Up Next', 'visor-row-lead')[1] === U.clock(U.event('review').date) || [lead, T.texts('Up Next', 'visor-row-lead').join('|'), U.clock(U.event('review').date)].join(' / '); })()"
 check 'one timeout runs while the panel is open, for the next change of a row' "U.module.wake !== 0"
 run 'visor.notch.close()'
 events '[{"uid":"run","remove":true},{"uid":"review","remove":true},{"uid":"plan","remove":true},{"uid":"bday","remove":true},{"uid":"tender","remove":true}]'

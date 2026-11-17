@@ -8,6 +8,7 @@
 // with libedataserver 3.58 under gjs 1.88), and one that is disposed while
 // the shell runs does not.
 import type Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 
 import type ECal from 'gi://ECal?version=2.0';
 import type EDataServer from 'gi://EDataServer?version=1.2';
@@ -17,6 +18,8 @@ import { unfoldIcs } from './plan.js';
 
 /** Seconds ECal waits for a calendar that is still connecting. */
 const CONNECT_WAIT = 5;
+/** How long after the last lookup the connection is taken down; at once, the client still has work queued. */
+const CLOSE_DELAY_MS = 1000;
 
 interface Libraries {
   EDataServer: typeof EDataServer;
@@ -153,12 +156,19 @@ export class MeetingLinks {
     return { registry, clients: new Map(), opened };
   }
 
-  /** The last lookup is over: nothing of Evolution stays in the shell. */
+  /**
+   * The last lookup is over: nothing of Evolution stays in the shell. The
+   * timeout holds only the objects it disposes, so it may outlive the module.
+   */
   private closeSession(): void {
     const session = this.session;
     this.session = null;
     if (!session) return;
-    for (const object of session.opened.reverse()) object.run_dispose();
+    GLib.timeout_add(GLib.PRIORITY_LOW, CLOSE_DELAY_MS, () => {
+      for (const object of session.opened.reverse()) object.run_dispose();
+      session.opened.length = 0;
+      return GLib.SOURCE_REMOVE;
+    });
   }
 
   private async connect(session: Session, sourceUid: string): Promise<ECal.Client> {
