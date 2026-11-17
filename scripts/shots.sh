@@ -19,6 +19,7 @@ shots=(
     "open-one-column=content-one-column"
     "modules-view=content-modules-view"
     "empty=content-empty"
+    "ahead=modules-ahead"
 )
 
 fail=0
