@@ -24,15 +24,30 @@ export const isDone = (download: Download): boolean => download.doneAt !== undef
 export const displayName = (download: Download): string =>
   download.doneName ?? (finalName(download.name) || download.name);
 
+/** How long after the partial file went an empty final file is looked at again. */
+export const RECHECK_MS = 2000;
+
+export type Ending = 'finished' | 'cancelled' | 'unsure';
+
 /**
- * Whether a download whose partial file is gone has finished. `finalSize` is
- * null when the final file does not exist. Firefox keeps an empty file under
- * the final name while it downloads and removes it after the partial one when
- * the download is cancelled, so an empty final file counts only when the
- * partial file was empty too.
+ * What became of a download whose partial file is gone. `finalSize` is null
+ * when the final file does not exist. Firefox keeps an empty file under the
+ * final name while it downloads and removes it right after the partial one
+ * when the download is cancelled. So an empty final file is that placeholder
+ * when the partial file had bytes, and says nothing at the first look when it
+ * had none or was never measured ('unsure'). At the second look, RECHECK_MS
+ * later, a placeholder is gone, and an empty file that is still there is a
+ * download of no bytes.
  */
-export function isFinished(finalSize: number | null, partialSize: number | null): boolean {
-  return finalSize !== null && (finalSize > 0 || partialSize === 0);
+export function ending(
+  finalSize: number | null,
+  partialSize: number | null,
+  secondLook: boolean,
+): Ending {
+  if (finalSize === null) return 'cancelled';
+  if (finalSize > 0) return 'finished';
+  if (partialSize !== null && partialSize > 0) return 'cancelled';
+  return secondLook ? 'finished' : 'unsure';
 }
 
 const leavesAt = (download: Download): number =>

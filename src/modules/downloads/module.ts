@@ -10,11 +10,12 @@ import type { ModuleContext, NowRow, VisorModule } from '../../api.js';
 import { truncate } from '../../lib/format.js';
 import { formatBytes, isPartial, finalName } from './names.js';
 import {
+  RECHECK_MS,
   STALE_MS,
   current,
   displayName,
+  ending,
   isDone,
-  isFinished,
   nextLeave,
   type Download,
 } from './track.js';
@@ -40,6 +41,8 @@ class DownloadsModule implements VisorModule {
   private reading = new Set<string>();
   /** The one timeout: until the next finished or stale download leaves the list. */
   private source = 0;
+  /** Timeouts until the second look at an empty final file. */
+  private rechecks = new Set<number>();
   private reported = false;
 
   enable(ctx: ModuleContext): void {
@@ -86,6 +89,8 @@ class DownloadsModule implements VisorModule {
     this.dir = null;
     if (this.source) GLib.source_remove(this.source);
     this.source = 0;
+    for (const id of this.rechecks) GLib.source_remove(id);
+    this.rechecks.clear();
     this.downloads.clear();
     this.reading.clear();
     this.ctx = null;
@@ -96,31 +101,30 @@ class DownloadsModule implements VisorModule {
   /** Downloads that were running before Visor looked: partial files that changed a moment ago. */
   private scan(dir: Gio.File, cancellable: Gio.Cancellable): void {
     const next = (children: Gio.FileEnumerator) => {
-      children.next_files_async(100, GLib.PRIORITY_LOW, cancellable, (_children, result) =>
-        this.safely(() => {
-          let infos: Gio.FileInfo[];
-          try {
-            infos = children.next_files_finish(result);
-          } catch {
-            return;
-          }
-          if (infos.length === 0) {
-            children.close_async(GLib.PRIORITY_LOW, cancellable, null);
-            return;
-          }
-          const wall = Date.now();
-          for (const info of infos) {
-            const name = info.get_name();
-            if (!isPartial(name) || this.downloads.has(name)) continue;
-            const modified = info.get_attribute_uint64('time::modified') * 1000;
-            const age = Math.max(0, wall - modified);
-            if (age >= STALE_MS) continue;
-            this.downloads.set(name, { name, size: info.get_size(), seenAt: nowMs() - age });
-          }
-          this.changed();
-          next(children);
-        }),
-      );
+      children.next_files_async(100, GLib.PRIORITY_LOW, cancellable, (_children, result) => {
+        // Whatever happens below, the enumerator is closed when the scan does not go on.
+        // Without the cancellable: after disable() it would not close.
+        let more = false;
+        try {
+          this.safely(() => {
+            let infos: Gio.FileInfo[] = [];
+            try {
+              infos = children.next_files_finish(result);
+            } catch {
+              // Cancelled, or the directory cannot be read any further.
+            }
+            if (infos.length === 0) return;
+            const wall = Date.now();
+            // Each entry by itself: a name that cannot be read does not end the scan.
+            for (const info of infos) this.safely(() => this.found(info, wall));
+            more = true;
+            this.changed();
+          });
+        } finally {
+          if (more) next(children);
+          else children.close_async(GLib.PRIORITY_LOW, null, null);
+        }
+      });
     };
     dir.enumerate_children_async(
       `standard::name,${SIZE},time::modified`,
@@ -139,6 +143,16 @@ class DownloadsModule implements VisorModule {
           next(children);
         }),
     );
+  }
+
+  /** One entry of the directory at the start: a partial file that changed a moment ago is a download. */
+  private found(info: Gio.FileInfo, wall: number): void {
+    const name = info.get_name();
+    if (!isPartial(name) || this.downloads.has(name)) return;
+    const modified = info.get_attribute_uint64('time::modified') * 1000;
+    const age = Math.max(0, wall - modified);
+    if (age >= STALE_MS) return;
+    this.downloads.set(name, { name, size: info.get_size(), seenAt: nowMs() - age });
   }
 
   private onEvent(file: Gio.File, other: Gio.File | null, event: Gio.FileMonitorEvent): void {
@@ -191,8 +205,12 @@ class DownloadsModule implements VisorModule {
     this.readSize(name);
   }
 
-  /** The partial file is gone: finished when the final file is there, else cancelled. */
-  private ended(download: Download): void {
+  /**
+   * The partial file is gone: finished when the final file is there, else
+   * cancelled. An empty final file is looked at a second time a moment later,
+   * see ending(); until then the row stays as it is.
+   */
+  private ended(download: Download, secondLook = false): void {
     const target = finalName(download.name);
     const { dir, cancellable } = this;
     if (!target || !dir || !cancellable) {
@@ -201,8 +219,20 @@ class DownloadsModule implements VisorModule {
     }
     this.querySize(dir.get_child(target), cancellable, size => {
       if (this.downloads.get(download.name) !== download) return;
+      const verdict = ending(size, download.size, secondLook);
+      if (verdict === 'unsure') {
+        const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, RECHECK_MS, () => {
+          this.rechecks.delete(id);
+          this.safely(() => {
+            if (this.downloads.get(download.name) === download) this.ended(download, true);
+          });
+          return GLib.SOURCE_REMOVE;
+        });
+        this.rechecks.add(id);
+        return;
+      }
       this.downloads.delete(download.name);
-      if (isFinished(size, download.size)) this.finish(download, target, size);
+      if (verdict === 'finished') this.finish(download, target, size);
       else this.changed();
     });
   }
@@ -225,7 +255,14 @@ class DownloadsModule implements VisorModule {
     const { dir, cancellable } = this;
     if (size !== null || !dir || !cancellable) return;
     this.querySize(dir.get_child(target), cancellable, final => {
-      if (final === null || final === done.size || this.downloads.get(done.name) !== done) return;
+      if (this.downloads.get(done.name) !== done) return;
+      if (final === null) {
+        // Renamed, but not to a file that is there: nothing to call done or to open.
+        this.downloads.delete(done.name);
+        this.changed();
+        return;
+      }
+      if (final === done.size) return;
       done.size = final;
       this.render();
     });

@@ -5,7 +5,7 @@ import {
   current,
   displayName,
   isDone,
-  isFinished,
+  ending,
   nextLeave,
   type Download,
 } from '../src/modules/downloads/track.js';
@@ -39,18 +39,32 @@ describe('displayName', () => {
   });
 });
 
-describe('isFinished', () => {
-  it('needs the final file', () => {
-    expect(isFinished(null, 500)).toBe(false);
-    expect(isFinished(null, null)).toBe(false);
-    expect(isFinished(500, 400)).toBe(true);
-    expect(isFinished(500, null)).toBe(true);
+describe('ending', () => {
+  it('is cancelled without the final file, at either look', () => {
+    expect(ending(null, 500, false)).toBe('cancelled');
+    expect(ending(null, null, false)).toBe('cancelled');
+    expect(ending(null, 0, true)).toBe('cancelled');
   });
 
-  it('takes an empty final file for the placeholder of Firefox', () => {
-    expect(isFinished(0, 400)).toBe(false);
-    expect(isFinished(0, null)).toBe(false);
-    expect(isFinished(0, 0)).toBe(true);
+  it('is finished with a final file that has bytes', () => {
+    expect(ending(500, 400, false)).toBe('finished');
+    expect(ending(500, null, false)).toBe('finished');
+    expect(ending(500, 0, true)).toBe('finished');
+  });
+
+  it('takes an empty final file for the placeholder of Firefox when the partial one had bytes', () => {
+    expect(ending(0, 400, false)).toBe('cancelled');
+    expect(ending(0, 400, true)).toBe('cancelled');
+  });
+
+  it('does not decide at once when the partial file was empty or never measured', () => {
+    expect(ending(0, 0, false)).toBe('unsure');
+    expect(ending(0, null, false)).toBe('unsure');
+  });
+
+  it('takes an empty file that is still there a moment later for a download of no bytes', () => {
+    expect(ending(0, 0, true)).toBe('finished');
+    expect(ending(0, null, true)).toBe('finished');
   });
 });
 
