@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Takes the screenshots a phase is judged by, in the dark and the light scheme,
-# into docs/screenshots/, and fails when the shell logged an error while one
-# of them was taken.
+# Takes the screenshots a phase is judged by, in the dark and the light scheme
+# and with two accent colours (blue, the default, and green), into
+# docs/screenshots/, and fails when the shell logged an error while one of them
+# was taken. The files are <name>-<scheme>.png for blue and
+# <name>-<scheme>-green.png for green. The settings window shows the accent too
+# (switches), so it is taken in both; the accessibility settings are shown once.
 #
 # Usage: scripts/shots.sh [name...]   (default: all of the list below)
 # Any other scenario of scripts/scenarios/ can be named as well; its
@@ -80,10 +83,16 @@ for name in "${names[@]}"; do
     options=()
     [[ "$name" == prefs-* ]] && options=("${fixtures[@]}")
     schemes=(dark light)
-    # The accessibility settings are shown once, in the dark scheme.
-    [[ "$name" == a11y-* ]] && schemes=(dark)
+    # The accent colour comes from the system; blue is its default.
+    accents=(blue green)
+    # The accessibility settings are shown once, in the dark scheme, in blue.
+    [[ "$name" == a11y-* ]] && schemes=(dark) accents=(blue)
     for scheme in "${schemes[@]}"; do
-        shot "$scenario" "$dir/$name-$scheme.png" --scheme "$scheme" "${options[@]}"
+        for accent in "${accents[@]}"; do
+            suffix="$scheme"
+            [[ "$accent" != blue ]] && suffix="$scheme-$accent"
+            shot "$scenario" "$dir/$name-$suffix.png" --scheme "$scheme" --accent "$accent" "${options[@]}"
+        done
     done
     # The settings window in German, to see that nothing is cut off or left in English.
     if [[ "$name" == prefs-general || "$name" == prefs-modules ]]; then
@@ -93,7 +102,5 @@ for name in "${names[@]}"; do
             echo "skip  $name-de-dark.png: this machine has no locale de_DE.UTF-8"
         fi
     fi
-    # The accent colour comes from the system; one screenshot shows another one.
-    [[ "$name" == open ]] && shot "$scenario" "$dir/open-dark-green.png" --scheme dark --accent green
 done
 exit "$fail"
