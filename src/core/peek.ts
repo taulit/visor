@@ -67,7 +67,7 @@ export class Peek {
     this.callbacks.changed();
   }
 
-  /** Shows the chip first and in the accent colour for three seconds. */
+  /** Shows the chip first and in the accent colour for three seconds; a waiting chip keeps its amber. */
   flash(entry: ModuleEntry, chip: PeekChip): void {
     const { id } = entry.module;
     const running = this.flashes.get(id);
@@ -97,7 +97,8 @@ export class Peek {
       if (flash)
         result.push({
           id: entry.module.id,
-          chip: { ...flash.chip, tone: 'accent' },
+          // Amber stays amber: a chip that waits for the user is not just news.
+          chip: { ...flash.chip, tone: flash.chip.tone === 'waiting' ? 'waiting' : 'accent' },
           flash: flash.order,
         });
       else if (entry.chip) result.push({ id: entry.module.id, chip: entry.chip });

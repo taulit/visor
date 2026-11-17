@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 11:26+0100\n"
+"POT-Creation-Date: 2026-11-17 11:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,7 +101,8 @@ msgstr ""
 msgid "Downloads"
 msgstr ""
 
-#: build/modules/downloads/module.js:336 build/modules/timers/module.js:229
+#: build/modules/downloads/module.js:336 build/modules/t3/module.js:301
+#: build/modules/timers/module.js:229
 msgid "Done"
 msgstr ""
 
@@ -164,6 +165,102 @@ msgstr ""
 msgid "Dismiss"
 msgstr ""
 
+#: build/modules/t3/module.js:26
+msgid "T3 Code"
+msgstr ""
+
+#: build/modules/t3/module.js:32
+msgid "t3 Fix the failing test"
+msgstr ""
+
+#: build/modules/t3/module.js:95 build/modules/t3/module.js:313
+msgid "Untitled thread"
+msgstr ""
+
+#: build/modules/t3/module.js:100
+#, javascript-format
+msgid "Send to %s"
+msgstr ""
+
+#: build/modules/t3/module.js:109
+msgid "Start a new thread"
+msgstr ""
+
+#: build/modules/t3/module.js:227
+#, javascript-format
+msgid "+ %d more"
+msgstr ""
+
+#: build/modules/t3/module.js:275
+msgid "Agent"
+msgstr ""
+
+#: build/modules/t3/module.js:278
+#, javascript-format
+msgid "%s is waiting"
+msgstr ""
+
+#: build/modules/t3/module.js:287
+msgid "Starting"
+msgstr ""
+
+#: build/modules/t3/module.js:290 build/modules/t3/module.js:291
+msgid "Working"
+msgstr ""
+
+#: build/modules/t3/module.js:294
+msgid "Wants to run"
+msgstr ""
+
+#: build/modules/t3/module.js:296
+msgid "Wants to use a file"
+msgstr ""
+
+#: build/modules/t3/module.js:297
+msgid "Asks for permission"
+msgstr ""
+
+#: build/modules/t3/module.js:299
+msgid "Has a question"
+msgstr ""
+
+#: build/modules/t3/module.js:303
+msgid "Failed"
+msgstr ""
+
+#: build/modules/t3/module.js:309
+msgid "Could not send"
+msgstr ""
+
+#: build/modules/t3/module.js:324
+msgid "Deny"
+msgstr ""
+
+#: build/modules/t3/module.js:326
+msgid "Allow"
+msgstr ""
+
+#: build/modules/t3/module.js:333
+msgid "Answer"
+msgstr ""
+
+#: build/modules/t3/module.js:381
+#, javascript-format
+msgid "Reply to %s"
+msgstr ""
+
+#: build/modules/t3/module.js:381 build/modules/t3/module.js:382
+msgid "Reply"
+msgstr ""
+
+#: build/modules/t3/module.js:397 build/modules/timers/module.js:246
+msgid "Stop"
+msgstr ""
+
+#: build/modules/t3/module.js:408
+msgid "Open in T3 Code"
+msgstr ""
+
 #: build/modules/timers/module.js:19
 msgid "Timers"
 msgstr ""
@@ -208,10 +305,6 @@ msgstr ""
 
 #: build/modules/timers/module.js:236
 msgid "Resume"
-msgstr ""
-
-#: build/modules/timers/module.js:246
-msgid "Stop"
 msgstr ""
 
 #: build/modules/timers/module.js:251

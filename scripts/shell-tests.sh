@@ -16,6 +16,7 @@ tests=(
     "modules-now|tests/shell/modules-now.sh"
     "modules-ahead|tests/shell/modules-ahead.sh"
     "template|tests/shell/template.sh"
+    "t3|tests/shell/t3.sh"
     "disable-restores|tests/shell/disable-restores.sh"
     "e2e-timer|tests/shell/e2e-timer.sh"
     "notch-behaviour|scripts/nested.sh -- tests/shell/notch-behaviour.sh"
@@ -24,6 +25,7 @@ tests=(
     "notch-leak-after-use|scripts/nested.sh --animations -- tests/shell/notch-leak-after-use.sh"
     "content-leak|tests/shell/content-leak.sh 20"
     "leak-test|scripts/leak-test.sh 50"
+    "leak-test-t3|scripts/leak-test.sh 50 --t3"
 )
 
 for wanted in "$@"; do

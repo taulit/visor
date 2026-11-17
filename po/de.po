@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 11:26+0100\n"
+"POT-Creation-Date: 2026-11-17 11:51+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -98,7 +98,8 @@ msgstr "Keine Module"
 msgid "Downloads"
 msgstr "Downloads"
 
-#: build/modules/downloads/module.js:336 build/modules/timers/module.js:229
+#: build/modules/downloads/module.js:336 build/modules/t3/module.js:301
+#: build/modules/timers/module.js:229
 msgid "Done"
 msgstr "Fertig"
 
@@ -161,6 +162,102 @@ msgstr "Alle löschen"
 msgid "Dismiss"
 msgstr "Entfernen"
 
+#: build/modules/t3/module.js:26
+msgid "T3 Code"
+msgstr "T3 Code"
+
+#: build/modules/t3/module.js:32
+msgid "t3 Fix the failing test"
+msgstr "t3 Behebe den fehlschlagenden Test"
+
+#: build/modules/t3/module.js:95 build/modules/t3/module.js:313
+msgid "Untitled thread"
+msgstr "Unbenannter Thread"
+
+#: build/modules/t3/module.js:100
+#, javascript-format
+msgid "Send to %s"
+msgstr "An %s senden"
+
+#: build/modules/t3/module.js:109
+msgid "Start a new thread"
+msgstr "Neuen Thread starten"
+
+#: build/modules/t3/module.js:227
+#, javascript-format
+msgid "+ %d more"
+msgstr "+ %d weitere"
+
+#: build/modules/t3/module.js:275
+msgid "Agent"
+msgstr "Agent"
+
+#: build/modules/t3/module.js:278
+#, javascript-format
+msgid "%s is waiting"
+msgstr "%s wartet"
+
+#: build/modules/t3/module.js:287
+msgid "Starting"
+msgstr "Startet"
+
+#: build/modules/t3/module.js:290 build/modules/t3/module.js:291
+msgid "Working"
+msgstr "Arbeitet"
+
+#: build/modules/t3/module.js:294
+msgid "Wants to run"
+msgstr "Möchte ausführen"
+
+#: build/modules/t3/module.js:296
+msgid "Wants to use a file"
+msgstr "Möchte eine Datei verwenden"
+
+#: build/modules/t3/module.js:297
+msgid "Asks for permission"
+msgstr "Bittet um Erlaubnis"
+
+#: build/modules/t3/module.js:299
+msgid "Has a question"
+msgstr "Hat eine Frage"
+
+#: build/modules/t3/module.js:303
+msgid "Failed"
+msgstr "Fehlgeschlagen"
+
+#: build/modules/t3/module.js:309
+msgid "Could not send"
+msgstr "Senden nicht möglich"
+
+#: build/modules/t3/module.js:324
+msgid "Deny"
+msgstr "Ablehnen"
+
+#: build/modules/t3/module.js:326
+msgid "Allow"
+msgstr "Erlauben"
+
+#: build/modules/t3/module.js:333
+msgid "Answer"
+msgstr "Antworten"
+
+#: build/modules/t3/module.js:381
+#, javascript-format
+msgid "Reply to %s"
+msgstr "Antwort an %s"
+
+#: build/modules/t3/module.js:381 build/modules/t3/module.js:382
+msgid "Reply"
+msgstr "Antworten"
+
+#: build/modules/t3/module.js:397 build/modules/timers/module.js:246
+msgid "Stop"
+msgstr "Stoppen"
+
+#: build/modules/t3/module.js:408
+msgid "Open in T3 Code"
+msgstr "In T3 Code öffnen"
+
 #: build/modules/timers/module.js:19
 msgid "Timers"
 msgstr "Timer"
@@ -206,10 +303,6 @@ msgstr "Neu starten"
 #: build/modules/timers/module.js:236
 msgid "Resume"
 msgstr "Weiter"
-
-#: build/modules/timers/module.js:246
-msgid "Stop"
-msgstr "Stoppen"
 
 #: build/modules/timers/module.js:251
 msgid "+1 min"
