@@ -9,8 +9,9 @@ export interface MeetingLink {
 
 /**
  * Jitsi can be self-hosted anywhere, so only these hosts (and their subdomains) count:
- * the public instance, the project site and 8x8's hosted Jitsi. Apart from `meet.jit.si`, where
- * the room name is the whole path, a link must be a single room segment.
+ * the public instance, the project site and 8x8's hosted Jitsi. On `meet.jit.si` the room name is
+ * the whole path, elsewhere a link is a single room segment; 8x8 puts its tenant before the room
+ * (`8x8.vc/<tenant>/<room>`).
  */
 const JITSI_HOSTS = ['meet.jit.si', 'jitsi.org', '8x8.vc'];
 
@@ -35,6 +36,7 @@ function classify(host: string, path: string): MeetingService | null {
   }
 
   if (host === 'meet.jit.si') return path.length > 1 ? 'jitsi' : null;
+  if (isHost(host, '8x8.vc') && /^\/[^/]+\/[^/]+\/?$/.test(path)) return 'jitsi';
   if (JITSI_HOSTS.some((domain: string) => isHost(host, domain)) && /^\/[^/]+\/?$/.test(path))
     return 'jitsi';
   return null;
