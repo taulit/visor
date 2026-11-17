@@ -11,6 +11,7 @@ import Soup from 'gi://Soup?version=3.0';
 
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+import { fetchText, runtimePath } from '../modules/t3/fetch.js';
 import { clearToken, storeToken, unlockKeyring } from '../modules/t3/keyring.js';
 import {
   SERVER_KEY,
@@ -40,43 +41,14 @@ const MAX_ANSWER_BYTES = 64 * 1024;
 
 /** The origin of the server running on this machine, from its runtime file, or null. */
 function localOrigin(): string | null {
-  const base = GLib.getenv('T3CODE_HOME') || GLib.build_filenamev([GLib.get_home_dir(), '.t3']);
   try {
-    const [, bytes] = GLib.file_get_contents(
-      GLib.build_filenamev([base, 'userdata', 'server-runtime.json']),
-    );
+    const [, bytes] = GLib.file_get_contents(runtimePath());
     return bytes.length <= MAX_ANSWER_BYTES
       ? decodeRuntimeState(new TextDecoder().decode(bytes))
       : null;
   } catch {
     return null;
   }
-}
-
-interface Answer {
-  /** 0 when there was no answer. */
-  status: number;
-  body: string;
-}
-
-function send(
-  http: Soup.Session,
-  message: Soup.Message,
-  cancellable: Gio.Cancellable,
-): Promise<Answer> {
-  return new Promise(resolve => {
-    http.send_and_read_async(message, GLib.PRIORITY_DEFAULT, cancellable, (_source, result) => {
-      try {
-        const data = http.send_and_read_finish(result).get_data();
-        const status = message.get_status();
-        // Only a plain 200 has a body worth reading; a redirect is not followed.
-        const fits = status === Soup.Status.OK && data !== null && data.length <= MAX_ANSWER_BYTES;
-        resolve({ status, body: fits ? new TextDecoder().decode(data) : '' });
-      } catch {
-        resolve({ status: 0, body: '' });
-      }
-    });
-  });
 }
 
 /**
@@ -91,19 +63,16 @@ export async function exchangePairingCode(
   code: string,
   cancellable: Gio.Cancellable,
 ): Promise<{ token: string } | { error: PairingError }> {
-  let about: Soup.Message;
-  let exchange: Soup.Message;
-  try {
-    about = Soup.Message.new('GET', descriptorUrl(origin));
-    exchange = Soup.Message.new('POST', tokenUrl(origin));
-  } catch {
-    return { error: 'unreachable' };
-  }
+  const about = Soup.Message.new('GET', descriptorUrl(origin));
+  const exchange = Soup.Message.new('POST', tokenUrl(origin));
+  if (!about || !exchange) return { error: 'unreachable' };
   // The code goes to the server the link names and is not carried along by a redirect.
   about.add_flags(Soup.MessageFlags.NO_REDIRECT);
   exchange.add_flags(Soup.MessageFlags.NO_REDIRECT);
   // The version first: a server that speaks another protocol keeps its code unused.
-  const descriptor = decodeDescriptor((await send(http, about, cancellable)).body);
+  const descriptor = decodeDescriptor(
+    (await fetchText(http, about, MAX_ANSWER_BYTES, cancellable)).body ?? '',
+  );
   if (!descriptor) return { error: 'unreachable' };
   if (!isCompatible(descriptor)) return { error: 'incompatible' };
 
@@ -113,9 +82,9 @@ export async function exchangePairingCode(
     new GLib.Bytes(new TextEncoder().encode(tokenRequestBody(code, label))),
   );
   if (cancellable.is_cancelled()) return { error: 'unreachable' };
-  const answer = await send(http, exchange, new Gio.Cancellable());
+  const answer = await fetchText(http, exchange, MAX_ANSWER_BYTES, new Gio.Cancellable());
   if (answer.status !== Soup.Status.OK) return { error: exchangeError(answer.status) };
-  const token = decodeAccessToken(answer.body);
+  const token = decodeAccessToken(answer.body ?? '');
   return token ? { token } : { error: 'rejected' };
 }
 

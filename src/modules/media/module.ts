@@ -280,12 +280,7 @@ class MediaModule implements VisorModule {
       );
     };
     const download = () => {
-      let message;
-      try {
-        message = Soup.Message.new('GET', url);
-      } catch {
-        return;
-      }
+      const message = Soup.Message.new('GET', url);
       if (!message) return;
       const session = ctx.http;
       const save = (bytes: GLib.Bytes) =>
