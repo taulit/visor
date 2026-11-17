@@ -16,6 +16,7 @@ shots=(
     "hint=hint"
     "peek=content-peek"
     "open=content-demo"
+    "now=modules-now"
     "open-one-column=content-one-column"
     "modules-view=content-modules-view"
     "empty=content-empty"
