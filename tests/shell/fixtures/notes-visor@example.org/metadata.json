@@ -1,0 +1,7 @@
+{
+  "uuid": "notes-visor@example.org",
+  "name": "Notes",
+  "description": "Quick notes in the dock",
+  "shell-version": ["50"],
+  "visor": { "api": 1, "slot": "dock" }
+}

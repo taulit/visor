@@ -1,0 +1,7 @@
+{
+  "uuid": "old-visor@example.org",
+  "name": "Old Tasks",
+  "description": "Tasks for an older Visor",
+  "shell-version": ["50"],
+  "visor": { "api": 2, "slot": "now" }
+}

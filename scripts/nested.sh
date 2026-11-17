@@ -12,13 +12,14 @@
 #                       pink, purple, slate (default blue)
 #   --animations        keep animations on (default: off, for stable screenshots)
 #   --no-visor          do not load Visor, only the test helper
+#   --extension DIR     also install the extension in DIR (can be given more than once)
 #   --log FILE          copy the shell log to FILE when done
 #
 # Inside the command, scripts/lib/shell.sh offers shell_eval and shell_shot.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-size=1920x1080 scheme=dark accent=blue animations=false with_visor=true log=
+size=1920x1080 scheme=dark accent=blue animations=false with_visor=true log= extra_extensions=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -27,6 +28,7 @@ while [[ $# -gt 0 ]]; do
         --accent) accent="$2"; shift 2 ;;
         --animations) animations=true; shift ;;
         --no-visor) with_visor=false; shift ;;
+        --extension) extra_extensions+=("$2"); shift 2 ;;
         --log) log="$2"; shift 2 ;;
         --) shift; break ;;
         *) echo "nested.sh: unknown option $1" >&2; exit 2 ;;
@@ -59,6 +61,9 @@ chmod 700 "$sandbox/run"
 extensions="$sandbox/home/.local/share/gnome-shell/extensions"
 mkdir -p "$extensions"
 cp -r "$repo/tests/shell-helper" "$extensions/visor-test-helper@taulit.github.io"
+for dir in "${extra_extensions[@]}"; do
+    cp -r "$dir" "$extensions/$(basename "$dir")"
+done
 enabled="['visor-test-helper@taulit.github.io']"
 if $with_visor; then
     [[ -f "$repo/build/metadata.json" ]] || { echo "nested.sh: run 'pnpm build' first" >&2; exit 1; }
