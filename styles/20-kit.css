@@ -158,7 +158,8 @@
   box-shadow: inset 0 0 0 2px -st-accent-color;
 }
 .visor-button.link {
-  height: 20px;
+  /* Not a fixed height: large text needs more. */
+  min-height: 20px;
   padding: 0;
   border-radius: 4px;
 }

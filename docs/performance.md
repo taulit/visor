@@ -155,5 +155,5 @@ Search, the measuring of the sheet, live ticks of modules and all animations run
   tried and dropped: St resolves styles only for mapped actors, so the cost stayed where it was.
 - **The test.** `tests/shell/search.sh` failed once with 16.3 ms against 16. It now types the same queries in
   five rounds and judges each query by its median over the rounds against the budget (16 ms for the list,
-  33 ms until painted), and keeps a hard limit for any single sample (50 ms for the list, 250 ms until
+  50 ms until painted), and keeps a hard limit for any single sample (50 ms for the list, 250 ms until
   painted). A regression is slow every round and fails the median; a stall fails the limit.

@@ -1075,6 +1075,8 @@ export class Chip {
       accessible_role: interactive ? Atk.Role.PUSH_BUTTON : Atk.Role.LABEL,
       child: box,
     });
+    // The name set in update() is what a screen reader gets; the label stays linked for the rest.
+    this.actor.label_actor = this.label;
     this.update(chip);
   }
 
