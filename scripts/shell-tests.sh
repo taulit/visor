@@ -22,6 +22,7 @@ tests=(
     "t3|tests/shell/t3.sh"
     "disable-restores|tests/shell/disable-restores.sh"
     "e2e-timer|tests/shell/e2e-timer.sh"
+    "e2e-notification|tests/shell/e2e-notification.sh"
     "notch-behaviour|scripts/nested.sh -- tests/shell/notch-behaviour.sh"
     "notch-motion|scripts/nested.sh --animations -- tests/shell/notch-motion.sh"
     "notch-motion-no-animations|scripts/nested.sh -- tests/shell/notch-motion.sh"
