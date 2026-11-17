@@ -39,8 +39,19 @@ The environment issues its own sessions (`docs/internals/environment-auth.md`,
    revoked.
 4. **Socket**: `ws://<host>/ws?orchestrationProtocol=2&wsTicket=<ticket>` (`apps/server/src/ws.ts`).
 
-Visor does step 1, 3 and 4. Step 2 belongs to the settings; the module reads the token from the setting
-`t3-access-token` and stays empty and silent without one.
+The module does step 1, 3 and 4. Step 2 is done by the settings window (Modules → T3 Code,
+`src/prefs/t3.ts`; what both sides share is in `src/modules/t3/pairing.ts`): it takes the pairing link or
+the bare code, checks the descriptor, exchanges the code and writes the token to the setting
+`t3-access-token`, and the origin to `t3-server-url` when it is not the local server. The token endpoint
+answers a wrong, used or expired code with 401 (`EnvironmentAuthInvalidError`) and a malformed request
+with 400. The module reads the token from the setting, follows its changes without a restart and stays
+empty and silent without one. A 401 or 403 on the ticket request means the token is no good: the module
+logs one line and asks again only when the token or the address changes.
+
+**Revoking.** `POST /api/auth/clients/revoke` (`{sessionId}`) needs the scope `access:write`, which Visor
+does not ask for, and refuses the session that calls it (`current_session_revoke_not_allowed`, 403). A
+client cannot end its own session, so Disconnect only forgets the token; the session stays listed in
+T3 Code under Settings → Connections until it is revoked there or expires.
 
 ## 3. Messages
 

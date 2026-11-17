@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 15:21+0100\n"
+"POT-Creation-Date: 2026-11-17 15:40+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -47,7 +47,7 @@ msgstr "Wechselkurse sind ausgeschaltet"
 msgid "Rates are loading"
 msgstr "Kurse werden geladen"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
 msgid "Modules"
 msgstr "Module"
 
@@ -164,6 +164,7 @@ msgid "Dismiss"
 msgstr "Entfernen"
 
 #: build/modules/t3/module.js:26 build/prefs/builtin-modules.js:7
+#: build/prefs/t3.js:84
 msgid "T3 Code"
 msgstr "T3 Code"
 
@@ -230,32 +231,36 @@ msgstr "Fehlgeschlagen"
 msgid "Could not send"
 msgstr "Senden nicht möglich"
 
-#: build/modules/t3/module.js:324
+#: build/modules/t3/module.js:331 build/modules/t3/module.js:446
 msgid "Deny"
 msgstr "Ablehnen"
 
-#: build/modules/t3/module.js:326
+#: build/modules/t3/module.js:333 build/modules/t3/module.js:447
 msgid "Allow"
 msgstr "Erlauben"
 
-#: build/modules/t3/module.js:333
+#: build/modules/t3/module.js:340
 msgid "Answer"
 msgstr "Antworten"
 
-#: build/modules/t3/module.js:381
+#: build/modules/t3/module.js:418
+msgid "Open T3 Code to read all of it"
+msgstr "Öffne T3 Code, um alles zu lesen"
+
+#: build/modules/t3/module.js:452
 #, javascript-format
 msgid "Reply to %s"
 msgstr "Antwort an %s"
 
-#: build/modules/t3/module.js:381 build/modules/t3/module.js:382
+#: build/modules/t3/module.js:452 build/modules/t3/module.js:453
 msgid "Reply"
 msgstr "Antworten"
 
-#: build/modules/t3/module.js:397 build/modules/timers/module.js:246
+#: build/modules/t3/module.js:468 build/modules/timers/module.js:246
 msgid "Stop"
 msgstr "Stoppen"
 
-#: build/modules/t3/module.js:408
+#: build/modules/t3/module.js:479
 msgid "Open in T3 Code"
 msgstr "In T3 Code öffnen"
 
@@ -492,35 +497,35 @@ msgid "The rates come from the European Central Bank, at most once a day."
 msgstr ""
 "Die Kurse kommen von der Europäischen Zentralbank, höchstens einmal am Tag."
 
-#: build/prefs/modules.js:75
+#: build/prefs/modules.js:77
 msgid "Discover"
 msgstr "Entdecken"
 
-#: build/prefs/modules.js:108
+#: build/prefs/modules.js:110
 msgid "Move up"
 msgstr "Nach oben"
 
-#: build/prefs/modules.js:109
+#: build/prefs/modules.js:111
 msgid "Move down"
 msgstr "Nach unten"
 
-#: build/prefs/modules.js:112
+#: build/prefs/modules.js:114
 msgid "Change the order"
 msgstr "Reihenfolge ändern"
 
-#: build/prefs/modules.js:122
+#: build/prefs/modules.js:124
 msgid "Drag to change the order"
 msgstr "Ziehen, um die Reihenfolge zu ändern"
 
-#: build/prefs/modules.js:149
+#: build/prefs/modules.js:151
 msgid "Built for another version of Visor"
 msgstr "Für eine andere Version von Visor gebaut"
 
-#: build/prefs/modules.js:151
+#: build/prefs/modules.js:153
 msgid "Turned off in the extensions"
 msgstr "In den Erweiterungen ausgeschaltet"
 
-#: build/prefs/modules.js:161
+#: build/prefs/modules.js:163
 msgid "Settings of the module"
 msgstr "Einstellungen des Moduls"
 
@@ -550,3 +555,58 @@ msgstr ""
 #: build/prefs/shortcut.js:48
 msgid "Cancel"
 msgstr "Abbrechen"
+
+#: build/prefs/t3.js:73
+msgid "This is not a pairing link"
+msgstr "Das ist kein Kopplungslink"
+
+#: build/prefs/t3.js:75
+msgid "The link is wrong or has expired"
+msgstr "Der Link ist falsch oder abgelaufen"
+
+#: build/prefs/t3.js:77
+msgid "This version of T3 Code does not fit Visor"
+msgstr "Diese Version von T3 Code passt nicht zu Visor"
+
+#: build/prefs/t3.js:79
+msgid "The server cannot be reached"
+msgstr "Der Server ist nicht erreichbar"
+
+#. --- not paired ---
+#: build/prefs/t3.js:89
+msgid "Pairing link or code"
+msgstr "Kopplungslink oder Code"
+
+#: build/prefs/t3.js:92
+msgid "Connect"
+msgstr "Verbinden"
+
+#. --- paired ---
+#: build/prefs/t3.js:162
+msgid "Connected"
+msgstr "Verbunden"
+
+#: build/prefs/t3.js:164
+msgid "Disconnect"
+msgstr "Trennen"
+
+#. --- the address ---
+#: build/prefs/t3.js:170
+msgid "Server address"
+msgstr "Serveradresse"
+
+#: build/prefs/t3.js:172
+msgid "Address, empty for this machine"
+msgstr "Adresse, leer für diesen Rechner"
+
+#: build/prefs/t3.js:192
+msgid ""
+"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"here."
+msgstr ""
+"Erstelle in T3 Code unter Settings → Connections einen Kopplungslink und füge "
+"ihn hier ein."
+
+#: build/prefs/t3.js:195 build/prefs/t3.js:196
+msgid "This machine"
+msgstr "Dieser Rechner"
