@@ -8,7 +8,7 @@ Tick a step only after its "Verify" lines hold.
 
 1. Merge the open phase branches into `main` (V3 is pull request #5, V4 follows) and make sure `main` is green in CI.
    - Verify: `git log --oneline main` shows them, CI of the last commit is green.
-2. Work through [ego-checklist.md](ego-checklist.md): the two rows marked "fixed in this phase" (timeouts that outlive `disable()`, `run_dispose` without a reason) still hold after the merge (re-check their `file:line`), every "maintainer" row has a decision.
+2. Work through [ego-checklist.md](ego-checklist.md): every "maintainer" row has a decision.
    - Verify: each row of the file is "ok", "fixed" with the line re-checked, or has a written decision.
 3. Bring the texts up to date with the code: the "Privacy and network" table of [README.md](../README.md) and the `description` of `metadata.json` must say what the code does at the release (for example where the T3 Code token is stored, if that changed).
    - Verify: read both against `grep -rn "Soup\.\|St.Clipboard" src`.

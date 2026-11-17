@@ -176,7 +176,7 @@ import GObject from 'gi://GObject';
 this._clock = new GnomeDesktop.WallClock(); // {time_only: true} drops the date
 this._clock.bind_property('clock', label, 'text', GObject.BindingFlags.SYNC_CREATE);
 // or: this._clock.connectObject('notify::clock', () => ..., this);
-// disable: this._clock.run_dispose() or drop all references and handlers
+// disable: drop all references and handlers (what Visor does)
 ```
 
 The string already follows `org.gnome.desktop.interface clock-format`, `clock-show-date`, `clock-show-seconds`, `clock-show-weekday`. Stock label style: `style_class: 'clock'`, `clutter_text.ellipsize = Pango.EllipsizeMode.NONE`.
