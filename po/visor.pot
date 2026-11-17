@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-16 22:24+0100\n"
+"POT-Creation-Date: 2026-11-17 10:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: build/core/sheet.js:147 build/core/sheet.js:500
 msgid "Modules"
@@ -30,6 +31,7 @@ msgid "Search"
 msgstr ""
 
 #: build/core/sheet.js:299 build/core/sheet.js:371
+#: build/modules/upcoming/when.js:35
 msgid "Now"
 msgstr ""
 
@@ -41,7 +43,9 @@ msgstr ""
 msgid "Shows up only while something is running."
 msgstr ""
 
-#: build/core/sheet.js:372
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/core/sheet.js:372 build/modules/upcoming/module.js:25
+#: build/modules/upcoming/module.js:106
 msgid "Up Next"
 msgstr ""
 
@@ -59,6 +63,92 @@ msgstr ""
 
 #: build/core/sheet.js:571
 msgid "No modules"
+msgstr ""
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/modules/notifications/module.js:19
+#: build/modules/notifications/module.js:91
+msgid "Notifications"
+msgstr ""
+
+#: build/modules/notifications/module.js:93
+msgid "Do Not Disturb"
+msgstr ""
+
+#: build/modules/notifications/module.js:100
+msgid "No new notifications"
+msgstr ""
+
+#: build/modules/notifications/module.js:281
+msgid "Show less"
+msgstr ""
+
+#: build/modules/notifications/module.js:283
+#, javascript-format
+msgid "Show all %d"
+msgstr ""
+
+#: build/modules/notifications/module.js:306
+msgid "Clear all"
+msgstr ""
+
+#: build/modules/notifications/module.js:328
+msgid "Dismiss"
+msgstr ""
+
+#: build/modules/upcoming/module.js:107
+msgid "Nothing else today"
+msgstr ""
+
+#: build/modules/upcoming/module.js:189
+msgid "Join"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:21
+#, javascript-format
+msgid "in %d min"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:23
+#, javascript-format
+msgid "in %d h"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:24
+#, javascript-format
+msgid "in %d h %d min"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:29
+msgid "all day"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:32
+#, javascript-format
+msgid "until %s"
+msgstr ""
+
+#: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
+msgid "Today"
+msgstr ""
+
+#: build/modules/upcoming/when.js:40
+msgid "Tomorrow"
+msgstr ""
+
+#: build/modules/upcoming/when.js:59
+msgid "now"
+msgstr ""
+
+#: build/modules/upcoming/when.js:61
+#, javascript-format
+msgid "%d min ago"
+msgid_plural "%d min ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/modules/upcoming/when.js:66
+msgid "Yesterday"
 msgstr ""
 
 #: build/prefs.js:5
