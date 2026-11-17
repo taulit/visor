@@ -21,23 +21,23 @@ changelog, CI steps, the T3 token in the keyring, the settings checks, `visor.id
 `scripts/measure.sh`, `docs/performance.md`, accessibility (`docs/accessibility.md`, `tests/shell/a11y.sh`).
 Gate on the merged branch: 794 unit tests, 18 shell tests (one timing fix in `tests/shell/prefs-t3.sh`).
 
-Running, all read-only except the first (which edits `po/` only):
+The three reviews are done (bug: 1 blocking, 5 minor; simplicity: 19 cuts; spec: 9 gaps). The V3 pull
+request (#5) is merged and `main` is merged into this branch, so V4 is not stacked.
 
-| Task                                      | Model  | Thread                                                                                                                                                                                                           |
-| ----------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 8 new strings in eight languages          | Sonnet | `[V4 translation top-up](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3Ae20db198-b123-4202-a982-0647da13b67f)` |
-| Bug review of the V4 diff                 | Fable  | `[V4 bug review](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3A7aa7e5a5-cc3a-4756-958f-12387fdaf183)`         |
-| Simplicity review of `src/` and `styles/` | Fable  | `[V4 simplicity review](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3A518cec42-f0ef-4b6e-a8b7-aef10411fb0d)`  |
-| Spec review against the plans             | Sonnet | `[V4 spec review](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3A559bb0c4-b921-4f57-bdc7-6865fae953bc)`        |
+Running, each in its own worktree (`git worktree list`), committing after each item:
+
+| Task                                                                                                                                                                      | Model  | Thread                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bugs (pairing with a locked keyring, sources after `disable()`), plan gaps (ear radius, signal count in the leak test, scenario 1 as one test), simplifications in `src/` | Fable  | `[V4 fix review findings (source)](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3A5917bfb2-f88f-486c-b562-39a871f94188)`   |
+| Release and nightly workflows, screenshots in two accents, `docs/verified.md`, checklists, `CONTRIBUTING.md`                                                              | Sonnet | `[V4 fix review findings (CI, docs)](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3Ae14ba543-8296-4190-b87b-64e6eb629abc)` |
 
 ## Next
 
-1. Fix the findings of the three reviews together with the two violations in `docs/ego-checklist.md` (timeouts
-   that outlive `disable()` in `src/modules/upcoming/`, `run_dispose()` without a reason) and the gaps in
-   `docs/verified.md` (private shell members of the calendar, five shell modules).
-2. Full gate once more on a quiet machine (`pnpm run test:shell`, `scripts/measure.sh`, `scripts/shots.sh`).
-3. Open the V4 pull request against `main` once the V3 pull request (#5) is merged; if it is still open, say
-   clearly that V4 is stacked on #5 and must be merged after it.
+1. Merge both branches into `phase/v4-hardening`; update `docs/ego-checklist.md` rows the source fixes made
+   stale.
+2. Full gate once on a quiet machine (`pnpm run test:shell`, `scripts/measure.sh`, `scripts/shots.sh`); a
+   short re-check by a fresh agent of the blocking finding (pairing with a locked keyring).
+3. Open the V4 pull request against `main` (not stacked). Only the user merges.
 
 ## Open items carried forward
 
