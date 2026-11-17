@@ -53,6 +53,13 @@ describe('texts', () => {
     ).toBe('Mum: 1 < 2 && link\nnext');
     expect(plainBody('a &#228; &#xe4; &unknown;', true)).toBe('a ä ä &unknown;');
     expect(plainBody('<b>kept</b>', false)).toBe('<b>kept</b>');
+  });
+
+  it('reads an entity that is no character as U+FFFD and never throws', () => {
+    expect(plainBody('a&#x110000;b', true)).toBe('a\ufffdb');
+    expect(plainBody('&#1114112; &#99999999999999999999;', true)).toBe('\ufffd \ufffd');
+    expect(plainBody('&#xd800; &#57343; &#0; &#x0;', true)).toBe('\ufffd \ufffd \ufffd \ufffd');
+    expect(plainBody('&#x10ffff; &#x1F600;', true)).toBe('\u{10ffff} \u{1f600}');
     expect(plainBody(null, true)).toBe('');
   });
 

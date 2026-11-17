@@ -48,6 +48,13 @@ export function arrange<T extends Listed>(items: readonly T[], expanded: boolean
   return result;
 }
 
+/** The character of a numeric entity; U+FFFD for what is no character: 0, surrogates, past U+10FFFF. */
+function codePoint(digits: string, radix: number): string {
+  const code = parseInt(digits, radix);
+  const valid = code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff);
+  return valid ? String.fromCodePoint(code) : '\ufffd';
+}
+
 const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
 
 /** The body as plain text. Apps may send the small markup of the notification spec: tags go, entities are read. */
@@ -59,10 +66,8 @@ export function plainBody(body: string | null | undefined, markup: boolean): str
     .replace(/<\/?[a-z][^<>]*>/gi, '')
     .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, name: string) => {
       const lower = name.toLowerCase();
-      if (lower.startsWith('#x'))
-        return String.fromCodePoint(parseInt(lower.slice(2), 16) || 0xfffd);
-      if (lower.startsWith('#'))
-        return String.fromCodePoint(parseInt(lower.slice(1), 10) || 0xfffd);
+      if (lower.startsWith('#x')) return codePoint(lower.slice(2), 16);
+      if (lower.startsWith('#')) return codePoint(lower.slice(1), 10);
       return ENTITIES[lower] ?? match;
     })
     .trim();

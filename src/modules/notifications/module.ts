@@ -69,6 +69,7 @@ class Notifications implements VisorModule {
   private expanded = false;
 
   private renderLater = 0;
+  private reported = false;
   private tick = 0;
 
   enable(ctx: ModuleContext): void {
@@ -312,7 +313,22 @@ class Notifications implements VisorModule {
     }
 
     visible.forEach(({ entry, app }, index) => {
-      const props = this.rowProps(entry, app, now, opts);
+      let props: RowProps;
+      try {
+        props = this.rowProps(entry, app, now, opts);
+      } catch (e) {
+        // One notification that cannot be read does not take the list down.
+        if (!this.reported) {
+          this.reported = true;
+          logError(e as Error, 'Visor: notifications');
+        }
+        props = {
+          icon: ICON,
+          title: app,
+          actions: [],
+          activate: () => this.activate(() => entry.notification.activate()),
+        };
+      }
       let row = this.rows.get(entry.notification);
       if (row) {
         row.update(props);
