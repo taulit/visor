@@ -1,0 +1,107 @@
+/*
+ * Search: the list of results. It floats over the columns, 6 px below the
+ * search row (56 px), as wide as that row. The tokens are explained in
+ * 20-kit.css.
+ */
+.visor-search-overlay {
+  margin: 62px 8px 0;
+  padding: 6px;
+  border-radius: 16px;
+  box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.6);
+}
+/* Longer lists scroll inside; the sheet grows at most this far for them. */
+.visor-results-scroll {
+  max-height: 460px;
+}
+.visor-result-group {
+  padding: 8px 10px 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.visor-result {
+  padding: 8px 10px;
+  border-radius: 11px;
+  spacing: 12px;
+}
+.visor-result-tile {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+.visor-result-icon {
+  icon-size: 16px;
+}
+.visor-result-icon.app {
+  icon-size: 22px;
+}
+.visor-result-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.visor-result-title.large {
+  font-size: 16px;
+}
+.visor-result-subtitle {
+  font-size: 11.5px;
+}
+.visor-result-hint {
+  font-size: 11px;
+}
+.visor-result.quiet .visor-result-title {
+  font-weight: 400;
+}
+
+/* --- Colours on a dark panel --- */
+.visor-dark .visor-search-overlay {
+  background-color: #232327;
+  color: #f5f5f7;
+}
+.visor-dark .visor-result-tile {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+.visor-dark .visor-result-subtitle {
+  color: rgba(245, 245, 247, 0.6);
+}
+.visor-dark .visor-result-group,
+.visor-dark .visor-result-hint,
+.visor-dark .visor-result.quiet .visor-result-title {
+  color: rgba(245, 245, 247, 0.36);
+}
+
+/* --- Colours on a light panel --- */
+.visor-light .visor-search-overlay {
+  background-color: #ffffff;
+  color: #1d1d1f;
+}
+.visor-light .visor-result-tile {
+  background-color: rgba(0, 0, 0, 0.09);
+}
+.visor-light .visor-result-subtitle {
+  color: rgba(29, 29, 31, 0.6);
+}
+.visor-light .visor-result-group,
+.visor-light .visor-result-hint,
+.visor-light .visor-result.quiet .visor-result-title {
+  color: rgba(29, 29, 31, 0.38);
+}
+
+/* --- High contrast: quiet text at 80 % --- */
+.visor-dark.visor-hc .visor-result-subtitle,
+.visor-dark.visor-hc .visor-result-group,
+.visor-dark.visor-hc .visor-result-hint,
+.visor-dark.visor-hc .visor-result.quiet .visor-result-title {
+  color: rgba(245, 245, 247, 0.8);
+}
+.visor-light.visor-hc .visor-result-subtitle,
+.visor-light.visor-hc .visor-result-group,
+.visor-light.visor-hc .visor-result-hint,
+.visor-light.visor-hc .visor-result.quiet .visor-result-title {
+  color: rgba(29, 29, 31, 0.8);
+}
+
+/* The selected line: the accent at 22 %, the same on both panels. */
+.visor-dark .visor-result.selected,
+.visor-light .visor-result.selected {
+  background-color: st-transparentize(-st-accent-color, 0.78);
+}

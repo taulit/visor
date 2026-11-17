@@ -29,6 +29,10 @@ export interface SearchMount {
   /** Shows a widget right below the search row, above the columns. Null takes it away. */
   setOverlay(widget: St.Widget | null): void;
   clearQuery(): void;
+  /** Replaces the text of the entry and reports it at once; the cursor goes to the end. */
+  setQuery(query: string): void;
+  /** Gets every key press in the entry first. True means the key was used up. */
+  setKeyHandler(handler: ((event: Clutter.Event) => boolean) | null): void;
 }
 
 export interface SheetCallbacks {
@@ -95,6 +99,7 @@ export class Sheet implements SearchMount {
   private overlay: St.Bin | null = null;
   private overlayChild: St.Widget | null = null;
   private queryHandler: ((query: string) => void) | null = null;
+  private keyHandler: ((event: Clutter.Event) => boolean) | null = null;
   private reportedQuery = '';
   private debounce = 0;
 
@@ -160,9 +165,18 @@ export class Sheet implements SearchMount {
   }
 
   clearQuery(): void {
+    this.setQuery('');
+  }
+
+  setQuery(query: string): void {
     if (!this.entry) return;
-    this.entry.set_text('');
+    this.entry.set_text(query);
+    this.entry.clutter_text.set_cursor_position(-1);
     this.reportQuery();
+  }
+
+  setKeyHandler(handler: ((event: Clutter.Event) => boolean) | null): void {
+    this.keyHandler = handler;
   }
 
   // --- state ---
@@ -285,7 +299,7 @@ export class Sheet implements SearchMount {
     this.cancelMeasure();
     if (this.debounce) GLib.source_remove(this.debounce);
     this.debounce = 0;
-    this.queryHandler = null;
+    this.queryHandler = this.keyHandler = null;
     if (this.root) {
       St.FocusManager.get_for_stage(global.stage).remove_group(this.root);
       this.root.destroy();
@@ -350,6 +364,8 @@ export class Sheet implements SearchMount {
     searchRow.add_child(entry);
     entry.clutter_text.connect('text-changed', () => this.queryChanged());
     entry.clutter_text.connect('key-press-event', (_actor, event) => {
+      const handler = this.keyHandler;
+      if (handler && ownGuard.build(() => handler(event))) return Clutter.EVENT_STOP;
       if (event.get_key_symbol() !== Clutter.KEY_Down) return Clutter.EVENT_PROPAGATE;
       this.scroll!.navigate_focus(null, St.DirectionType.TAB_FORWARD, false);
       return Clutter.EVENT_STOP;
