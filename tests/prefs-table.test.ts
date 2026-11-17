@@ -18,14 +18,9 @@ function declared(): Map<string, string> {
 }
 
 describe('table of built-in modules for the settings window', () => {
-  // Modules that are in the table but whose files are not in this branch yet.
-  const NOT_MERGED_YET = ['t3'];
-
   it('lists every module of src/modules with its slot', () => {
     const table = new Map(BUILTIN_MODULES.map(module => [module.id, module.slot]));
-    expect(table).toEqual(
-      new Map([...declared(), ...NOT_MERGED_YET.map(id => [id, table.get(id)!] as const)]),
-    );
+    expect(table).toEqual(declared());
   });
 
   it('has an id, an icon and a name for each module, once', () => {
