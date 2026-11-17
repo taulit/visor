@@ -34,10 +34,10 @@
   - Peek-Priorität
   - Katalog-Suche (`catalog-search.ts`)
 - **Shell-Tests:**
-  - `scripts/nested.sh` startet eine headless Shell: `dbus-run-session -- gnome-shell --headless --wayland --virtual-monitor 1920x1080` *(prüfen: Flags in Shell 50; alternativ `--devkit`)*. Die Extension wird mit `gnome-extensions install --force` und `enable` geladen.
+  - `scripts/nested.sh` startet eine headless Shell in einer Sandbox (eigenes HOME, eigene XDG-Ordner, eigener D-Bus): `dbus-run-session -- gnome-shell --headless --wayland --no-x11 --virtual-monitor 1920x1080` (bestätigt). Die Extension wird in die Sandbox kopiert und dort über GSettings aktiviert. So berührt kein Test die laufende Sitzung.
   - `scripts/shell-shot.sh <szenario>`:
-    1. Setzt Zustände über eine nur im Debug-Build vorhandene D-Bus-Schnittstelle `io.github.taulit.Visor.Debug` (`SetState`, `InjectNotification`, `StartTimer`, `MockMedia`).
-    2. Macht dann einen Screenshot über `org.gnome.Shell.Screenshot`.
+    1. Setzt Zustände über die D-Bus-Schnittstelle `io.github.taulit.Visor.Debug` (`Eval`). Sie steckt in einer eigenen Test-Extension (`tests/shell-helper/`), die nur die Sandbox lädt. Visor selbst enthält keinen Debug-Code.
+    2. Macht dann einen Screenshot über `Screenshot` derselben Schnittstelle (`org.gnome.Shell.Screenshot` lässt fremde Aufrufer nicht zu).
   - Szenarien: idle, hint, peek mit 4 Chips, open mit allen Modulen, open nur Ausblick, Suche mit Ergebnissen, Agent wartend aufgeklappt, Modulansicht, Notizen-Dock. Jeweils hell und dunkel und mit 2 Akzentfarben.
   - Screenshots landen in `docs/screenshots/`. Der Orchestrator vergleicht sie mit den Prototypen.
   - Leck-Test: 50× enable/disable. Danach muss gelten:

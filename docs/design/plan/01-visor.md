@@ -43,7 +43,7 @@ visor/
       upcoming.ts  notifications.ts
     lib/                  kleine Helfer: signals.ts (SignalTracker), i18n.ts, http.ts (eine Soup.Session)
   schemas/org.gnome.shell.extensions.visor.gschema.xml
-  stylesheet.css  stylesheet-dark.css  stylesheet-light.css   (Shell-Unterstützung prüfen)
+  stylesheet.css          eine Datei; hell/dunkel/hoher Kontrast über Klassen, die theme.ts setzt (verified.md §3)
   po/ (de.po, visor.pot)
   sdk/                    npm-Paket @taulit/visor-module (Typen + connectVisor-Helfer)
   examples/module-template/
@@ -57,7 +57,7 @@ Typen kommen von `@girs/gnome-shell` und den passenden `@girs/*`-Paketen für GN
 ## 2. Einbau in die Leiste
 
 - **Datumsmenü ersetzen:**
-  - `Main.panel.statusArea.dateMenu.container` verstecken.
+  - `Main.panel.statusArea.dateMenu.container` verstecken und bei `notify::visible` erneut verstecken (die Leiste zeigt ihn bei jedem Moduswechsel wieder).
   - Einen eigenen Hals-Aktor in `Main.panel._centerBox` an derselben Stelle einfügen.
   - Bei `disable()` den Aktor entfernen und das Datumsmenü wieder zeigen.
 - **Uhr:**
@@ -67,7 +67,7 @@ Typen kommen von `@girs/gnome-shell` und den passenden `@girs/*`-Paketen für GN
     - Bernstein, wenn ein Agent wartet.
     - Sonst ist er nicht sichtbar.
 - **Notch-Körper:**
-  - Ein `St.Widget` über `Main.layoutManager.addTopChrome(actor, { affectsInputRegion: true, trackFullscreen: true })`.
+  - Ein `St.Widget` über `Main.layoutManager.addChrome(actor, { trackFullscreen: true })`, direkt über `panelBox` einsortiert. `affectsInputRegion` gibt es in Shell 50 nicht mehr (verified.md §1).
   - Er wird mittig unter dem Hals auf dem Hauptmonitor positioniert und folgt `monitors-changed`.
 - **Ohren** (konkave Übergänge links und rechts):
   - Je ein `St.DrawingArea` mit Cairo, Radius 16 px im offenen Zustand und 7 px bei Hover.
@@ -90,7 +90,7 @@ Typen kommen von `@girs/gnome-shell` und den passenden `@girs/*`-Paketen für GN
 | open | Klick auf Hals oder Chip, Super+V | 960 × Inhaltshöhe (max. 820 bzw. Monitorhöhe − 120), Radius 30 | Sheet |
 
 - **Federkurve:**
-  - Eine gedämpfte Feder (Steifigkeit ≈ 300, Dämpfung ≈ 26, Masse 1) als `Clutter.Timeline` mit eigener Fortschrittsfunktion *(prüfen: `set_progress_func` in Clutter 50; sonst Feder in `new-frame` selbst rechnen)*. Sie entspricht der CSS-Kurve `--spring` des Prototyps.
+  - Eine gedämpfte Feder (Steifigkeit ≈ 300, Dämpfung ≈ 26, Masse 1) als `Clutter.Timeline`, die Feder wird in `new-frame` selbst gerechnet (`set_progress_func` ist unter GJS 1.88 unbrauchbar, verified.md §2). Sie entspricht der CSS-Kurve `--spring` des Prototyps.
   - Dauer: hint 500 ms, peek/open 620 ms, schließen 400 ms mit ease-out (`EASE_OUT_QUINT`).
 - **Billig animieren:**
   - Animiert werden nur Breite und Höhe eines Clip-Containers.
@@ -106,7 +106,7 @@ Typen kommen von `@girs/gnome-shell` und den passenden `@girs/*`-Paketen für GN
 
 ## 4. Theme
 
-- **Akzentfarbe:** `St.Settings.get().accent_color` *(prüfen)* oder die CSS-Variable `-st-accent-color` im Stylesheet. Bei Änderung werden die Farben live neu gesetzt.
+- **Akzentfarbe:** `St.ThemeContext.get_for_stage(global.stage).get_accent_color()` in JS und `-st-accent-color` im Stylesheet (verified.md §3). Bei Änderung werden die Farben live neu gesetzt.
 - **Bernstein `#f6a33b`** ist die einzige zweite Farbe und bedeutet nur „wartet auf dich“.
 - **Schrift:** die Schrift der Shell (Adwaita Sans), keine eigene. Größen in 04.
 - **Struktur:** Hairlines statt Karten. Flächen gibt es nur für Hover (`surface`), Eingaben und Buttons.
@@ -144,7 +144,7 @@ Jedes Modul ist eine Datei bzw. ein Ordner unter `src/modules/` und benutzt nur 
 
 ### 6.1 Medien (Jetzt)
 
-- **Quelle:** Wiederverwendung von `resource:///org/gnome/shell/ui/mpris.js` (MprisSource bzw. MprisPlayer) *(prüfen: Exportnamen in Shell 50)*. Fallback ist ein eigener MPRIS-Proxy über `Gio.DBusProxy`.
+- **Quelle:** ein eigener MPRIS-Proxy über `Gio.DBusProxy`. `ui/mpris.js` der Shell kennt weder Position noch Länge und lässt sich nicht abbauen (verified.md §7).
 - **Zeile:**
   - Cover 36 px mit Radius 8, Titel, Künstler.
   - Rechts ⏮ ⏯ ⏭. Abspielen ist ein gefüllter Kreis (`play`-Stil).
@@ -214,15 +214,15 @@ Zeigt laufende Agenten-Sessions des lokalen T3-Code-Servers. Freigaben gehen dir
 
 ### 6.5 Als Nächstes (Ausblick)
 
-- **Quelle:** die Kalenderdaten, die die Shell schon hat. `DBusEventSource` aus `resource:///org/gnome/shell/ui/calendar.js` über `org.gnome.Shell.CalendarServer` *(prüfen)*. Geburtstage kommen über den EDS-Kalender „Geburtstage und Jahrestage“ aus derselben Quelle.
+- **Quelle:** die Kalenderdaten, die die Shell schon hat. `DBusEventSource` aus `resource:///org/gnome/shell/ui/calendar.js` über `org.gnome.Shell.CalendarServer` (bestätigt, verified.md §9). Der Dienst liefert nur Titel, Beginn und Ende. Geburtstage kommen über den EDS-Kalender „Geburtstage und Jahrestage“ aus derselben Quelle.
 - **Anzeige:**
   - Die nächsten max. 3 Termine in den kommenden 7 Tagen, laufende zuerst.
   - Spalte „wann“ 52 px: `Jetzt`, `15:00`, `Morgen`, `Fr`.
   - Ganztägiges ohne Uhrzeit.
 - **Beitreten:**
-  - Erkennt Meet-, Teams-, Zoom- und Jitsi-Links in Ort oder Beschreibung.
+  - Erkennt Meet-, Teams-, Zoom- und Jitsi-Links in Ort oder Beschreibung. Beides holt Visor asynchron über ECal, erst bei geöffnetem Panel und nur für Termine im Beitreten-Fenster. Fehlt die Typelib, gibt es keinen Knopf.
   - Ab 10 min vor Beginn erscheint der Knopf `Beitreten` (primär).
-- **Klick auf eine Zeile:** öffnet GNOME Kalender beim Termin (`gnome-calendar --uuid`) *(prüfen)*.
+- **Klick auf eine Zeile:** öffnet GNOME Kalender beim Termin (`gnome-calendar --uuid <quelle>:<uid>[:<rid>]`, bestätigt).
 - **Leer:** „Heute nichts mehr“ in leiser Schrift.
 
 ### 6.6 Mitteilungen (Ausblick)
@@ -254,7 +254,7 @@ Ein Feld, ein Overlay mit Ergebnissen unter der Suchzeile, darunter **keine** Vo
 3. **Apps:** `Shell.AppSystem` und `Gio.AppInfo` mit der Fuzzy-Logik der Shell, max. 5. Enter startet die App.
 4. **Module:** Suchquellen fremder Module, etwa Notizen über das Notizen-Modul.
 5. **GNOME-Suchanbieter:**
-   - Über `remoteSearch.loadRemoteSearchProviders()` *(prüfen)*. Das respektiert `org.gnome.desktop.search-providers` (deaktivierte, Reihenfolge).
+   - Über `remoteSearch.loadRemoteSearchProviders(searchSettings)` (bestätigt). Das respektiert `org.gnome.desktop.search-providers` (deaktivierte, Reihenfolge).
    - Max. 3 pro Anbieter, mit Symbol und Name des Anbieters.
    - Gibt es für eine App ein Visor-Modul mit eigener Suche (z. B. Sheaf), wird ihr Remote-Anbieter ausgeblendet. So erscheint nichts doppelt.
 
@@ -282,7 +282,7 @@ Ein Feld, ein Overlay mit Ergebnissen unter der Suchzeile, darunter **keine** Vo
 Ein `Adw.PreferencesWindow` mit drei Seiten:
 
 1. **Allgemein:**
-   - Tastenkürzel öffnen (Standard Super+V)
+   - Tastenkürzel öffnen. Visor übernimmt das Kürzel der Shell für die Mitteilungsliste (Standard Super+V und Super+M), solange es aktiv ist. Ein zusätzliches eigenes Kürzel ist einstellbar (Standard leer), verified.md §5
    - „Vorschau beim Darüberfahren“
    - Verzögerung bis Vorschau (380 ms)
    - „Bei Ereignissen kurz zeigen“

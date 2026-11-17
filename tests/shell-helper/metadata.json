@@ -1,0 +1,7 @@
+{
+  "uuid": "visor-test-helper@taulit.github.io",
+  "name": "Visor Test Helper",
+  "description": "Test-only helper for the sandboxed headless shell used by scripts/nested.sh. Never installed for users and not part of the store ZIP.",
+  "shell-version": ["50", "51"],
+  "url": "https://github.com/taulit/visor"
+}

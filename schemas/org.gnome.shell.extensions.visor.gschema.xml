@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="visor">
+  <schema id="org.gnome.shell.extensions.visor" path="/org/gnome/shell/extensions/visor/">
+    <key name="open-shortcut" type="as">
+      <default>[]</default>
+      <summary>Additional shortcut</summary>
+      <description>Extra keyboard shortcuts that open Visor. The shortcut of the shell for the notification list (Super+V by default) always opens it.</description>
+    </key>
+    <key name="hover-preview" type="b">
+      <default>true</default>
+      <summary>Hover preview</summary>
+      <description>Peek at the island content when the pointer rests on it.</description>
+    </key>
+    <key name="peek-delay" type="i">
+      <range min="100" max="2000"/>
+      <default>380</default>
+      <summary>Peek delay</summary>
+      <description>Time in milliseconds the pointer must rest on the island before it peeks.</description>
+    </key>
+    <key name="flash-on-events" type="b">
+      <default>true</default>
+      <summary>Flash on events</summary>
+      <description>Briefly expand the island when a module reports an event.</description>
+    </key>
+    <key name="width" type="s">
+      <choices>
+        <choice value="compact"/>
+        <choice value="normal"/>
+        <choice value="wide"/>
+      </choices>
+      <default>'normal'</default>
+      <summary>Island width</summary>
+      <description>Width preset of the expanded island.</description>
+    </key>
+    <key name="disabled-modules" type="as">
+      <default>[]</default>
+      <summary>Disabled modules</summary>
+      <description>Identifiers of modules that are turned off.</description>
+    </key>
+    <key name="module-order" type="as">
+      <default>[]</default>
+      <summary>Module order</summary>
+      <description>Identifiers of modules in the order they are shown.</description>
+    </key>
+    <key name="timers" type="s">
+      <default>'[]'</default>
+      <summary>Timers</summary>
+      <description>JSON-encoded list of saved timers.</description>
+    </key>
+    <key name="currency-rates" type="b">
+      <default>true</default>
+      <summary>Currency rates</summary>
+      <description>Fetch exchange rates online for the unit and currency converter.</description>
+    </key>
+    <key name="debug-metrics" type="b">
+      <default>false</default>
+      <summary>Debug metrics</summary>
+      <description>Log performance metrics of the extension to the journal.</description>
+    </key>
+  </schema>
+</schemalist>

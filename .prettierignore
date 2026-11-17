@@ -1,0 +1,8 @@
+build
+dist
+docs/design
+pnpm-lock.yaml
+.shell-src
+po
+node_modules
+LICENSE
