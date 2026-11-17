@@ -20,8 +20,9 @@
 
 /* --- Section --- */
 .visor-section-header {
-  height: 20px;
+  min-height: 20px;
   margin-bottom: 4px;
+  spacing: 12px;
 }
 .visor-section-title {
   font-size: 12px;
@@ -29,6 +30,12 @@
 }
 .visor-section-links {
   spacing: 10px;
+}
+.visor-section-toggle {
+  spacing: 8px;
+}
+.visor-section-toggle-label {
+  font-size: 11.5px;
 }
 
 /* --- Row --- */
@@ -63,8 +70,9 @@
   border-radius: 8px;
   background-size: cover;
 }
+/* At least this wide; core/kit.ts widens the column for a longer text. */
 .visor-row-lead {
-  width: 52px;
+  min-width: 52px;
   font-size: 12px;
   font-weight: 600;
   font-feature-settings: 'tnum';
@@ -225,6 +233,7 @@
   color: rgba(245, 245, 247, 0.36);
 }
 .visor-dark .visor-row-icon.symbolic,
+.visor-dark .visor-section-toggle-label,
 .visor-dark .visor-row-lead,
 .visor-dark .visor-row-subtitle,
 .visor-dark .visor-row-meta,
@@ -291,6 +300,7 @@
   color: rgba(29, 29, 31, 0.38);
 }
 .visor-light .visor-row-icon.symbolic,
+.visor-light .visor-section-toggle-label,
 .visor-light .visor-row-lead,
 .visor-light .visor-row-subtitle,
 .visor-light .visor-row-meta,
@@ -347,6 +357,7 @@
 
 /* --- High contrast on a dark panel: muted text at 80 % --- */
 .visor-dark.visor-hc .visor-row-icon.symbolic,
+.visor-dark.visor-hc .visor-section-toggle-label,
 .visor-dark.visor-hc .visor-row-lead,
 .visor-dark.visor-hc .visor-row-subtitle,
 .visor-dark.visor-hc .visor-row-meta,
@@ -362,6 +373,7 @@
 
 /* --- High contrast on a light panel: muted text at 80 % --- */
 .visor-light.visor-hc .visor-row-icon.symbolic,
+.visor-light.visor-hc .visor-section-toggle-label,
 .visor-light.visor-hc .visor-row-lead,
 .visor-light.visor-hc .visor-row-subtitle,
 .visor-light.visor-hc .visor-row-meta,

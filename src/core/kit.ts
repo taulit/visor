@@ -18,6 +18,7 @@ import type {
   KitToggle,
   PeekChip,
   RowProps,
+  ToggleProps,
 } from '../api.js';
 
 /** Runs code of a module so that an exception cannot leave it. */
@@ -349,6 +350,39 @@ function setIcon(icon: St.Icon, value: string | Gio.Icon): void {
   }
 }
 
+/** Rows by their actor, to find the rows next to one. */
+const rowsByActor = new WeakMap<Clutter.Actor, Row>();
+
+/**
+ * The `lead` column is as wide as the stylesheet says, or as the longest text
+ * in it: 'Tomorrow' is wider than '15:00'. The rows of one container share
+ * that width, so their titles line up.
+ */
+function alignLeads(container: Clutter.Actor | null): void {
+  if (!container) return;
+  const labels: St.Label[] = [];
+  for (const child of container.get_children()) {
+    const label = rowsByActor.get(child)?.leadLabel;
+    // Off the stage a label has no style yet, so neither its font nor its width is known.
+    if (label?.get_stage()) labels.push(label);
+  }
+  let widest = 0;
+  for (const label of labels) {
+    widest = Math.max(
+      widest,
+      label.get_theme_node().get_min_width(),
+      Math.ceil(label.clutter_text.get_preferred_width(-1)[1]),
+    );
+  }
+  for (const label of labels) label.set_width(widest);
+}
+
+/** Options only Visor itself uses; modules build rows from RowProps alone. */
+export interface RowOptions {
+  /** A widget at the very end of the row, such as the switch in the list of modules. */
+  trailing?: St.Widget;
+}
+
 export class Row implements KitRow {
   /** Takes the place in the column. */
   readonly actor: St.Widget;
@@ -397,6 +431,12 @@ export class Row implements KitRow {
   ) {
     this.props = cleanRow(props);
     this.actor = new St.Widget({ layout_manager: new OutsetLayout(), x_expand: true });
+    rowsByActor.set(this.actor, this);
+    this.actor.connect('parent-set', (_actor, old: Clutter.Actor | null) => {
+      if (this.leadIs !== 'text') return;
+      alignLeads(old);
+      alignLeads(this.actor.get_parent());
+    });
     this.frame = new St.BoxLayout({
       style_class: 'visor-row',
       vertical: true,
@@ -449,6 +489,11 @@ export class Row implements KitRow {
     this.apply();
   }
 
+  /** The label of the `lead` text, null for a row with an icon or nothing in front. */
+  get leadLabel(): St.Label | null {
+    return this.lead instanceof St.Label ? this.lead : null;
+  }
+
   /** The actor that takes the focus when the keyboard moves to this row. */
   get focusTarget(): St.Widget {
     return this.main;
@@ -481,15 +526,19 @@ export class Row implements KitRow {
     const { props } = this;
     const kind = leadKind(props);
     if (kind !== this.leadIs) {
+      const wasText = this.leadIs === 'text';
       this.lead?.destroy();
       this.lead = null;
       this.coverUri = '';
       this.leadIs = kind;
+      if (wasText) alignLeads(this.actor.get_parent());
       if (kind === 'text') {
         this.lead = new St.Label({
           style_class: 'visor-row-lead',
           y_align: Clutter.ActorAlign.CENTER,
         });
+        // The font is known once the label has its style, and may change with it.
+        this.lead.connect('style-changed', () => alignLeads(this.actor.get_parent()));
       } else if (kind === 'picture') {
         this.lead = new St.Widget({
           style_class: 'visor-row-cover',
@@ -506,7 +555,10 @@ export class Row implements KitRow {
     if (!this.lead) return;
     if (this.lead instanceof St.Label) {
       const lead = props.lead ?? '';
-      if (this.lead.text !== lead) this.lead.text = lead;
+      if (this.lead.text !== lead) {
+        this.lead.text = lead;
+        alignLeads(this.actor.get_parent());
+      }
     } else if (this.lead instanceof St.Icon) {
       setIcon(this.lead, props.icon!);
     } else {
@@ -828,13 +880,14 @@ export class Row implements KitRow {
 class Section implements KitSection {
   readonly actor: St.Widget;
   readonly body: St.Widget;
+  readonly toggle: KitToggle | null = null;
   private title: St.Label;
   private linksBox: St.BoxLayout;
   private links: ActionList;
   /** The link that has the keyboard focus. */
   private focused: Clutter.Actor | null = null;
 
-  constructor(props: { title: string; links?: Action[] }, guard: Guard) {
+  constructor(props: { title: string; links?: Action[]; toggle?: ToggleProps }, guard: Guard) {
     this.actor = new St.BoxLayout({
       style_class: 'visor-section',
       vertical: true,
@@ -858,6 +911,24 @@ class Section implements KitSection {
       opacity: 0,
     });
     header.add_child(this.linksBox);
+    if (props.toggle) {
+      // Always visible, with its name next to it: a bare switch says nothing.
+      const box = new St.BoxLayout({
+        style_class: 'visor-section-toggle',
+        y_align: Clutter.ActorAlign.CENTER,
+      });
+      const label = new St.Label({
+        style_class: 'visor-section-toggle-label',
+        text: str(props.toggle.label),
+        y_align: Clutter.ActorAlign.CENTER,
+      });
+      const toggle = new Toggle(props.toggle, guard);
+      toggle.actor.label_actor = label;
+      box.add_child(label);
+      box.add_child(toggle.actor);
+      header.add_child(box);
+      this.toggle = toggle;
+    }
     this.actor.add_child(header);
     this.body = new St.BoxLayout({
       style_class: 'visor-section-body',
@@ -899,10 +970,7 @@ class Toggle implements KitToggle {
   readonly actor: St.Button;
   private knob: St.Widget;
 
-  constructor(
-    props: { label: string; active: boolean; onChange(active: boolean): void },
-    guard: Guard,
-  ) {
+  constructor(props: ToggleProps, guard: Guard) {
     this.knob = new St.Widget({ style_class: 'visor-toggle-knob' });
     // The track has the size of the inside of the switch and a fixed layout,
     // so the knob starts at its edge whatever the button does with its child.

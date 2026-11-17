@@ -22,6 +22,7 @@ shots=(
     "empty=content-empty"
     "search=search-results"
     "search-convert=search-convert"
+    "ahead=modules-ahead"
 )
 
 fail=0

@@ -70,6 +70,9 @@ shell_eval '(() => {
         // One row and one chip. Modules do not survive disable(), so tests
         // call this again after they enabled the extension anew.
         register() {
+            // These tests are about the notch; the built-in modules would add
+            // sections and chips of their own.
+            for (const entry of visor.content.registry.all()) visor.api.unregister(entry.module.id);
             visor.api.register({
                 id: "probe",
                 name: "Probe",

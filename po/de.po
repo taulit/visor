@@ -203,28 +203,85 @@ msgstr "Timer abgelaufen"
 
 #: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
 msgid "Today"
-msgstr ""
+msgstr "Heute"
 
 #: build/modules/upcoming/when.js:40
 msgid "Tomorrow"
-msgstr ""
+msgstr "Morgen"
 
 #: build/modules/upcoming/when.js:59
-#, fuzzy
 msgid "now"
-msgstr "Jetzt"
+msgstr "jetzt"
 
 #: build/modules/upcoming/when.js:61
 #, javascript-format
 msgid "%d min ago"
 msgid_plural "%d min ago"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "vor %d Min."
+msgstr[1] "vor %d Min."
 
 #: build/modules/upcoming/when.js:66
 msgid "Yesterday"
-msgstr ""
+msgstr "Gestern"
 
 #: build/prefs.js:5
 msgid "General"
 msgstr "Allgemein"
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/modules/notifications/module.js:19
+#: build/modules/notifications/module.js:91
+msgid "Notifications"
+msgstr "Mitteilungen"
+
+#: build/modules/notifications/module.js:93
+msgid "Do Not Disturb"
+msgstr "Nicht stören"
+
+#: build/modules/notifications/module.js:100
+msgid "No new notifications"
+msgstr "Keine neuen Mitteilungen"
+
+#: build/modules/notifications/module.js:281
+msgid "Show less"
+msgstr "Weniger anzeigen"
+
+#: build/modules/notifications/module.js:283
+#, javascript-format
+msgid "Show all %d"
+msgstr "Alle %d anzeigen"
+
+#: build/modules/notifications/module.js:306
+msgid "Clear all"
+msgstr "Alle löschen"
+
+#: build/modules/notifications/module.js:328
+msgid "Dismiss"
+msgstr "Entfernen"
+
+#: build/modules/upcoming/module.js:107
+msgid "Nothing else today"
+msgstr "Heute nichts mehr"
+
+#: build/modules/upcoming/module.js:189
+msgid "Join"
+msgstr "Beitreten"
+
+#: build/modules/upcoming/plan.js:21
+#, javascript-format
+msgid "in %d min"
+msgstr "in %d Min."
+
+#: build/modules/upcoming/plan.js:23
+#, javascript-format
+msgid "in %d h"
+msgstr "in %d Std."
+
+#: build/modules/upcoming/plan.js:24
+#, javascript-format
+msgid "in %d h %d min"
+msgstr "in %d Std. %d Min."
+
+#: build/modules/upcoming/plan.js:29
+msgid "all day"
+msgstr "ganztägig"

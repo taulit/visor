@@ -41,6 +41,12 @@ describe('findMeetingLink', () => {
     ['https://meet.jit.si/StandupRoom', 'https://meet.jit.si/StandupRoom', 'jitsi'],
     ['https://meet.jit.si/Standup/', 'https://meet.jit.si/Standup/', 'jitsi'],
     ['https://8x8.vc/StandupRoom', 'https://8x8.vc/StandupRoom', 'jitsi'],
+    [
+      'https://8x8.vc/vpaas-magic-cookie-1234/StandupRoom',
+      'https://8x8.vc/vpaas-magic-cookie-1234/StandupRoom',
+      'jitsi',
+    ],
+    ['https://8x8.vc/acme/standup/', 'https://8x8.vc/acme/standup/', 'jitsi'],
     ['https://meet.jit.si/Room#config.x=1,', 'https://meet.jit.si/Room#config.x=1', 'jitsi'],
   ];
 
@@ -62,6 +68,7 @@ describe('findMeetingLink', () => {
     ['jitsi on an unknown host', 'https://jitsi.example.org/Room'],
     ['jitsi.org with a long path', 'https://jitsi.org/downloads/ubuntu-debian-installations/'],
     ['8x8.vc with a long path', 'https://8x8.vc/a/b/c'],
+    ['jitsi.org with two segments', 'https://jitsi.org/user/room'],
     ['null', null],
     ['undefined', undefined],
   ];

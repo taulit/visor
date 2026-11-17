@@ -190,16 +190,27 @@ export interface Command {
 
 /** UI building blocks. Modules use only these, so everything follows the theme. */
 export interface Kit {
-  section(props: { title: string; links?: Action[] }): KitSection;
+  /**
+   * `toggle` puts a switch with its label at the right end of the header. Unlike
+   * the links it is always visible, such as 'Do Not Disturb' for notifications.
+   */
+  section(props: { title: string; links?: Action[]; toggle?: ToggleProps }): KitSection;
   row(props: RowProps): KitRow;
   button(action: Action): St.Widget;
   iconButton(action: Action & { icon: string }): St.Widget;
   /** A switch without visible text; `label` is its accessible name. */
-  toggle(props: { label: string; active: boolean; onChange(active: boolean): void }): KitToggle;
+  toggle(props: ToggleProps): KitToggle;
   progress(props: { value: number | 'indeterminate'; tone?: 'muted' | 'accent' }): KitProgress;
   /** Quiet line for a section without content, such as 'No new notifications'. */
   empty(text: string): St.Widget;
   chip(chip: PeekChip): St.Widget;
+}
+
+export interface ToggleProps {
+  label: string;
+  active: boolean;
+  /** The user moved the switch. */
+  onChange(active: boolean): void;
 }
 
 export interface KitSection {
@@ -208,6 +219,8 @@ export interface KitSection {
   body: St.Widget;
   /** Links on the right of the title; they appear on hover or keyboard focus of the section. */
   setLinks(links: Action[]): void;
+  /** The switch in the header, null when the section was built without `toggle`. */
+  readonly toggle: KitToggle | null;
 }
 
 export interface KitRow {
