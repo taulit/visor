@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:51+0100\n"
+"POT-Creation-Date: 2026-11-17 16:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +50,7 @@ msgstr ""
 msgid "Rates are loading"
 msgstr ""
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
 msgid "Modules"
 msgstr ""
 
@@ -505,35 +505,35 @@ msgstr ""
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr ""
 
-#: build/prefs/modules.js:97
+#: build/prefs/modules.js:96
 msgid "Discover"
 msgstr ""
 
-#: build/prefs/modules.js:133
+#: build/prefs/modules.js:132
 msgid "Move up"
 msgstr ""
 
-#: build/prefs/modules.js:134
+#: build/prefs/modules.js:133
 msgid "Move down"
 msgstr ""
 
-#: build/prefs/modules.js:137
+#: build/prefs/modules.js:136
 msgid "Change the order"
 msgstr ""
 
-#: build/prefs/modules.js:147
+#: build/prefs/modules.js:146
 msgid "Drag to change the order"
 msgstr ""
 
-#: build/prefs/modules.js:174
+#: build/prefs/modules.js:173
 msgid "Built for another version of Visor"
 msgstr ""
 
-#: build/prefs/modules.js:176
+#: build/prefs/modules.js:175
 msgid "Turned off in the extensions"
 msgstr ""
 
-#: build/prefs/modules.js:186
+#: build/prefs/modules.js:185
 msgid "Settings of the module"
 msgstr ""
 

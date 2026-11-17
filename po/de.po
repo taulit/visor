@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:51+0100\n"
+"POT-Creation-Date: 2026-11-17 16:54+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -47,7 +47,7 @@ msgstr "Wechselkurse sind ausgeschaltet"
 msgid "Rates are loading"
 msgstr "Kurse werden geladen"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "Module"
 
@@ -507,35 +507,35 @@ msgid "The rates come from the European Central Bank, at most once a day."
 msgstr ""
 "Die Kurse kommen von der Europäischen Zentralbank, höchstens einmal am Tag."
 
-#: build/prefs/modules.js:97
+#: build/prefs/modules.js:96
 msgid "Discover"
 msgstr "Entdecken"
 
-#: build/prefs/modules.js:133
+#: build/prefs/modules.js:132
 msgid "Move up"
 msgstr "Nach oben"
 
-#: build/prefs/modules.js:134
+#: build/prefs/modules.js:133
 msgid "Move down"
 msgstr "Nach unten"
 
-#: build/prefs/modules.js:137
+#: build/prefs/modules.js:136
 msgid "Change the order"
 msgstr "Reihenfolge ändern"
 
-#: build/prefs/modules.js:147
+#: build/prefs/modules.js:146
 msgid "Drag to change the order"
 msgstr "Ziehen, um die Reihenfolge zu ändern"
 
-#: build/prefs/modules.js:174
+#: build/prefs/modules.js:173
 msgid "Built for another version of Visor"
 msgstr "Für eine andere Version von Visor gebaut"
 
-#: build/prefs/modules.js:176
+#: build/prefs/modules.js:175
 msgid "Turned off in the extensions"
 msgstr "In den Erweiterungen ausgeschaltet"
 
-#: build/prefs/modules.js:186
+#: build/prefs/modules.js:185
 msgid "Settings of the module"
 msgstr "Einstellungen des Moduls"
 

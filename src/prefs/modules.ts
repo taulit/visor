@@ -17,8 +17,6 @@ import type { ForeignModule } from './foreign.js';
 import { openExtensionPrefs } from './shell-extensions.js';
 import { t3Group } from './t3.js';
 
-const BUILTIN_IDS = BUILTIN_MODULES.map(module => module.id);
-
 /** A module the window can switch off and put in order: it knows its id. */
 interface Managed {
   id: string;
