@@ -20,11 +20,15 @@ import { unfoldIcs } from './plan.js';
 const CONNECT_WAIT = 5;
 /** How long after the last lookup the connection is taken down; at once, the client still has work queued. */
 const CLOSE_DELAY_MS = 1000;
+/** A lookup that failed is tried again, but not sooner than this. */
+const RETRY_MS = 30_000;
 
 interface Libraries {
   EDataServer: typeof EDataServer;
   ECal: typeof ECal;
 }
+
+const nowMs = (): number => GLib.get_monotonic_time() / 1000;
 
 /** One asynchronous GIO call as a promise, without changing the class it belongs to. */
 function call<T>(
@@ -54,6 +58,8 @@ export class MeetingLinks {
   /** By event id. Null: looked at, no link. */
   private cache = new Map<string, MeetingLink | null>();
   private loading = new Set<string>();
+  /** By event id: when the lookup last failed, on the monotonic clock. */
+  private failed = new Map<string, number>();
   private libraries: Promise<Libraries> | null = null;
   private session: Session | null = null;
   /** Lookups that still run. */
@@ -69,7 +75,9 @@ export class MeetingLinks {
   /** The link of an event, null when it has none, undefined while that is not known yet. */
   get(id: string): MeetingLink | null | undefined {
     if (this.cache.has(id)) return this.cache.get(id);
-    if (!this.loading.has(id)) {
+    const failedAt = this.failed.get(id);
+    const waits = failedAt !== undefined && nowMs() - failedAt < RETRY_MS;
+    if (!this.loading.has(id) && !waits) {
       this.loading.add(id);
       void this.load(id);
     }
@@ -79,15 +87,18 @@ export class MeetingLinks {
   destroy(): void {
     this.cache.clear();
     this.loading.clear();
+    this.failed.clear();
     this.libraries = null;
   }
 
   private async load(id: string): Promise<void> {
     let link: MeetingLink | null = null;
+    let failed = false;
     this.running++;
     try {
       link = await this.find(id);
     } catch (e) {
+      failed = true;
       if (!this.cancellable.is_cancelled() && !this.complained) {
         this.complained = true;
         console.debug(`Visor: no Join buttons, reading the event failed: ${e}`);
@@ -97,6 +108,12 @@ export class MeetingLinks {
     }
     if (this.cancellable.is_cancelled()) return;
     this.loading.delete(id);
+    // "No link" is only what an event that was read says; a failure is asked again later.
+    if (failed) {
+      this.failed.set(id, nowMs());
+      return;
+    }
+    this.failed.delete(id);
     this.cache.set(id, link);
     if (link) this.found();
   }
