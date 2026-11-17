@@ -17,7 +17,7 @@ import type { Item } from './results.js';
 
 export const MAX_APPS = 5;
 export const MAX_PER_SOURCE = 5;
-export const MAX_PER_PROVIDER = 3;
+const MAX_PER_PROVIDER = 3;
 
 const SEARCH_PROVIDERS_SCHEMA = 'org.gnome.desktop.search-providers';
 

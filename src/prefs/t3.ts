@@ -11,7 +11,8 @@ import Soup from 'gi://Soup?version=3.0';
 
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import { clearToken, lookupToken, storeToken } from '../modules/t3/keyring.js';
+import { fetchText, runtimePath } from '../modules/t3/fetch.js';
+import { clearToken, storeToken, unlockKeyring } from '../modules/t3/keyring.js';
 import {
   SERVER_KEY,
   TOKEN_ORIGIN_KEY,
@@ -40,11 +41,8 @@ const MAX_ANSWER_BYTES = 64 * 1024;
 
 /** The origin of the server running on this machine, from its runtime file, or null. */
 function localOrigin(): string | null {
-  const base = GLib.getenv('T3CODE_HOME') || GLib.build_filenamev([GLib.get_home_dir(), '.t3']);
   try {
-    const [, bytes] = GLib.file_get_contents(
-      GLib.build_filenamev([base, 'userdata', 'server-runtime.json']),
-    );
+    const [, bytes] = GLib.file_get_contents(runtimePath());
     return bytes.length <= MAX_ANSWER_BYTES
       ? decodeRuntimeState(new TextDecoder().decode(bytes))
       : null;
@@ -53,55 +51,28 @@ function localOrigin(): string | null {
   }
 }
 
-interface Answer {
-  /** 0 when there was no answer. */
-  status: number;
-  body: string;
-}
-
-function send(
-  http: Soup.Session,
-  message: Soup.Message,
-  cancellable: Gio.Cancellable,
-): Promise<Answer> {
-  return new Promise(resolve => {
-    http.send_and_read_async(message, GLib.PRIORITY_DEFAULT, cancellable, (_source, result) => {
-      try {
-        const data = http.send_and_read_finish(result).get_data();
-        const status = message.get_status();
-        // Only a plain 200 has a body worth reading; a redirect is not followed.
-        const fits = status === Soup.Status.OK && data !== null && data.length <= MAX_ANSWER_BYTES;
-        resolve({ status, body: fits ? new TextDecoder().decode(data) : '' });
-      } catch {
-        resolve({ status: 0, body: '' });
-      }
-    });
-  });
-}
-
 /**
  * Exchanges a one-time pairing code at the server for an access token.
- * Ends with 'unreachable' when `cancellable` is cancelled.
+ * Ends with 'unreachable' when `cancellable` is cancelled before the code is
+ * sent; once it is on its way the answer is awaited, bounded by the timeout
+ * of `http`, so that a token the server issued is not thrown away.
  */
-export async function exchangePairingCode(
+async function exchangePairingCode(
   http: Soup.Session,
   origin: string,
   code: string,
   cancellable: Gio.Cancellable,
 ): Promise<{ token: string } | { error: PairingError }> {
-  let about: Soup.Message;
-  let exchange: Soup.Message;
-  try {
-    about = Soup.Message.new('GET', descriptorUrl(origin));
-    exchange = Soup.Message.new('POST', tokenUrl(origin));
-  } catch {
-    return { error: 'unreachable' };
-  }
+  const about = Soup.Message.new('GET', descriptorUrl(origin));
+  const exchange = Soup.Message.new('POST', tokenUrl(origin));
+  if (!about || !exchange) return { error: 'unreachable' };
   // The code goes to the server the link names and is not carried along by a redirect.
   about.add_flags(Soup.MessageFlags.NO_REDIRECT);
   exchange.add_flags(Soup.MessageFlags.NO_REDIRECT);
   // The version first: a server that speaks another protocol keeps its code unused.
-  const descriptor = decodeDescriptor((await send(http, about, cancellable)).body);
+  const descriptor = decodeDescriptor(
+    (await fetchText(http, about, MAX_ANSWER_BYTES, cancellable)).body ?? '',
+  );
   if (!descriptor) return { error: 'unreachable' };
   if (!isCompatible(descriptor)) return { error: 'incompatible' };
 
@@ -110,9 +81,10 @@ export async function exchangePairingCode(
     'application/x-www-form-urlencoded',
     new GLib.Bytes(new TextEncoder().encode(tokenRequestBody(code, label))),
   );
-  const answer = await send(http, exchange, cancellable);
+  if (cancellable.is_cancelled()) return { error: 'unreachable' };
+  const answer = await fetchText(http, exchange, MAX_ANSWER_BYTES, new Gio.Cancellable());
   if (answer.status !== Soup.Status.OK) return { error: exchangeError(answer.status) };
-  const token = decodeAccessToken(answer.body);
+  const token = decodeAccessToken(answer.body ?? '');
   return token ? { token } : { error: 'rejected' };
 }
 
@@ -133,7 +105,7 @@ function errorText(error: PairingError): string {
   }
 }
 
-/** The group "T3 Code" of the Modules page. Requests end when `window` closes. */
+/** The group "T3 Code" of the Modules page. A pairing that has not sent its code yet ends when `window` closes. */
 export function t3Group(
   settings: Gio.Settings,
   window: Adw.PreferencesWindow,
@@ -141,7 +113,7 @@ export function t3Group(
   const group = new Adw.PreferencesGroup({ title: _('T3 Code') });
   const http = new Soup.Session({ timeout: TIMEOUT_SECONDS });
   let cancellable: Gio.Cancellable | null = null;
-  let timeout = 0;
+  let closed = false;
 
   // --- not paired ---
   const title = _('Pairing link or code');
@@ -170,8 +142,6 @@ export function t3Group(
     else entry.remove_css_class('error');
   };
   const finish = (): void => {
-    if (timeout) GLib.source_remove(timeout);
-    timeout = 0;
     cancellable = null;
     connect.sensitive = true;
   };
@@ -199,27 +169,24 @@ export function t3Group(
     showError(null);
     connect.sensitive = false;
     const mine = (cancellable = new Gio.Cancellable());
-    timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, TIMEOUT_SECONDS, () => {
-      timeout = 0;
-      mine.cancel();
-      return GLib.SOURCE_REMOVE;
-    });
-    // The keyring first: without one the token could not be kept, and the
-    // code, which is good once, stays unused.
-    const usable = (await lookupToken(origin, mine)) !== null;
+    // The keyring first, unlocked: the code is good once, so it is spent only
+    // when the token can be kept. The user may take their time with the
+    // password; the keyring has a limit of its own.
+    const usable = await unlockKeyring(mine);
     // The window closed meanwhile: its widgets are gone.
-    if (cancellable !== mine) return;
+    if (closed) return;
     const result = usable
       ? await exchangePairingCode(http, origin, pairing.code, mine)
       : { error: 'keyring' as const };
-    if (cancellable !== mine) return;
-    const stored = 'token' in result && (await storeToken(origin, result.token, mine));
-    if (cancellable !== mine) return;
-    finish();
-    if ('error' in result || !stored) {
-      showError('error' in result ? result.error : 'keyring');
-      return;
+    // Not tied to the window: the code is spent, so the token is kept even
+    // when the window closes now.
+    const stored =
+      'token' in result && (await storeToken(origin, result.token, new Gio.Cancellable()));
+    if (!closed) {
+      finish();
+      if (!stored) showError('error' in result ? result.error : 'keyring');
     }
+    if (!stored) return;
     if (pairing.origin) settings.set_string(SERVER_KEY, originToStore(pairing.origin, local));
     // The token is for this origin; the module sends it nowhere else.
     settings.set_string(TOKEN_ORIGIN_KEY, origin);
@@ -227,6 +194,7 @@ export function t3Group(
   };
   const start = (): void => {
     pair().catch(() => {
+      if (closed) return;
       finish();
       showError('unreachable');
     });
@@ -303,12 +271,10 @@ export function t3Group(
   sync();
 
   window.connect('close-request', () => {
+    closed = true;
     cancellable?.cancel();
     cancellable = null;
-    if (timeout) GLib.source_remove(timeout);
-    timeout = 0;
     for (const handler of handlers) settings.disconnect(handler);
-    http.abort();
     Gtk.StyleContext.remove_provider_for_display(display, css);
     return false;
   });

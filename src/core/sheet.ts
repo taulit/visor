@@ -13,7 +13,7 @@ import type { Kit, KitSection, RowProps, Slot } from '../api.js';
 import { diffIds } from '../lib/diff.js';
 import { badgeText } from '../lib/modules.js';
 import { leftColumnWidth, sheetWidth } from '../lib/widths.js';
-import { createKit, ownGuard, Row } from './kit.js';
+import { createKit, ownGuard, Row, scaleFactor } from './kit.js';
 import type { ModuleEntry, Registry } from './registry.js';
 
 /** Name of the built-in view that lists the modules. No module can have this id. */
@@ -38,7 +38,7 @@ export interface SearchMount {
   setKeyHandler(handler: ((event: Clutter.Event) => boolean) | null): void;
 }
 
-export interface SheetCallbacks {
+interface SheetCallbacks {
   /** The width or the height the sheet asks for changed. */
   changed(): void;
 }
@@ -67,10 +67,6 @@ interface ModuleList {
   shown: string;
   /** The row of each module and what it shows now. */
   rows: Map<string, { row: Row; props: () => RowProps }>;
-}
-
-function scaleFactor(): number {
-  return St.ThemeContext.get_for_stage(global.stage).scale_factor;
 }
 
 export class Sheet implements SearchMount {

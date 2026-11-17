@@ -55,8 +55,7 @@ describe('pickChips', () => {
     expect(ids(picked)).toEqual(['e', 'a', 'b', 'c']);
   });
 
-  it('treats an invalid priority as zero and honours a custom limit', () => {
-    expect(ids(pickChips([chip('a', NaN), chip('b', 1), chip('c', -1)], 2))).toEqual(['b', 'a']);
-    expect(pickChips([chip('a', 1)], 0)).toEqual([]);
+  it('treats an invalid priority as zero', () => {
+    expect(ids(pickChips([chip('a', NaN), chip('b', 1), chip('c', -1)]))).toEqual(['b', 'a', 'c']);
   });
 });

@@ -22,7 +22,6 @@ export class Clock {
   private label: St.Label;
   private dot: St.Widget;
   private wallClock: GnomeDesktop.WallClock;
-  private ownsClock: boolean;
   private attention: Attention = null;
 
   constructor() {
@@ -56,7 +55,6 @@ export class Clock {
     // settings, and no timer of Visor's own for the tick once a minute.
     const stock = (Main.panel.statusArea.dateMenu as unknown as { _clock?: unknown } | undefined)
       ?._clock;
-    this.ownsClock = !(stock instanceof GnomeDesktop.WallClock);
     this.wallClock = stock instanceof GnomeDesktop.WallClock ? stock : new GnomeDesktop.WallClock();
     this.wallClock.connectObject('notify::clock', () => this.sync(), this);
     this.sync();
@@ -83,7 +81,6 @@ export class Clock {
 
   destroy(): void {
     this.wallClock.disconnectObject(this);
-    if (this.ownsClock) this.wallClock.run_dispose();
     this.actor.destroy();
   }
 }

@@ -161,7 +161,7 @@ export const threadLink = (origin: string, environmentId: string, threadId: stri
 
 // --- frames ---
 
-export type ServerFrame =
+type ServerFrame =
   | { tag: 'chunk'; requestId: string; values: unknown[] }
   | { tag: 'exit'; requestId: string; ok: true; value: unknown }
   | { tag: 'exit'; requestId: string; ok: false; error: string }
@@ -369,7 +369,7 @@ export const fitsPreview = (prompt: Prompt): boolean =>
   prompt.exact && promptPreview(prompt) === prompt.text && columns(prompt.text) <= PREVIEW_CHARS;
 
 /** The lines the expanded row shows of a command, see `.visor-t3-command`. */
-export const COMMAND_LINES = 8;
+const COMMAND_LINES = 8;
 /**
  * What one wrapped line holds for certain. The narrowest column gives the
  * command about 32 columns, and wrapping at words wastes less than half of two
@@ -401,7 +401,7 @@ export function fitsExpanded(prompt: Prompt): boolean {
 }
 
 /** How often the command of a request is asked for before it counts as unknown for good. */
-export const PROMPT_TRIES = 3;
+const PROMPT_TRIES = 3;
 
 /** The wait before the command is asked for again after `failures` failures; null: not again. */
 export const promptRetryMs = (failures: number): number | null =>
@@ -424,7 +424,7 @@ export const mayAnswer = (
 
 // --- the threads ---
 
-export type RequestKind = 'command' | 'file' | 'permission' | 'question';
+type RequestKind = 'command' | 'file' | 'permission' | 'question';
 
 interface Thread {
   id: string;
@@ -559,7 +559,7 @@ export function applyShellItem(state: ShellState, item: unknown): boolean {
 
 // --- what Visor shows ---
 
-export type Phase = 'starting' | 'working' | 'approval' | 'question' | 'done' | 'error';
+type Phase = 'starting' | 'working' | 'approval' | 'question' | 'done' | 'error';
 
 export interface Session {
   /** The thread id. */

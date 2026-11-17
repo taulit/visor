@@ -17,6 +17,9 @@ declare module 'gi://Secret' {
         attributes: Record<string, SchemaAttributeType>,
       );
     }
+    class Service {
+      static disconnect(): void;
+    }
     const COLLECTION_DEFAULT: string;
     type Attributes = Record<string, string>;
     type Callback = (source: unknown, result: Gio.AsyncResult) => void;

@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  calc,
-  formatResult,
-  isCalculation,
-  readNumber,
-  separatorsFor,
-} from '../src/core/search/calc.js';
+import { calc, formatResult, readNumber, separatorsFor } from '../src/core/search/calc.js';
 
 const value = (input: string, locale: string): number | null => {
   const result = calc(input, locale);
@@ -133,38 +127,6 @@ describe('calc', () => {
 
   it('snaps floating-point noise of trig functions to zero', () => {
     expect(calc('sin(pi)', 'en-US')).toEqual({ ok: true, value: 0 });
-  });
-});
-
-describe('isCalculation', () => {
-  const yes = ['1+1', 'pi*2', 'sqrt(4)', '5%', '20% of 80', '2 ^ 3', '3 × 4', 'abs(-1)', '1,5 + 1'];
-  const no = [
-    '2024',
-    '2.5',
-    'e',
-    'pi',
-    'π',
-    'log',
-    'sqrt',
-    'hello',
-    '',
-    '  ',
-    '(5)',
-    '-5',
-    'firefox 2',
-    '1 +',
-  ];
-
-  it.each(yes)('"%s" is a calculation', input => {
-    expect(isCalculation(input, 'en-US')).toBe(true);
-  });
-
-  it.each(no)('"%s" is not a calculation', input => {
-    expect(isCalculation(input, 'en-US')).toBe(false);
-  });
-
-  it('reads the number in the given locale', () => {
-    expect(isCalculation('2,5 * 2', 'de-DE')).toBe(true);
   });
 });
 

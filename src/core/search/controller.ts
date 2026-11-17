@@ -8,7 +8,7 @@ import St from 'gi://St';
 import type { RemoteSearchProvider } from 'resource:///org/gnome/shell/ui/remoteSearch.js';
 
 import type { Command } from '../../api.js';
-import { ownGuard } from '../kit.js';
+import { isActivateKey, ownGuard, str } from '../kit.js';
 import { metricsOn, reportSearch } from '../metrics.js';
 import type { ModuleEntry, Registry, SearchParts } from '../registry.js';
 import type { SearchMount } from '../sheet.js';
@@ -36,30 +36,17 @@ const PROXY_WAITS = 50;
 /** Microseconds a change of the list may spend before new icons are left for later. */
 const ICON_BUDGET = 6000;
 
-export interface SearchHost {
+interface SearchHost {
   /** Closes the panel. */
   close(): void;
 }
 
 /** How long the last query took, in microseconds. */
-export interface SearchTiming {
+interface SearchTiming {
   /** Until commands, calculation and apps were in the list. */
   local: number;
   /** Until the modules and the GNOME search providers were asked as well. */
   total: number;
-}
-
-function text(value: unknown): string {
-  if (typeof value === 'string') return value;
-  return value === undefined || value === null ? '' : String(value);
-}
-
-function isActivateKey(symbol: number): boolean {
-  return (
-    symbol === Clutter.KEY_Return ||
-    symbol === Clutter.KEY_KP_Enter ||
-    symbol === Clutter.KEY_ISO_Enter
-  );
 }
 
 export class Search {
@@ -171,12 +158,14 @@ export class Search {
       const id = `source:${entry.module.id}`;
       groups.push({
         id,
-        label: text(source.title) || entry.module.name,
+        label: str(source.title) || entry.module.name,
         items: previous.get(id) ?? [],
       });
     }
-    const providers =
-      recognised || this.remote.loaded ? this.providersFor(parts, previous, recognised) : null;
+    let providers: RemoteSearchProvider[] | null = null;
+    // A command is not searched for anywhere else.
+    if (recognised) providers = [];
+    else if (this.remote.loaded) providers = this.providersFor(parts, previous);
     // Completing a keyword is offered last: Enter on 't' launches the first app, not 'timer'.
     this.completion = {
       id: 'complete',
@@ -287,7 +276,7 @@ export class Search {
     const { icon, name } = entry.module;
     // Incomplete arguments: the example says what is missing.
     const hint: Item[] = [
-      { id: 'hint', title: text(command.hint) || query.command.keyword, subtitle: name, icon },
+      { id: 'hint', title: str(command.hint) || query.command.keyword, subtitle: name, icon },
     ];
     const toItems = (results: unknown): Item[] => {
       const items = fromResults(results, entry.guard, icon, MAX_PER_COMMAND);
@@ -324,7 +313,7 @@ export class Search {
       return {
         id: `complete:${offered.entry.module.id}:${keyword}`,
         title: keyword,
-        subtitle: text(offered.command.hint) || offered.entry.module.name,
+        subtitle: str(offered.command.hint) || offered.entry.module.name,
         icon: offered.entry.module.icon,
         hint: _('Enter completes'),
         keepOpen: true,
@@ -404,12 +393,7 @@ export class Search {
   }
 
   /** The providers no module stands in for, each with its group at the end of the list. */
-  private providersFor(
-    parts: SearchParts,
-    previous: Map<string, Item[]>,
-    none = false,
-  ): RemoteSearchProvider[] {
-    if (none) return [];
+  private providersFor(parts: SearchParts, previous: Map<string, Item[]>): RemoteSearchProvider[] {
     const providers = this.remote.load().filter(provider => !isReplaced(provider, parts.replaced));
     for (const provider of providers) {
       const id = `provider:${provider.id}`;

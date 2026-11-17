@@ -31,24 +31,29 @@ export interface Guard {
   build<T>(fn: () => T): T | null;
 }
 
+/** A guard that hands every exception to `report`. */
+export function makeGuard(report: (error: unknown) => void): Guard {
+  return {
+    call(fn) {
+      try {
+        fn();
+      } catch (e) {
+        report(e);
+      }
+    },
+    build(fn) {
+      try {
+        return fn();
+      } catch (e) {
+        report(e);
+        return null;
+      }
+    },
+  };
+}
+
 /** For widgets of Visor itself: exceptions are logged, nothing else. */
-export const ownGuard: Guard = {
-  call(fn) {
-    try {
-      fn();
-    } catch (e) {
-      logError(e as Error, 'Visor');
-    }
-  },
-  build(fn) {
-    try {
-      return fn();
-    } catch (e) {
-      logError(e as Error, 'Visor');
-      return null;
-    }
-  },
-};
+export const ownGuard: Guard = makeGuard(e => logError(e as Error, 'Visor'));
 
 const FADE_MS = 150;
 /** How far a row reaches out of its column on both sides, so its text lines up with the section title. */
@@ -60,7 +65,7 @@ const TOGGLE_TRAVEL = 16;
  * Text from a module, as a string. A value of another type in a string
  * property of an actor ends the running call in a way no `catch` sees.
  */
-function str(value: unknown): string {
+export function str(value: unknown): string {
   if (typeof value === 'string') return value;
   return value === undefined || value === null ? '' : String(value);
 }
@@ -78,7 +83,7 @@ function cleanRow(props: RowProps): RowProps {
   };
 }
 
-function scaleFactor(): number {
+export function scaleFactor(): number {
   return St.ThemeContext.get_for_stage(global.stage).scale_factor;
 }
 
@@ -92,7 +97,7 @@ function fade(actor: Clutter.Actor, visible: boolean): void {
   actor.ease({ opacity, duration: FADE_MS, mode: Clutter.AnimationMode.EASE_OUT_QUAD });
 }
 
-function isActivateKey(symbol: number): boolean {
+export function isActivateKey(symbol: number): boolean {
   return (
     symbol === Clutter.KEY_Return ||
     symbol === Clutter.KEY_KP_Enter ||
@@ -379,22 +384,16 @@ function alignLeads(container: Clutter.Actor | null): void {
   for (const label of labels) label.set_width(widest);
 }
 
-/** Options only Visor itself uses; modules build rows from RowProps alone. */
 function setState(actor: St.Widget, state: Atk.StateType, on: boolean): void {
   if (on) actor.add_accessible_state(state);
   else actor.remove_accessible_state(state);
 }
 
 /** What the colour of a row or a chip says, for screen readers. */
-export function statusWords(status: string | undefined): string {
+function statusWords(status: string | undefined): string {
   if (status === 'waiting') return _('waits for you');
   if (status === 'done') return _('done');
   return '';
-}
-
-export interface RowOptions {
-  /** A widget at the very end of the row, such as the switch in the list of modules. */
-  trailing?: St.Widget;
 }
 
 export class Row implements KitRow {
@@ -506,11 +505,6 @@ export class Row implements KitRow {
   /** The label of the `lead` text, null for a row with an icon or nothing in front. */
   get leadLabel(): St.Label | null {
     return this.lead instanceof St.Label ? this.lead : null;
-  }
-
-  /** The actor that takes the focus when the keyboard moves to this row. */
-  get focusTarget(): St.Widget {
-    return this.main;
   }
 
   private apply(): void {

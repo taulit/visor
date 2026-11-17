@@ -2,13 +2,16 @@
 // descriptor, WebSocket ticket, socket, the shell stream. It reconnects with
 // a growing wait and at once when the network or the server's runtime file
 // changes. The access token is in the keyring (keyring.ts) and is read when
-// the settings say that there is one. Without a token it does nothing at all,
-// and a token the server refuses is not tried again until the pairing changes.
+// the settings say that there is one; a keyring that had no answer is asked
+// again when the Secret Service appears on the session bus. Without a token
+// it does nothing at all, and a token the server refuses is not tried again
+// until the pairing changes.
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Soup from 'gi://Soup?version=3.0';
 
-import { lookupToken } from './keyring.js';
+import { fetchText, runtimePath, type Answer } from './fetch.js';
+import { keyringServiceGone, lookupToken } from './keyring.js';
 import { SERVER_KEY, TOKEN_ORIGIN_KEY, TOKEN_SERIAL_KEY, tokenFits } from './pairing.js';
 import {
   METHODS,
@@ -34,13 +37,11 @@ import {
   type ShellState,
 } from './protocol.js';
 
-export { SERVER_KEY, TOKEN_ORIGIN_KEY, TOKEN_SERIAL_KEY };
-
 /**
  * The pairing the keyring had no answer for. A locked keyring asks for its
  * password; this keeps an extension that is disabled and enabled again (every
  * time the screen is unlocked) from asking over and over. It lasts as long as
- * the shell and ends when the pairing changes.
+ * the shell and ends when the pairing changes or a keyring service starts.
  */
 let keyringFailedFor: string | null = null;
 
@@ -58,12 +59,6 @@ interface Pending {
   resolve(value: unknown): void;
   reject(error: Error): void;
   timeout: number;
-}
-
-/** Where a running server says it listens: `$T3CODE_HOME` or `~/.t3`. */
-function runtimeFile(): Gio.File {
-  const base = GLib.getenv('T3CODE_HOME') || GLib.build_filenamev([GLib.get_home_dir(), '.t3']);
-  return Gio.File.new_for_path(GLib.build_filenamev([base, 'userdata', 'server-runtime.json']));
 }
 
 export class T3Client {
@@ -92,6 +87,9 @@ export class T3Client {
   /** The access token, read from the keyring; empty until then and when not paired. */
   private token = '';
   private lookup: Gio.Cancellable | null = null;
+  private keyringWatch = 0;
+  /** Whether the Secret Service is on the session bus; null until the bus has said. */
+  private keyringOwned: boolean | null = null;
 
   /** `changed` is called when the threads or the connection changed. */
   constructor(
@@ -116,17 +114,41 @@ export class T3Client {
     this.network.connectObject('network-changed', () => this.retryNow(), this);
     try {
       // The server writes this file when it starts and removes it when it stops.
-      this.monitor = runtimeFile().monitor_file(Gio.FileMonitorFlags.NONE, null);
+      this.monitor = Gio.File.new_for_path(runtimePath()).monitor_file(
+        Gio.FileMonitorFlags.NONE,
+        null,
+      );
       this.monitor.connectObject('changed', () => this.retryNow(), this);
     } catch {
       this.monitor = null;
     }
+    this.keyringWatch = Gio.bus_watch_name(
+      Gio.BusType.SESSION,
+      'org.freedesktop.secrets',
+      Gio.BusNameWatcherFlags.NONE,
+      () => {
+        // Only a service that was not there before: one that was there and
+        // gave no answer had its prompt dismissed and is not asked again.
+        const appeared = this.keyringOwned === false;
+        this.keyringOwned = true;
+        if (!appeared || this.token) return;
+        keyringFailedFor = null;
+        this.load();
+      },
+      () => {
+        if (this.keyringOwned) keyringServiceGone();
+        this.keyringOwned = false;
+      },
+    );
     this.load();
   }
 
   stop(): void {
     if (!this.running) return;
     this.running = false;
+    Gio.bus_unwatch_name(this.keyringWatch);
+    this.keyringWatch = 0;
+    this.keyringOwned = null;
     this.settings?.disconnectObject(this);
     this.network?.disconnectObject(this);
     this.network = null;
@@ -211,7 +233,8 @@ export class T3Client {
           keyringFailedFor = pairing;
           log(
             'The keyring is not available, so the access token of T3 Code cannot be read; ' +
-              'its sessions are not shown. Not asking again until Visor is paired anew.',
+              'its sessions are not shown. Not asking again until a keyring service ' +
+              'starts or Visor is paired anew.',
           );
           return;
         }
@@ -263,7 +286,9 @@ export class T3Client {
     const configured = this.settings?.get_string(SERVER_KEY) ?? '';
     const origin = configured
       ? cleanOrigin(configured)
-      : decodeRuntimeState((await this.readFile(runtimeFile(), cancellable)) ?? '');
+      : decodeRuntimeState(
+          (await this.readFile(Gio.File.new_for_path(runtimePath()), cancellable)) ?? '',
+        );
     if (!origin || cancellable.is_cancelled()) return false;
     // The token goes to the server it was issued by and to no other.
     if (!tokenFits(this.settings?.get_string(TOKEN_ORIGIN_KEY) ?? '', origin)) return false;
@@ -314,13 +339,10 @@ export class T3Client {
     socket.keepalive_interval = KEEPALIVE_SECONDS;
     socket.connectObject(
       'message',
-      (_socket: Soup.WebsocketConnection, type: Soup.WebsocketDataType, bytes: GLib.Bytes) =>
-        this.receive(type, bytes),
+      (_socket: Soup.WebsocketConnection, _type: Soup.WebsocketDataType, bytes: GLib.Bytes) =>
+        this.receive(bytes),
       'closed',
       () => this.lost(socket),
-      // An error is followed by `closed`; nothing to say about it.
-      'error',
-      () => {},
       this,
     );
     this.shellRequest = String(this.nextId++);
@@ -344,40 +366,18 @@ export class T3Client {
     });
   }
 
-  /** The status (0 when there was no answer) and, for a 200 answer, the body. */
   private fetch(
     method: string,
     url: string,
     token: string | null,
     cancellable: Gio.Cancellable,
-  ): Promise<{ status: number; body: string | null }> {
-    return new Promise(resolve => {
-      let message: Soup.Message;
-      try {
-        message = Soup.Message.new(method, url);
-      } catch {
-        resolve({ status: 0, body: null });
-        return;
-      }
-      // A redirect would carry the token or the ticket to another place.
-      message.add_flags(Soup.MessageFlags.NO_REDIRECT);
-      if (token) message.get_request_headers().append('Authorization', `Bearer ${token}`);
-      this.http.send_and_read_async(
-        message,
-        GLib.PRIORITY_DEFAULT,
-        cancellable,
-        (_source, result) => {
-          try {
-            const data = this.http.send_and_read_finish(result).get_data();
-            const status = message.get_status();
-            const ok = status === Soup.Status.OK && data !== null && data.length <= MAX_HTTP_BYTES;
-            resolve({ status, body: ok ? new TextDecoder().decode(data) : null });
-          } catch {
-            resolve({ status: 0, body: null });
-          }
-        },
-      );
-    });
+  ): Promise<Answer> {
+    const message = Soup.Message.new(method, url);
+    if (!message) return Promise.resolve({ status: 0, body: null });
+    // A redirect would carry the token or the ticket to another place.
+    message.add_flags(Soup.MessageFlags.NO_REDIRECT);
+    if (token) message.get_request_headers().append('Authorization', `Bearer ${token}`);
+    return fetchText(this.http, message, MAX_HTTP_BYTES, cancellable);
   }
 
   private openSocket(
@@ -385,10 +385,8 @@ export class T3Client {
     cancellable: Gio.Cancellable,
   ): Promise<Soup.WebsocketConnection | null> {
     return new Promise(resolve => {
-      let message: Soup.Message;
-      try {
-        message = Soup.Message.new('GET', url);
-      } catch {
+      const message = Soup.Message.new('GET', url);
+      if (!message) {
         resolve(null);
         return;
       }
@@ -425,12 +423,11 @@ export class T3Client {
       socket.close(Soup.WebsocketCloseCode.NORMAL, null);
   }
 
-  private receive(type: Soup.WebsocketDataType, bytes: GLib.Bytes): void {
+  /** The server may send JSON as text or as bytes; both are read the same way. */
+  private receive(bytes: GLib.Bytes): void {
     const socket = this.socket;
     const data = bytes.get_data();
     if (!socket || !data) return;
-    // The server may send JSON as text or as bytes.
-    void type;
     let shellChanged = false;
     for (const frame of decodeFrames(new TextDecoder().decode(data))) {
       switch (frame.tag) {
@@ -492,8 +489,7 @@ export class T3Client {
     this.socket = null;
     if (socket) {
       socket.disconnectObject(this);
-      if (socket.get_state() === Soup.WebsocketState.OPEN)
-        socket.close(Soup.WebsocketCloseCode.NORMAL, null);
+      this.close(socket);
     }
     for (const pending of this.pending.values()) {
       GLib.source_remove(pending.timeout);

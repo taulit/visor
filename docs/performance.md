@@ -133,6 +133,17 @@ Search, the measuring of the sheet, live ticks of modules and all animations run
   the hidden overlay (`core/sheet.ts`). Icons were already bounded (lookups stop 6 ms after the query began
   and continue when idle). What remains is the wait for the frame clock, which is one frame at most and not
   work.
+- **Search, what the three shortcuts are worth.** Measured on `SearchTiming.local` with each one taken out
+  of the build in turn: eleven fresh shells per variant (five for the warm-up), in each the words `fi`, `set`,
+  `ca`, `te`, `no` typed letter by letter and deleted again, on a machine under load (load average 12 to 17,
+  so the absolute numbers are high; the variants ran in turns).
+  - `warmUp()` on the first key: the first query of a session takes 8.5 ms (median) with it, 36.7 ms without.
+  - `reserve()`, the lines of commands, calculation and apps kept while the query is empty: the first letter
+    of a word takes 8.5 ms with it, 12.4 ms without, and is slower without it in each of the five words; the
+    letters after it are the same (5.6 and 5.4 ms).
+  - `ICON_BUDGET`, 6 ms for icon lookups: the query that brings the most new app icons (`s`) takes 27 ms with
+    it, 36 ms without; first letters overall 8.5 against 10.3 ms, the letters after them the same (5.6 and
+    5.7 ms).
 - **Idle.** The neck had a wall clock of its own, with its own timer each minute; it now uses the one of the
   date menu.
 - **`enable()`.** Within budget as it was; nothing was moved. Its parts (median, µs): settings 205, content

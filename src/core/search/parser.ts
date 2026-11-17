@@ -3,9 +3,6 @@
 import { evaluate } from './calc.js';
 import { parseCurrencyQuery } from './rates.js';
 
-/** Order of the result groups in the list. */
-export const GROUP_ORDER = ['command', 'calc', 'apps', 'modules', 'providers'] as const;
-
 export interface Query {
   /** The input, trimmed. */
   text: string;
@@ -17,7 +14,7 @@ export interface Query {
   currency: { amount: number; from: string; to: string } | null;
 }
 
-export interface ParseOptions {
+interface ParseOptions {
   /** The keywords of every registered command, e.g. `[['timer'], ['stoppuhr', 'stopwatch']]`. */
   commands: string[][];
   locale?: string;

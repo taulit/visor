@@ -55,7 +55,7 @@ export type NotchEvent =
 export type TimerIntent =
   { timer: TimerName; action: 'start'; ms: number } | { timer: TimerName; action: 'cancel' };
 
-export interface Transition {
+interface Transition {
   model: NotchModel;
   /** Applied in order. Starting a running timer restarts it. */
   timers: TimerIntent[];

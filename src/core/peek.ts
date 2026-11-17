@@ -17,7 +17,7 @@ interface Flash {
   timeout: number;
 }
 
-export interface PeekCallbacks {
+interface PeekCallbacks {
   /** The chip of this module was clicked. */
   activate(id: string): void;
   /** The chips changed: their number, their order or what they say. */

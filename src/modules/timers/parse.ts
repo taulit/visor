@@ -1,6 +1,6 @@
 /** Parse what the user types after the `timer` keyword. Pure logic. */
 
-export type TimerSpec =
+type TimerSpec =
   | { kind: 'countdown'; durationMs: number; label: string }
   | { kind: 'alarm'; at: Date; label: string };
 

@@ -16,6 +16,22 @@ keyring_guard() {
     fi
 }
 
+# keyring_start: runs the Secret Service of the sandbox, an unlocked login
+# keyring below the sandbox HOME (its password is no secret), and waits until
+# it is on the bus. Its process id is in keyring_pid.
+keyring_start() {
+    keyring_guard
+    printf 'sandbox' | gnome-keyring-daemon --unlock --foreground --components=secrets \
+        >>"$HOME/keyring.log" 2>&1 &
+    keyring_pid=$!
+    for _ in $(seq 1 50); do
+        gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus \
+            --method org.freedesktop.DBus.NameHasOwner org.freedesktop.secrets 2>/dev/null |
+            grep -q true && break
+        sleep 0.1
+    done
+}
+
 # keyring_store ORIGIN TOKEN: stores the T3 Code token the way the settings window does.
 keyring_store() {
     keyring_guard
@@ -27,6 +43,15 @@ keyring_store() {
 keyring_lookup() {
     keyring_guard
     secret-tool lookup xdg:schema io.github.taulit.Visor.T3 origin "$1" 2>/dev/null || true
+}
+
+# keyring_lock: locks the login keyring of the sandbox (its password is "sandbox");
+# the next call that needs it makes the shell ask for the password.
+keyring_lock() {
+    keyring_guard
+    gdbus call --session --dest org.freedesktop.secrets --object-path /org/freedesktop/secrets \
+        --method org.freedesktop.Secret.Service.Lock \
+        "['/org/freedesktop/secrets/collection/login']" >/dev/null
 }
 
 # t3_pair ORIGIN TOKEN: what pairing in the settings window leaves behind.

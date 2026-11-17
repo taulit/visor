@@ -17,8 +17,8 @@ const DAY_MS = 86_400_000;
 const RANGE_DAYS = 7;
 const ICON = 'x-office-calendar-symbolic';
 const CHIP_PRIORITY = 60;
-/** How long after disable() the proxy of the event source is disposed, see retire(). */
-const RETIRE_MS = 1000;
+/** How long after a request the calendar server may still owe its answer, see disable(). */
+const ANSWER_WAIT_US = 1_000_000;
 /** A timeout fires a little early now and then; this keeps it from firing twice. */
 const WAKE_SLACK_MS = 20;
 
@@ -41,6 +41,8 @@ class Upcoming implements VisorModule {
   private source: Calendar.DBusEventSource | null = null;
   /** The source finished connecting to the calendar server. */
   private sourceReady = false;
+  /** When the source last asked the calendar server something, on the monotonic clock. */
+  private askedAt = 0;
   private clock: Gio.Settings | null = null;
   private cancellable: Gio.Cancellable | null = null;
   private links: MeetingLinks | null = null;
@@ -71,6 +73,8 @@ class Upcoming implements VisorModule {
       () => this.refresh(),
       'notify::has-calendars',
       () => {
+        // Connected: the source asks for its range now.
+        this.askedAt = GLib.get_monotonic_time();
         this.sourceReady = true;
         this.refresh();
       },
@@ -103,9 +107,14 @@ class Upcoming implements VisorModule {
     this.source = null;
     if (source) {
       source.disconnectObject(this);
-      const ready =
-        this.sourceReady || (source as unknown as { _initialized: boolean })._initialized;
-      retire(source, ready);
+      // As the date menu does with its own, but only a source that is at
+      // rest: while it connects to the calendar server or waits for an answer
+      // the shell touches the proxy afterwards, and a disposed one makes it
+      // complain. The shell does not say when a source waits, so one that
+      // was asked something a moment ago is only let go.
+      const connected = (source as unknown as { _initialized: boolean })._initialized;
+      const atRest = GLib.get_monotonic_time() - this.askedAt > ANSWER_WAIT_US;
+      if (connected && atRest) source.destroy();
       giveRangeBack();
     }
     this.sourceReady = false;
@@ -133,6 +142,7 @@ class Upcoming implements VisorModule {
   private request(): void {
     const now = new Date();
     this.requestedDay = now.toDateString();
+    this.askedAt = GLib.get_monotonic_time();
     this.source?.requestRange(now, new Date(now.getTime() + RANGE_DAYS * DAY_MS));
   }
 
@@ -258,30 +268,6 @@ class Upcoming implements VisorModule {
       return GLib.SOURCE_REMOVE;
     });
   }
-}
-
-/**
- * Takes an event source down. Its proxy cannot go while the source still
- * connects to the calendar server or waits for an answer: the shell touches
- * the proxy when either comes back, and a disposed one makes it complain. So
- * the proxy goes a moment later, by a timeout that holds nothing but the
- * source. A source that never connects has nothing to take down.
- */
-function retire(source: Calendar.DBusEventSource, ready: boolean): void {
-  const later = (): void => {
-    GLib.timeout_add(GLib.PRIORITY_LOW, RETIRE_MS, () => {
-      source.destroy();
-      return GLib.SOURCE_REMOVE;
-    });
-  };
-  if (ready) {
-    later();
-    return;
-  }
-  const id = source.connect('notify::has-calendars', () => {
-    source.disconnect(id);
-    later();
-  });
 }
 
 /**

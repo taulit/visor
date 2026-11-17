@@ -1,6 +1,6 @@
 /** The timers and what happens to them over time. Pure logic: every function gets `now` (ms since the epoch). */
 
-export type TimerKind = 'countdown' | 'alarm' | 'stopwatch';
+type TimerKind = 'countdown' | 'alarm' | 'stopwatch';
 
 export interface Timer {
   id: string;
@@ -102,7 +102,7 @@ export function restart(timer: Timer, now: number): Timer {
   return createAlarm(timer.id, at.getTime(), timer.label, now);
 }
 
-export interface Step {
+interface Step {
   timers: Timer[];
   /**
    * Ended in this step, each exactly once and however long ago: these are

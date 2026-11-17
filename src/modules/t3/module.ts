@@ -367,28 +367,21 @@ class T3Module implements VisorModule {
 
   /** Drops what belongs to requests and threads the server no longer has. */
   private forget(client: T3Client): void {
+    const prune = <K>(collection: Map<K, unknown> | Set<K>, keep: (key: K) => boolean): void => {
+      for (const key of [...collection.keys()]) if (!keep(key)) collection.delete(key);
+    };
+    const sessions = sessionsOf(client.shell, 0);
     const requests = new Set<string>();
-    for (const session of sessionsOf(client.shell, 0))
-      if (session.request) requests.add(session.request.id);
-    for (const map of [this.prompts, this.answered, this.announced])
-      for (const requestId of [...map.keys()]) if (!requests.has(requestId)) map.delete(requestId);
+    for (const session of sessions) if (session.request) requests.add(session.request.id);
+    const asked = (requestId: string): boolean => requests.has(requestId);
+    for (const map of [this.prompts, this.answered, this.announced]) prune(map, asked);
     // What failed is remembered across a connection that broke, or a projection
     // that breaks it would be asked for on every new one.
-    if (client.synced) {
-      for (const map of [this.asking, this.failures])
-        for (const requestId of [...map.keys()])
-          if (!requests.has(requestId)) map.delete(requestId);
-    }
+    if (client.synced) for (const map of [this.asking, this.failures]) prune(map, asked);
     const shown = new Set(this.sessions.map(session => session.id));
-    for (const threadId of [...this.current.keys()])
-      if (!shown.has(threadId)) this.current.delete(threadId);
-    for (const threadId of [...this.details.keys()])
-      if (!shown.has(threadId)) this.details.delete(threadId);
-    for (const threadId of [...this.errors.keys()])
-      if (!client.shell.threads.has(threadId)) this.errors.delete(threadId);
-    for (const threadId of [...this.stopped])
-      if (!sessionsOf(client.shell, 0).some(s => s.id === threadId && s.runId))
-        this.stopped.delete(threadId);
+    for (const map of [this.current, this.details]) prune(map, id => shown.has(id));
+    prune(this.errors, id => client.shell.threads.has(id));
+    prune(this.stopped, id => sessions.some(s => s.id === id && s.runId));
   }
 
   private chip(session: Session): PeekChip {

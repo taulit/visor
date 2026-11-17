@@ -97,3 +97,24 @@ export async function clearToken(origin: string, cancellable: Gio.Cancellable): 
   );
   return cleared !== null;
 }
+
+/**
+ * Makes sure a token can be stored: stores a probe item and removes it again.
+ * A locked keyring asks for its password here, and a missing default keyring
+ * is created, before anything that cannot be repeated is done. False when the
+ * keyring cannot be used or the user dismissed the prompt.
+ */
+export async function unlockKeyring(cancellable: Gio.Cancellable): Promise<boolean> {
+  const probe = 'visor:probe';
+  if (!(await storeToken(probe, 'probe', cancellable))) return false;
+  await clearToken(probe, cancellable);
+  return true;
+}
+
+/**
+ * The Secret Service left the bus: libsecret keeps its connection to the one
+ * that is gone and would ask the next one with a session it does not know.
+ */
+export function keyringServiceGone(): void {
+  Secret.Service.disconnect();
+}

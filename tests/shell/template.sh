@@ -121,7 +121,7 @@ wait_check 'the three extensions are active' "[$(state $dock), $(state $now), $(
 check 'Dock example is registered with its owner' "$(registered example-dock $dock) && visor.content.registry.get('example-dock').module.slot === 'dock'"
 check 'Now example is registered with its owner' "$(registered example-now $now) && visor.content.registry.get('example-now').module.slot === 'now'"
 check 'Up Next example is registered with its owner' "$(registered example-ahead $ahead) && visor.content.registry.get('example-ahead').module.slot === 'ahead'"
-check 'API 2 module: refused, listed as incompatible, not registered, extension active' "visor.content.registry.get('example-future') === null && visor.content.registry.incompatible.map(m => m.id + m.api).join() === 'example-future2' && $(state $future) === 1"
+check 'API 2 module: refused, not registered, extension active' "visor.content.registry.get('example-future') === null && $(state $future) === 1"
 check 'API 2 module: one line in the log' "$(refusals) === 1"
 check 'the module gets the settings and gettext of its extension' "visor.content.registry.get('example-dock').module.name === 'Example'"
 check 'Now example: one row' "visor.content.registry.get('example-now').rows.map(r => r.title).join() === 'Hello from Visor'"

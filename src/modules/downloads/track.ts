@@ -27,7 +27,7 @@ export const displayName = (download: Download): string =>
 /** How long after the partial file went an empty final file is looked at again. */
 export const RECHECK_MS = 2000;
 
-export type Ending = 'finished' | 'cancelled' | 'unsure';
+type Ending = 'finished' | 'cancelled' | 'unsure';
 
 /**
  * What became of a download whose partial file is gone. `finalSize` is null

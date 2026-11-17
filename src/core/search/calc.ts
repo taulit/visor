@@ -3,9 +3,9 @@
  * Pure logic. Uses only `Intl`, which exists both in GJS and in Node.
  */
 
-export type CalcResult = { ok: true; value: number } | { ok: false };
+type CalcResult = { ok: true; value: number } | { ok: false };
 
-export interface Separators {
+interface Separators {
   decimal: string;
   group: string;
 }
@@ -294,14 +294,6 @@ export function evaluate(
 export function calc(input: string, locale?: string): CalcResult {
   const result = evaluate(input, locale);
   return result ? { ok: true, value: result.value } : { ok: false };
-}
-
-/**
- * Whether the input is worth showing as a calculation: it must parse and be more than a single
- * value, so `2024`, `pi` or `log` are not, while `pi*2`, `sqrt(4)` and `5%` are.
- */
-export function isCalculation(input: string, locale?: string): boolean {
-  return evaluate(input, locale)?.meaningful === true;
 }
 
 /**

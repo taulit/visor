@@ -16,7 +16,7 @@ type Gettext = (s: string) => string;
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
 /** The chip shows from this long before the start until the event ends. */
-export const CHIP_LEAD_MS = 15 * MINUTE_MS;
+const CHIP_LEAD_MS = 15 * MINUTE_MS;
 /** The same lead as joinWindowOpen() in when.ts. */
 const JOIN_LEAD_MS = 10 * MINUTE_MS;
 const CHIP_MAX_CHARS = 28;
@@ -26,7 +26,7 @@ const sameDay = (a: Date, b: Date): boolean =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
-export const nextMidnight = (now: Date): number =>
+const nextMidnight = (now: Date): number =>
   new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
 
 /** `in 5 min`, `in 2 h`, `in 1 h 36 min`. Minutes are rounded up, so it never says `in 0 min`. */
