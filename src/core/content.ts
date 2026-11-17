@@ -7,14 +7,9 @@ import type St from 'gi://St';
 import type { ModuleOwner, PeekChip, VisorApi } from '../api.js';
 import { disposeHttpSession } from '../lib/http.js';
 import { Peek } from './peek.js';
-import {
-  Registry,
-  type IncompatibleModule,
-  type ModuleEntry,
-  type RegistryListener,
-} from './registry.js';
+import { Registry, type ModuleEntry, type RegistryListener } from './registry.js';
 import { Search } from './search/controller.js';
-import { Sheet, type SearchMount } from './sheet.js';
+import { Sheet } from './sheet.js';
 import type { Attention, NotchContent, NotchHost, NotchState } from './types.js';
 
 export class Content implements NotchContent, RegistryListener {
@@ -54,16 +49,6 @@ export class Content implements NotchContent, RegistryListener {
   setHost(host: NotchHost): void {
     this.host = host;
     host.setAttention(this.attention);
-  }
-
-  /** Where the search hooks into the sheet. */
-  get search(): SearchMount {
-    return this.sheet;
-  }
-
-  /** Modules that were refused because they need another version of the API. */
-  get incompatibleModules(): readonly IncompatibleModule[] {
-    return this.registry.incompatible;
   }
 
   // --- NotchContent ---

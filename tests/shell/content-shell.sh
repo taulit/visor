@@ -177,7 +177,7 @@ echo "# escape"
 check 'Escape clears the search first' \
     '(() => { T.sheet.entry.set_text("abc"); return visor.content.handleEscape() === true && T.sheet.entry.get_text() === ""; })()'
 check 'the search text is reported 40 ms after a key' \
-    '(async () => { const got = []; visor.content.search.setQueryHandler(q => got.push(q)); T.sheet.entry.grab_key_focus(); await T.key(Clutter.KEY_a, Clutter.KEY_b); await T.wait(80); const typed = got.join("|"); visor.content.handleEscape(); visor.content.search.setQueryHandler(null); return typed === "a|ab" && got.join("|") === "a|ab|" || got.join("|"); })()'
+    '(async () => { const got = []; visor.content.sheet.setQueryHandler(q => got.push(q)); T.sheet.entry.grab_key_focus(); await T.key(Clutter.KEY_a, Clutter.KEY_b); await T.wait(80); const typed = got.join("|"); visor.content.handleEscape(); visor.content.sheet.setQueryHandler(null); return typed === "a|ab" && got.join("|") === "a|ab|" || got.join("|"); })()'
 check 'a dock icon opens the view of its module' \
     'T.click(T.find("visor-dock-button")[0]).then(() => T.sheet.view === "notes" && T.find("visor-view-title")[0].text === "Notes" && T.titles().join() === "Shopping list,Visor ideas" && visor.content.sheetWidth() === 960)'
 check 'Escape in a view clears a search text, then leaves the view, then is not used' \
@@ -229,7 +229,7 @@ check 'modules that throw are refused or left out, the others stay' \
             () => visor.api.register({ ...base, id: 'old-api', slot: 'now', enable() {} }, { uuid: 'old@example.org', metadata: { visor: { api: 2 } }, getSettings() { throw new Error('none'); }, gettext: s => s }),
         ].map(fn => { try { fn(); return false; } catch (e) { return e.message; } });
         const registry = T.content.registry;
-        return refused.every(Boolean) && /module API 2/.test(refused[4]) && T.content.incompatibleModules.map(m => m.id + m.api).join() === 'old-api2'
+        return refused.every(Boolean) && /module API 2/.test(refused[4])
             && !registry.get('bad-enable').active && registry.get('bad-enable').failed
             && !registry.get('bad-section').active && registry.get('bad-disable').active
             && registry.get('old-api') === null || JSON.stringify(refused);

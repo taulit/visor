@@ -20,7 +20,7 @@ import {
 import { uniqueById } from '../lib/diff.js';
 import { httpSession } from '../lib/http.js';
 import { aggregateAttention, declaredApi, isValidModuleId, orderIds } from '../lib/modules.js';
-import { createKit, type Guard } from './kit.js';
+import { createKit, makeGuard, type Guard } from './kit.js';
 import type { Attention } from './types.js';
 
 const SLOTS: readonly Slot[] = ['now', 'ahead', 'dock'];
@@ -48,16 +48,6 @@ interface InternalEntry extends ModuleEntry {
   openCallbacks: Set<(open: boolean) => void>;
 }
 
-/** A module that was refused because it was built for another version of the API. */
-export interface IncompatibleModule {
-  id: string;
-  name: string;
-  /** UUID of the extension the module came from. */
-  uuid: string;
-  /** The version the extension asked for. */
-  api: number;
-}
-
 /** What the running modules add to the search, in display order. */
 export interface SearchParts {
   commands: { entry: ModuleEntry; command: Command }[];
@@ -82,9 +72,6 @@ export interface RegistryListener {
 
 export class Registry {
   readonly api: VisorApi;
-  /** Modules refused for their API version, for the settings to list. */
-  readonly incompatible: IncompatibleModule[] = [];
-
   private entries = new Map<string, InternalEntry>();
   private listener: RegistryListener | null = null;
   private open = false;
@@ -190,7 +177,6 @@ export class Registry {
     this.settings.disconnectObject(this);
     for (const entry of [...this.entries.values()].reverse()) this.stop(entry);
     this.entries.clear();
-    this.incompatible.length = 0;
   }
 
   private register(module: VisorModule, owner?: ModuleOwner): void {
@@ -215,38 +201,16 @@ export class Registry {
     if (owner) {
       const api = declaredApi(owner.metadata);
       if (api !== null && api !== API_VERSION) {
-        const index = this.incompatible.findIndex(other => other.id === id);
-        if (index >= 0) this.incompatible.splice(index, 1);
-        this.incompatible.push({ id, name: String(module.name ?? id), uuid: owner.uuid, api });
         throw new Error(
           `Visor: module '${id}' of ${owner.uuid} was built for module API ${api}, ` +
             `but this Visor has module API ${API_VERSION}`,
         );
       }
     }
-    const index = this.incompatible.findIndex(other => other.id === id);
-    if (index >= 0) this.incompatible.splice(index, 1);
-
     const entry: InternalEntry = {
       module,
       owner: owner ?? null,
-      guard: {
-        call: fn => {
-          try {
-            fn();
-          } catch (e) {
-            this.report(entry, e);
-          }
-        },
-        build: fn => {
-          try {
-            return fn();
-          } catch (e) {
-            this.report(entry, e);
-            return null;
-          }
-        },
-      },
+      guard: makeGuard(e => this.report(entry, e)),
       active: false,
       generation: 0,
       failed: false,
