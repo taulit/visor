@@ -73,3 +73,9 @@ about state changes. The content asks the notch to open, close, flash or re-meas
   `tests/shell/` (the settings window opens in the sandbox through `OpenExtensionPrefs`) and the leak test, `scripts/shots.sh` takes the screenshots in `docs/screenshots/`,
   `scripts/shell-shot.sh <scenario>` a single one. The test helper in `tests/shell-helper/` exports
   `io.github.taulit.Visor.Debug` (`Eval`, `Screenshot`); in `Eval`, `visor` is the running extension object.
+- The sandbox has its own session bus and, on it, its own unlocked keyring (`gnome-keyring-daemon` with the
+  sandbox `HOME`; `--no-keyring` runs none). The keyring of the session you are logged in to is on another
+  bus and cannot be reached; `scripts/lib/keyring.sh` refuses to run outside the sandbox.
+- The settings window is another process, so the shell cannot look into it. Tests drive it with a virtual
+  pointer and keyboard and read it over the accessibility bus of the sandbox (`scripts/lib/prefs.sh`,
+  `tests/shell/prefs-a11y.py`): texts, positions of widgets by name, the keyboard focus.

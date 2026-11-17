@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:20+0100\n"
+"POT-Creation-Date: 2026-11-17 16:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +50,7 @@ msgstr ""
 msgid "Rates are loading"
 msgstr ""
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
 msgid "Modules"
 msgstr ""
 
@@ -167,7 +167,7 @@ msgid "Dismiss"
 msgstr ""
 
 #: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:91
+#: build/prefs/t3.js:95
 msgid "T3 Code"
 msgstr ""
 
@@ -505,35 +505,35 @@ msgstr ""
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr ""
 
-#: build/prefs/modules.js:77
+#: build/prefs/modules.js:96
 msgid "Discover"
 msgstr ""
 
-#: build/prefs/modules.js:110
+#: build/prefs/modules.js:132
 msgid "Move up"
 msgstr ""
 
-#: build/prefs/modules.js:111
+#: build/prefs/modules.js:133
 msgid "Move down"
 msgstr ""
 
-#: build/prefs/modules.js:114
+#: build/prefs/modules.js:136
 msgid "Change the order"
 msgstr ""
 
-#: build/prefs/modules.js:124
+#: build/prefs/modules.js:146
 msgid "Drag to change the order"
 msgstr ""
 
-#: build/prefs/modules.js:151
+#: build/prefs/modules.js:173
 msgid "Built for another version of Visor"
 msgstr ""
 
-#: build/prefs/modules.js:153
+#: build/prefs/modules.js:175
 msgid "Turned off in the extensions"
 msgstr ""
 
-#: build/prefs/modules.js:163
+#: build/prefs/modules.js:185
 msgid "Settings of the module"
 msgstr ""
 
@@ -562,59 +562,67 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: build/prefs/t3.js:78
+#: build/prefs/t3.js:80
 msgid "This is not a pairing link"
 msgstr ""
 
-#: build/prefs/t3.js:80 build/prefs/t3.js:197
+#: build/prefs/t3.js:82 build/prefs/t3.js:228
 msgid "Use https for a server on another machine"
 msgstr ""
 
-#: build/prefs/t3.js:82
+#: build/prefs/t3.js:84
 msgid "The link is wrong or has expired"
 msgstr ""
 
-#: build/prefs/t3.js:84
+#: build/prefs/t3.js:86
 msgid "This version of T3 Code does not fit Visor"
 msgstr ""
 
-#: build/prefs/t3.js:86
+#: build/prefs/t3.js:88
+msgid "The keyring is not available"
+msgstr ""
+
+#: build/prefs/t3.js:90
 msgid "The server cannot be reached"
 msgstr ""
 
 #. --- not paired ---
-#: build/prefs/t3.js:96
+#: build/prefs/t3.js:100
 msgid "Pairing link or code"
 msgstr ""
 
-#: build/prefs/t3.js:99
+#: build/prefs/t3.js:103
 msgid "Connect"
 msgstr ""
 
 #. --- paired ---
-#: build/prefs/t3.js:172
+#: build/prefs/t3.js:198
 msgid "Connected"
 msgstr ""
 
-#: build/prefs/t3.js:174
+#: build/prefs/t3.js:200
 msgid "Disconnect"
 msgstr ""
 
 #. --- the address ---
-#: build/prefs/t3.js:184
+#: build/prefs/t3.js:215
 msgid "Server address"
 msgstr ""
 
-#: build/prefs/t3.js:185
+#: build/prefs/t3.js:216
 msgid "Address, empty for this machine"
 msgstr ""
 
-#: build/prefs/t3.js:217
+#: build/prefs/t3.js:229
+msgid "This is not a server address"
+msgstr ""
+
+#: build/prefs/t3.js:249
 msgid ""
 "Create a pairing link in T3 Code under Settings → Connections and paste it "
 "here."
 msgstr ""
 
-#: build/prefs/t3.js:220 build/prefs/t3.js:221
+#: build/prefs/t3.js:252 build/prefs/t3.js:253
 msgid "This machine"
 msgstr ""

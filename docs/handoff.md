@@ -34,7 +34,8 @@ the V3 pull request is merged (otherwise say clearly that it is stacked on V3).
 ## Open items carried forward
 
 - T3 Code: nothing is verified against a real server (token exchange, ticket, socket, approve/deny/reply/stop).
-  The access token is stored as plain text in dconf; move it to the keyring (libsecret) in V4.
+  The access token is in the keyring (libsecret, `docs/t3-protocol.md`); a locked keyring was not
+  tested at runtime, the keyring of the sandbox is unlocked.
 - "Open in T3 Code" opens the thread in the browser; the desktop app has no deep link for threads.
 - API v1 has no kit element for body text or a text field; the T3 module builds both itself.
 

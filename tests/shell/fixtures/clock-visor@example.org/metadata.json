@@ -1,0 +1,7 @@
+{
+  "uuid": "clock-visor@example.org",
+  "name": "World Clock",
+  "description": "Other time zones in Now",
+  "shell-version": ["50"],
+  "visor": { "api": 1, "slot": "now", "id": "world-clock" }
+}

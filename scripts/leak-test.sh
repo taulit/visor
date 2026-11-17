@@ -32,8 +32,8 @@ t3_connected() { ! $with_t3 || shell_wait_for "$t3.module.client.connected && $t
 if $with_t3; then
     port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
     node "$repo/tests/t3-mock/server.js" --port "$port" --home "$HOME/.t3" >/dev/null 2>&1 &
-    shell_eval "visor.getSettings().set_string('t3-token-origin', 'http://127.0.0.1:$port')" >/dev/null
-    shell_eval "visor.getSettings().set_string('t3-access-token', 'mock-token')" >/dev/null
+    source "$repo/scripts/lib/keyring.sh"
+    t3_pair "http://127.0.0.1:$port" mock-token
     t3_connected
 fi
 settle
