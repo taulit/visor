@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 15:52+0100\n"
+"POT-Creation-Date: 2026-11-17 16:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -102,7 +102,7 @@ msgstr ""
 msgid "Downloads"
 msgstr ""
 
-#: build/modules/downloads/module.js:336 build/modules/t3/module.js:301
+#: build/modules/downloads/module.js:336 build/modules/t3/module.js:367
 #: build/modules/timers/module.js:229
 msgid "Done"
 msgstr ""
@@ -166,105 +166,113 @@ msgstr ""
 msgid "Dismiss"
 msgstr ""
 
-#: build/modules/t3/module.js:26 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:84
+#: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
+#: build/prefs/t3.js:91
 msgid "T3 Code"
 msgstr ""
 
-#: build/modules/t3/module.js:32
+#: build/modules/t3/module.js:33
 msgid "t3 Fix the failing test"
 msgstr ""
 
-#: build/modules/t3/module.js:95 build/modules/t3/module.js:313
+#: build/modules/t3/module.js:105 build/modules/t3/module.js:384
 msgid "Untitled thread"
 msgstr ""
 
-#: build/modules/t3/module.js:100
+#: build/modules/t3/module.js:110
 #, javascript-format
 msgid "Send to %s"
 msgstr ""
 
-#: build/modules/t3/module.js:109
+#: build/modules/t3/module.js:119
 msgid "Start a new thread"
 msgstr ""
 
-#: build/modules/t3/module.js:227
+#: build/modules/t3/module.js:280
 #, javascript-format
 msgid "+ %d more"
 msgstr ""
 
-#: build/modules/t3/module.js:275
+#: build/modules/t3/module.js:339
 msgid "Agent"
 msgstr ""
 
-#: build/modules/t3/module.js:278
+#: build/modules/t3/module.js:342
 #, javascript-format
 msgid "%s is waiting"
 msgstr ""
 
-#: build/modules/t3/module.js:287
+#: build/modules/t3/module.js:351
 msgid "Starting"
 msgstr ""
 
-#: build/modules/t3/module.js:290 build/modules/t3/module.js:291
+#: build/modules/t3/module.js:354 build/modules/t3/module.js:355
 msgid "Working"
 msgstr ""
 
-#: build/modules/t3/module.js:294
+#: build/modules/t3/module.js:358
+msgid "Answer this request in T3 Code"
+msgstr ""
+
+#: build/modules/t3/module.js:360
 msgid "Wants to run"
 msgstr ""
 
-#: build/modules/t3/module.js:296
+#: build/modules/t3/module.js:362
 msgid "Wants to use a file"
 msgstr ""
 
-#: build/modules/t3/module.js:297
+#: build/modules/t3/module.js:363
 msgid "Asks for permission"
 msgstr ""
 
-#: build/modules/t3/module.js:299
+#: build/modules/t3/module.js:365
 msgid "Has a question"
 msgstr ""
 
-#: build/modules/t3/module.js:303
+#: build/modules/t3/module.js:369
 msgid "Failed"
 msgstr ""
 
-#: build/modules/t3/module.js:309
+#: build/modules/t3/module.js:380
 msgid "Could not send"
 msgstr ""
 
-#: build/modules/t3/module.js:331 build/modules/t3/module.js:446
+#: build/modules/t3/module.js:406 build/modules/t3/module.js:587
+msgid "Open in T3 Code"
+msgstr ""
+
+#: build/modules/t3/module.js:418 build/modules/t3/module.js:510
 msgid "Deny"
 msgstr ""
 
-#: build/modules/t3/module.js:333 build/modules/t3/module.js:447
+#: build/modules/t3/module.js:424 build/modules/t3/module.js:511
 msgid "Allow"
 msgstr ""
 
-#: build/modules/t3/module.js:340
+#: build/modules/t3/module.js:434
 msgid "Answer"
 msgstr ""
 
-#: build/modules/t3/module.js:418
+#: build/modules/t3/module.js:521
+msgid "Has characters that cannot be shown. Open T3 Code to read it"
+msgstr ""
+
+#: build/modules/t3/module.js:522
 msgid "Open T3 Code to read all of it"
 msgstr ""
 
-#: build/modules/t3/module.js:452
+#: build/modules/t3/module.js:560
 #, javascript-format
 msgid "Reply to %s"
 msgstr ""
 
-#: build/modules/t3/module.js:452 build/modules/t3/module.js:453
+#: build/modules/t3/module.js:560 build/modules/t3/module.js:561
 msgid "Reply"
 msgstr ""
 
-#: build/modules/t3/module.js:468 build/modules/timers/module.js:246
+#: build/modules/t3/module.js:576 build/modules/timers/module.js:246
 msgid "Stop"
-msgstr ""
-
-#: build/modules/t3/module.js:479
-msgid "Open in T3 Code"
 msgstr ""
 
 #: build/modules/timers/module.js:19 build/prefs/builtin-modules.js:5
@@ -554,55 +562,59 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: build/prefs/t3.js:73
+#: build/prefs/t3.js:78
 msgid "This is not a pairing link"
 msgstr ""
 
-#: build/prefs/t3.js:75
+#: build/prefs/t3.js:80 build/prefs/t3.js:197
+msgid "Use https for a server on another machine"
+msgstr ""
+
+#: build/prefs/t3.js:82
 msgid "The link is wrong or has expired"
 msgstr ""
 
-#: build/prefs/t3.js:77
+#: build/prefs/t3.js:84
 msgid "This version of T3 Code does not fit Visor"
 msgstr ""
 
-#: build/prefs/t3.js:79
+#: build/prefs/t3.js:86
 msgid "The server cannot be reached"
 msgstr ""
 
 #. --- not paired ---
-#: build/prefs/t3.js:89
+#: build/prefs/t3.js:96
 msgid "Pairing link or code"
 msgstr ""
 
-#: build/prefs/t3.js:92
+#: build/prefs/t3.js:99
 msgid "Connect"
 msgstr ""
 
 #. --- paired ---
-#: build/prefs/t3.js:162
+#: build/prefs/t3.js:172
 msgid "Connected"
 msgstr ""
 
-#: build/prefs/t3.js:164
+#: build/prefs/t3.js:174
 msgid "Disconnect"
 msgstr ""
 
 #. --- the address ---
-#: build/prefs/t3.js:170
+#: build/prefs/t3.js:184
 msgid "Server address"
 msgstr ""
 
-#: build/prefs/t3.js:172
+#: build/prefs/t3.js:185
 msgid "Address, empty for this machine"
 msgstr ""
 
-#: build/prefs/t3.js:192
+#: build/prefs/t3.js:217
 msgid ""
 "Create a pairing link in T3 Code under Settings → Connections and paste it "
 "here."
 msgstr ""
 
-#: build/prefs/t3.js:195 build/prefs/t3.js:196
+#: build/prefs/t3.js:220 build/prefs/t3.js:221
 msgid "This machine"
 msgstr ""
