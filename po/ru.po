@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 22:22+0100\n"
+"POT-Creation-Date: 2026-11-17 23:18+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Russian\n"
@@ -17,109 +17,109 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: build/core/clock.js:61
+#: build/core/clock.js:59
 msgid "something waits for you"
 msgstr "что-то ждёт ответа"
 
-#: build/core/clock.js:63
+#: build/core/clock.js:61
 msgid "unread notifications"
 msgstr "непрочитанные уведомления"
 
-#: build/core/kit.js:351
+#: build/core/kit.js:354
 msgid "waits for you"
 msgstr "ждёт ответа"
 
-#: build/core/kit.js:353
+#: build/core/kit.js:356
 msgid "done"
 msgstr "готово"
 
-#: build/core/kit.js:797
+#: build/core/kit.js:796
 #, javascript-format
 msgid "Hide details of %s"
 msgstr "Скрыть подробности: %s"
 
-#: build/core/kit.js:798
+#: build/core/kit.js:797
 #, javascript-format
 msgid "Show details of %s"
 msgstr "Показать подробности: %s"
 
-#: build/core/search/controller.js:124 build/core/search/controller.js:147
+#: build/core/search/controller.js:114 build/core/search/controller.js:142
 msgid "Commands"
 msgstr "Команды"
 
-#: build/core/search/controller.js:132
+#: build/core/search/controller.js:122
 msgid "Calculate"
 msgstr "Вычислить"
 
-#: build/core/search/controller.js:133
+#: build/core/search/controller.js:123
 msgid "Apps"
 msgstr "Приложения"
 
-#: build/core/search/controller.js:179
+#: build/core/search/controller.js:174
 msgid "No results"
 msgstr "Ничего не найдено"
 
-#: build/core/search/controller.js:280
+#: build/core/search/controller.js:275
 msgid "Enter completes"
 msgstr "Enter — дополнить"
 
-#: build/core/search/controller.js:296 build/core/search/controller.js:321
+#: build/core/search/controller.js:291 build/core/search/controller.js:316
 msgid "Enter copies"
 msgstr "Enter — копировать"
 
-#: build/core/search/controller.js:306
+#: build/core/search/controller.js:301
 msgid "Currency rates are turned off"
 msgstr "Курсы валют отключены"
 
-#: build/core/search/controller.js:309
+#: build/core/search/controller.js:304
 msgid "Rates are loading"
 msgstr "Загрузка курсов"
 
-#: build/core/sheet.js:201 build/core/sheet.js:570 build/prefs/modules.js:18
+#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "Модули"
 
-#: build/core/sheet.js:334
+#: build/core/sheet.js:331
 msgid "Search, calculate or run a command …"
 msgstr "Поиск, вычисления или команда …"
 
-#: build/core/sheet.js:335 build/prefs/general.js:75
+#: build/core/sheet.js:332 build/prefs/general.js:75
 msgid "Search"
 msgstr "Поиск"
 
-#: build/core/sheet.js:360 build/core/sheet.js:441
+#: build/core/sheet.js:357 build/core/sheet.js:438
 #: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
 msgid "Now"
 msgstr "Сейчас"
 
-#: build/core/sheet.js:374
+#: build/core/sheet.js:371
 msgid "Back"
 msgstr "Назад"
 
-#: build/core/sheet.js:441
+#: build/core/sheet.js:438
 msgid "Shows up only while something is running."
 msgstr "Появляется, только пока что-то выполняется."
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:442 build/modules/upcoming/module.js:28
-#: build/modules/upcoming/module.js:99 build/prefs/builtin-modules.js:8
+#: build/core/sheet.js:439 build/modules/upcoming/module.js:28
+#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:8
 #: build/prefs/builtin-modules.js:19
 msgid "Up Next"
 msgstr "Далее"
 
-#: build/core/sheet.js:442
+#: build/core/sheet.js:439
 msgid "A short section next to “Now”."
 msgstr "Короткий раздел рядом с «Сейчас»."
 
-#: build/core/sheet.js:443 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:440 build/prefs/builtin-modules.js:20
 msgid "Dock"
 msgstr "Док"
 
-#: build/core/sheet.js:443
+#: build/core/sheet.js:440
 msgid "A view of its own behind an icon."
 msgstr "Собственное представление за значком."
 
-#: build/core/sheet.js:641
+#: build/core/sheet.js:638
 msgid "No modules"
 msgstr "Нет модулей"
 
@@ -127,7 +127,7 @@ msgstr "Нет модулей"
 msgid "Downloads"
 msgstr "Загрузки"
 
-#: build/modules/downloads/module.js:336 build/modules/t3/module.js:367
+#: build/modules/downloads/module.js:336 build/modules/t3/module.js:361
 #: build/modules/timers/module.js:229
 msgid "Done"
 msgstr "Готово"
@@ -192,7 +192,7 @@ msgid "Dismiss"
 msgstr "Скрыть"
 
 #: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:95
+#: build/prefs/t3.js:78
 msgid "T3 Code"
 msgstr "T3 Code"
 
@@ -200,7 +200,7 @@ msgstr "T3 Code"
 msgid "t3 Fix the failing test"
 msgstr "t3 Исправь падающий тест"
 
-#: build/modules/t3/module.js:105 build/modules/t3/module.js:384
+#: build/modules/t3/module.js:105 build/modules/t3/module.js:378
 msgid "Untitled thread"
 msgstr "Безымянный тред"
 
@@ -218,86 +218,86 @@ msgstr "Начать новый тред"
 msgid "+ %d more"
 msgstr "+ ещё %d"
 
-#: build/modules/t3/module.js:339
+#: build/modules/t3/module.js:333
 msgid "Agent"
 msgstr "Агент"
 
-#: build/modules/t3/module.js:342
+#: build/modules/t3/module.js:336
 #, javascript-format
 msgid "%s is waiting"
 msgstr "%s ожидает"
 
-#: build/modules/t3/module.js:351
+#: build/modules/t3/module.js:345
 msgid "Starting"
 msgstr "Запуск"
 
-#: build/modules/t3/module.js:354 build/modules/t3/module.js:355
+#: build/modules/t3/module.js:348 build/modules/t3/module.js:349
 msgid "Working"
 msgstr "Работает"
 
-#: build/modules/t3/module.js:358
+#: build/modules/t3/module.js:352
 msgid "Answer this request in T3 Code"
 msgstr "Ответьте на этот запрос в T3 Code"
 
-#: build/modules/t3/module.js:360
+#: build/modules/t3/module.js:354
 msgid "Wants to run"
 msgstr "Хочет выполнить"
 
-#: build/modules/t3/module.js:362
+#: build/modules/t3/module.js:356
 msgid "Wants to use a file"
 msgstr "Хочет использовать файл"
 
-#: build/modules/t3/module.js:363
+#: build/modules/t3/module.js:357
 msgid "Asks for permission"
 msgstr "Запрашивает разрешение"
 
-#: build/modules/t3/module.js:365
+#: build/modules/t3/module.js:359
 msgid "Has a question"
 msgstr "Задаёт вопрос"
 
-#: build/modules/t3/module.js:369
+#: build/modules/t3/module.js:363
 msgid "Failed"
 msgstr "Ошибка"
 
-#: build/modules/t3/module.js:380
+#: build/modules/t3/module.js:374
 msgid "Could not send"
 msgstr "Не удалось отправить"
 
-#: build/modules/t3/module.js:406 build/modules/t3/module.js:587
+#: build/modules/t3/module.js:400 build/modules/t3/module.js:581
 msgid "Open in T3 Code"
 msgstr "Открыть в T3 Code"
 
-#: build/modules/t3/module.js:418 build/modules/t3/module.js:510
+#: build/modules/t3/module.js:412 build/modules/t3/module.js:504
 msgid "Deny"
 msgstr "Отклонить"
 
-#: build/modules/t3/module.js:424 build/modules/t3/module.js:511
+#: build/modules/t3/module.js:418 build/modules/t3/module.js:505
 msgid "Allow"
 msgstr "Разрешить"
 
-#: build/modules/t3/module.js:434
+#: build/modules/t3/module.js:428
 msgid "Answer"
 msgstr "Ответить"
 
-#: build/modules/t3/module.js:521
+#: build/modules/t3/module.js:515
 msgid "Has characters that cannot be shown. Open T3 Code to read it"
 msgstr ""
 "Содержит символы, которые нельзя показать. Откройте T3 Code, чтобы прочитать"
 
-#: build/modules/t3/module.js:522
+#: build/modules/t3/module.js:516
 msgid "Open T3 Code to read all of it"
 msgstr "Откройте T3 Code, чтобы прочитать целиком"
 
-#: build/modules/t3/module.js:560
+#: build/modules/t3/module.js:554
 #, javascript-format
 msgid "Reply to %s"
 msgstr "Ответ для %s"
 
-#: build/modules/t3/module.js:560 build/modules/t3/module.js:561
+#: build/modules/t3/module.js:554 build/modules/t3/module.js:555
 msgid "Reply"
 msgstr "Ответить"
 
-#: build/modules/t3/module.js:576 build/modules/timers/module.js:246
+#: build/modules/t3/module.js:570 build/modules/timers/module.js:246
 msgid "Stop"
 msgstr "Остановить"
 
@@ -375,11 +375,11 @@ msgstr "Таймер сработал"
 msgid "Ended at %s"
 msgstr "Завершено в %s"
 
-#: build/modules/upcoming/module.js:100
+#: build/modules/upcoming/module.js:111
 msgid "Nothing else today"
 msgstr "На сегодня больше ничего"
 
-#: build/modules/upcoming/module.js:182
+#: build/modules/upcoming/module.js:194
 msgid "Join"
 msgstr "Присоединиться"
 
@@ -592,62 +592,62 @@ msgstr ""
 msgid "Cancel"
 msgstr "Отмена"
 
-#: build/prefs/t3.js:80
+#: build/prefs/t3.js:63
 msgid "This is not a pairing link"
 msgstr "Это не ссылка для сопряжения"
 
-#: build/prefs/t3.js:82 build/prefs/t3.js:228
+#: build/prefs/t3.js:65 build/prefs/t3.js:206
 msgid "Use https for a server on another machine"
 msgstr "Для сервера на другом компьютере используйте https"
 
-#: build/prefs/t3.js:84
+#: build/prefs/t3.js:67
 msgid "The link is wrong or has expired"
 msgstr "Ссылка неверна или устарела"
 
-#: build/prefs/t3.js:86
+#: build/prefs/t3.js:69
 msgid "This version of T3 Code does not fit Visor"
 msgstr "Эта версия T3 Code не подходит для Visor"
 
-#: build/prefs/t3.js:88
+#: build/prefs/t3.js:71
 msgid "The keyring is not available"
 msgstr "Связка ключей недоступна"
 
-#: build/prefs/t3.js:90
+#: build/prefs/t3.js:73
 msgid "The server cannot be reached"
 msgstr "Сервер недоступен"
 
 #. --- not paired ---
-#: build/prefs/t3.js:100
+#: build/prefs/t3.js:83
 msgid "Pairing link or code"
 msgstr "Ссылка или код сопряжения"
 
-#: build/prefs/t3.js:103
+#: build/prefs/t3.js:86
 msgid "Connect"
 msgstr "Подключить"
 
 #. --- paired ---
-#: build/prefs/t3.js:198
+#: build/prefs/t3.js:176
 msgid "Connected"
 msgstr "Подключено"
 
-#: build/prefs/t3.js:200
+#: build/prefs/t3.js:178
 msgid "Disconnect"
 msgstr "Отключить"
 
 #. --- the address ---
-#: build/prefs/t3.js:215
+#: build/prefs/t3.js:193
 msgid "Server address"
 msgstr "Адрес сервера"
 
-#: build/prefs/t3.js:216
+#: build/prefs/t3.js:194
 msgid "Address, empty for this machine"
 msgstr "Адрес, пусто для этого компьютера"
 
-#: build/prefs/t3.js:229
+#: build/prefs/t3.js:207
 msgid "This is not a server address"
 msgstr "Это не адрес сервера"
 
-#: build/prefs/t3.js:249
+#: build/prefs/t3.js:227
 msgid ""
 "Create a pairing link in T3 Code under Settings → Connections and paste it "
 "here."
@@ -655,6 +655,6 @@ msgstr ""
 "Создайте ссылку для сопряжения в T3 Code в разделе Settings → Connections и "
 "вставьте её сюда."
 
-#: build/prefs/t3.js:252 build/prefs/t3.js:253
+#: build/prefs/t3.js:230 build/prefs/t3.js:231
 msgid "This machine"
 msgstr "Этот компьютер"
