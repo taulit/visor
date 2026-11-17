@@ -18,7 +18,7 @@ cycles="$2"
 uuid='visor@taulit.github.io'
 state="Main.extensionManager.lookup('$uuid').state"
 # Every actor below the stage, so leaks outside uiGroup's direct children count too.
-count='(function n(a) { let c = 1; for (const k of a.get_children()) c += n(k); return c; })(global.stage)'
+count="$SHELL_ACTOR_COUNT"
 
 settle() { shell_eval 'new Promise(r => GLib.timeout_add(GLib.PRIORITY_LOW, 150, () => (r(true), false)))' >/dev/null; }
 

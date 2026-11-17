@@ -7,7 +7,7 @@ set -euo pipefail
 source "$VISOR_REPO/tests/shell/lib.sh"
 
 uuid='visor@taulit.github.io'
-count='(function n(a) { let c = 1; for (const k of a.get_children()) c += n(k); return c; })(global.stage)'
+count="$SHELL_ACTOR_COUNT"
 reenable="(Main.extensionManager.disableExtension('$uuid'), Main.extensionManager.enableExtension('$uuid'))"
 
 shell_eval "$reenable" >/dev/null

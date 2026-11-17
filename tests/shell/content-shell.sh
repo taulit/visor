@@ -260,7 +260,7 @@ check 'without modules nothing but the search row is left' \
     '(() => { visor.api.unregister("notifications"); return visor.content.sheetWidth() === 600 && !T.sheet.scroll.visible && !visor.content.hasPeek() && T.content.attention === null; })()'
 
 echo "# disable"
-count='(function n(a) { let c = 1; for (const k of a.get_children()) c += n(k); return c; })(global.stage)'
+count="$SHELL_ACTOR_COUNT"
 uuid='visor@taulit.github.io'
 run 'delete globalThis.T'
 run "Main.extensionManager.disableExtension('$uuid')"

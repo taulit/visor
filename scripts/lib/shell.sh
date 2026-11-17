@@ -18,6 +18,12 @@ shell_eval() {
     fi
 }
 
+# The number of actors on the stage, as a JS expression, for the leak tests.
+# The quick settings menu is left out: it lists the Wi-Fi networks and other
+# devices of the machine, which come and go while a test runs.
+# shellcheck disable=SC2034  # used by the scripts that source this file
+SHELL_ACTOR_COUNT='(function n(a) { if (a === Main.panel.statusArea.quickSettings?.menu.actor) return 0; let c = 1; for (const k of a.get_children()) c += n(k); return c; })(global.stage)'
+
 # shell_wait_for JS [timeout_seconds]: waits until JS evaluates to true.
 shell_wait_for() {
     local deadline=$((SECONDS + ${2:-10}))

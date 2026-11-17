@@ -502,7 +502,7 @@ check 'and painted with the next frame' "(() => { const paint = ${speed}[2]; ret
 echo "# closing and disabling"
 check 'nothing is left after closing' \
     '(async () => { visor.notch.close(); await T.wait(150); return T.quiet() && T.text() === "" || [T.sheet.overlay.visible, T.finder.groups.length, T.finder.idle, T.find("visor-result").length].join(); })()'
-count='(function n(a) { let c = 1; for (const k of a.get_children()) c += n(k); return c; })(global.stage)'
+count="$SHELL_ACTOR_COUNT"
 uuid='visor@taulit.github.io'
 run 'T.provider.stop()'
 run 'delete globalThis.T'
