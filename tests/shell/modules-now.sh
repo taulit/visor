@@ -42,6 +42,8 @@ run() { shell_eval "$1" >/dev/null; }
 uuid='visor@taulit.github.io'
 state="Main.extensionManager.lookup('$uuid').state"
 shell_wait_for 'visor !== null && visor.api !== null'
+# Stand-in for cover art.
+magick -size 96x96 -define gradient:angle=135 gradient:'#ff6a3d-#a23cff' "$HOME/cover.png"
 log_before="$(wc -l <"$HOME/shell.log")"
 
 # Helpers that live in the shell for the rest of the test. They go through
@@ -60,6 +62,111 @@ run "(() => {
     };
     return true;
 })()"
+
+# --- media ------------------------------------------------------------------
+
+# mock SUFFIX METHOD [args]: drives a mock player, see tests/mpris-mock.js.
+mock() {
+    gdbus call --session --dest "org.mpris.MediaPlayer2.$1" --object-path /org/mpris/MediaPlayer2 \
+        --method "io.github.taulit.Visor.MprisMock.$2" "${@:3}"
+}
+start_mock() {
+    gjs -m "$repo/tests/mpris-mock.js" "$@" &
+    shell_wait_for "N.mod('media').players.has('org.mpris.MediaPlayer2.$1')"
+}
+one='org.mpris.MediaPlayer2.visormock'
+media_row="N.rows('media')[0]"
+
+check 'media: no player, no row, no timeout' "N.rows('media').length === 0 && N.mod('media').pollSource === 0 && N.mod('media').pauseSource === 0"
+start_mock visormock
+check 'media: a stopped player has no row' "N.rows('media').length === 0 && N.chip('media') === null"
+mock visormock SetTrack 'Midnight City' "['M83']" '' 0 >/dev/null
+mock visormock SetStatus Playing >/dev/null
+wait_check 'media: a row appears when the player plays' "N.rows('media').length === 1 && $media_row.id === '$one'"
+check 'media: title, artist and player' "$media_row.title === 'Midnight City' && $media_row.subtitle === 'M83 · Visor Mock'"
+check 'media: controls' "$media_row.controls.map(a => a.label).join() === 'Previous,Pause,Next' && $media_row.controls[1].style === 'filled'"
+check 'media: no art, a music symbol' "$media_row.icon === 'audio-x-generic-symbolic' && $media_row.iconStyle === 'cover'"
+check 'media: the chip' "N.chip('media').text === 'Midnight City' && N.chip('media').priority === 30 && N.chip('media').icon === 'media-playback-start-symbolic'"
+check 'media: no timeout with the panel closed' "N.mod('media').pollSource === 0 && N.mod('media').pauseSource === 0"
+
+mock visormock SetTrack 'A very long title that does not fit into a chip' "['Kraftwerk', 'Moroder']" '' 0 >/dev/null
+wait_check 'media: the row follows the metadata' "$media_row.title.startsWith('A very long') && $media_row.subtitle === 'Kraftwerk, Moroder · Visor Mock'"
+check 'media: the chip is cut to 24 characters' "N.chip('media').text === 'A very long title that …'"
+
+run "(N.action($media_row, 'Next').run(), N.action($media_row, 'Previous').run(), N.action($media_row, 'Pause').run(), true)"
+wait_check 'media: the controls call the player' "$media_row.controls[1].label === 'Play'"
+check 'media: the calls arrived' "$(mock visormock Calls | grep -c "\['Next', 'Previous', 'PlayPause'\]" || true) === 1"
+check 'media: a paused player keeps its row but has no chip' "N.rows('media').length === 1 && N.chip('media') === null"
+check 'media: one timeout while a paused player is shown' "N.mod('media').pauseSource !== 0 && N.mod('media').pollSource === 0"
+run "N.action($media_row, 'Play').run()"
+wait_check 'media: play again' "$media_row.controls[1].label === 'Pause' && N.mod('media').pauseSource === 0"
+mock visormock SetCan false false >/dev/null
+wait_check 'media: no buttons for what the player cannot do' "$media_row.controls.map(a => a.label).join() === 'Pause'"
+mock visormock SetCan true true >/dev/null
+
+# Progress: only with a position and a length, read while the panel is open.
+mock visormock SetPosition 60000000 false >/dev/null
+run 'visor.notch.open()'
+shell_wait_for 'visor.notch.state === "open"'
+check 'media: one timeout while the panel is open and something plays' "N.mod('media').pollSource !== 0"
+run 'N.wait(1500)'
+check 'media: no progress without a length' "$media_row.progress === undefined"
+mock visormock SetTrack 'Midnight City' "['M83']" "file://$HOME/cover.png" 240000000 >/dev/null
+mock visormock SetPosition 60000000 false >/dev/null
+wait_check 'media: progress with position and length' "$media_row.progress === 0.25"
+mock visormock SetPosition 120000000 false >/dev/null
+wait_check 'media: the position is read every second' "$media_row.progress === 0.5" 4
+mock visormock SetPosition 180000000 true >/dev/null
+wait_check 'media: Seeked sets the position at once' "$media_row.progress === 0.75" 1
+check 'media: local art is shown as it is' "$media_row.icon instanceof Gio.FileIcon && $media_row.icon.get_file().get_path() === GLib.get_home_dir() + '/cover.png'"
+run 'visor.notch.close()'
+shell_wait_for 'visor.notch.state !== "open"'
+check 'media: no timeout after the panel closed' "N.mod('media').pollSource === 0"
+mock visormock SetPosition 30000000 false >/dev/null
+run 'N.wait(1500)'
+check 'media: the position is not read with the panel closed' "$media_row.progress === 0.75"
+
+# Art from the web is loaded once into the cache.
+www="$HOME/www"
+mkdir -p "$www"
+cp "$HOME/cover.png" "$www/art.png"
+port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
+python3 -m http.server --bind 127.0.0.1 --directory "$www" "$port" >"$HOME/www.log" 2>&1 &
+www_pid=$!
+for _ in $(seq 1 50); do curl -s -o /dev/null "http://127.0.0.1:$port/art.png" && break; sleep 0.1; done
+: >"$HOME/www.log"
+mock visormock SetTrack 'Web' "['M83']" "http://127.0.0.1:$port/art.png" 0 >/dev/null
+wait_check 'media: art from the web lands in the cache' "$media_row.icon instanceof Gio.FileIcon && $media_row.icon.get_file().get_path().startsWith(GLib.get_user_cache_dir() + '/visor/cover-') && $media_row.icon.get_file().query_exists(null)"
+mock visormock SetTrack 'Other' "['M83']" '' 0 >/dev/null
+mock visormock SetTrack 'Web again' "['M83']" "http://127.0.0.1:$port/art.png" 0 >/dev/null
+wait_check 'media: the same art again' "$media_row.title === 'Web again' && $media_row.icon instanceof Gio.FileIcon"
+check 'media: it was downloaded once' "$(grep -c 'GET /art.png' "$HOME/www.log" || true) === 1"
+kill "$www_pid" 2>/dev/null || true
+
+run 'visor.notch.open()'
+shell_wait_for 'visor.notch.state === "open"'
+run "$media_row.activate()"
+wait_check 'media: a click raises the player and closes the panel' "visor.notch.state !== 'open'"
+check 'media: Raise arrived' "$(mock visormock Calls | grep -c "'Raise'" || true) === 1"
+
+# Several players: playing first, the most recently active first, at most two rows.
+start_mock visormock2 'Second Mock'
+mock visormock2 SetTrack 'Second' "['B']" '' 0 >/dev/null
+mock visormock2 SetStatus Playing >/dev/null
+wait_check 'media: the player that started last comes first' "N.rows('media').map(r => r.title).join() === 'Second,Web again'"
+mock visormock2 SetStatus Paused >/dev/null
+wait_check 'media: a playing player comes before a paused one' "N.rows('media').map(r => r.title).join() === 'Web again,Second'"
+start_mock visormock3 'Third Mock'
+mock visormock3 SetTrack 'Third' "['C']" '' 0 >/dev/null
+mock visormock3 SetStatus Playing >/dev/null
+wait_check 'media: at most two rows' "N.rows('media').map(r => r.title).join() === 'Third,Web again'"
+mock visormock3 Quit >/dev/null
+wait_check 'media: the row goes when the player leaves the bus' "N.rows('media').map(r => r.title).join() === 'Web again,Second' && N.mod('media').players.size === 2"
+mock visormock2 SetStatus Stopped >/dev/null
+wait_check 'media: the row goes when the player stops' "N.rows('media').map(r => r.title).join() === 'Web again'"
+mock visormock2 Quit >/dev/null
+mock visormock SetStatus Stopped >/dev/null
+wait_check 'media: nothing plays, nothing shown, no timeout' "N.rows('media').length === 0 && N.chip('media') === null && N.mod('media').pollSource === 0 && N.mod('media').pauseSource === 0"
 
 # --- timers -----------------------------------------------------------------
 
@@ -126,12 +233,19 @@ run "N.mod('timers').commands[0].resolve('10m Tea')[0].activate()"
 check 'timers: with the panel closed only the end is awaited' "N.mod('timers').source !== 0 && N.row('timers', 'Tea').value === '10:00'"
 
 # Persistence: the timers come back after disable and enable.
+mock visormock SetStatus Playing >/dev/null
+shell_wait_for "N.rows('media').length === 1"
+run "globalThis.old = { media: N.mod('media'), timers: N.mod('timers') }"
 run "Main.extensionManager.disableExtension('$uuid')"
 shell_wait_for "$state !== 1"
+check 'media: disable leaves nothing behind' "old.media.subscription === 0 && old.media.players.size === 0 && old.media.pollSource === 0 && old.media.pauseSource === 0 && old.media.cancellable === null"
+check 'timers: disable leaves nothing behind' "old.timers.source === 0 && old.timers.sleepId === 0 && old.timers.tray === null"
 check 'timers: saved in the settings' "JSON.parse(visor.getSettings().get_string('timers')).map(t => t.label).join() === 'Research,Tea'"
 run "N.wait(1100)"
 run "Main.extensionManager.enableExtension('$uuid')"
 shell_wait_for "$state === 1"
+wait_check 'media: the player is found again after enable' "N.rows('media').length === 1 && N.rows('media')[0].title === 'Web again'"
+mock visormock Quit >/dev/null
 check 'timers: back after disable and enable' "(() => {
     const tea = N.seconds(N.row('timers', 'Tea').value);
     return N.rows('timers').length === 2 && tea < 600 && tea > 590 && N.seconds(N.row('timers', 'Research').value) >= 3;

@@ -1,4 +1,5 @@
 import type { VisorModule } from '../api.js';
+import { mediaModule } from './media/module.js';
 import { timersModule } from './timers/module.js';
 
 /**
@@ -6,5 +7,5 @@ import { timersModule } from './timers/module.js';
  * extensions. Creating a module does no work; that starts in enable().
  */
 export function builtinModules(): VisorModule[] {
-  return [timersModule()];
+  return [mediaModule(), timersModule()];
 }
