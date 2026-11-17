@@ -55,7 +55,11 @@ export function completions(text: string, commands: readonly (readonly string[])
 export function rateLine(query: CurrencyQuery, rates: Rates, locale?: string): string | null {
   const rate = convert(1, query.from, query.to, rates.rates);
   if (rate === null) return null;
-  const number = new Intl.NumberFormat(locale, { maximumSignificantDigits: 5 }).format(rate);
+  // Four decimals as banks quote them; a rate below one keeps four digits that say something.
+  const number = new Intl.NumberFormat(
+    locale,
+    rate >= 1 ? { maximumFractionDigits: 4 } : { maximumSignificantDigits: 4 },
+  ).format(rate);
   const day = new Date(`${rates.date}T00:00:00Z`);
   const date = Number.isNaN(day.getTime())
     ? rates.date

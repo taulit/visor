@@ -21,6 +21,8 @@ src/
 │   ├── registry.ts     modules, slots, order, lazy building
 │   ├── sheet.ts        the open panel: search row, dock, columns, module views
 │   ├── peek.ts         the row of chips
+│   ├── search/         the search behind the entry of the sheet: parser, calculator and rates (pure),
+│   │                   providers (apps, modules, GNOME), the list of results, the controller
 │   └── kit.ts          UI building blocks handed to modules
 ├── modules/            built-in modules, using only api.ts
 └── lib/                small helpers

@@ -32,6 +32,8 @@ const MAX_PER_COMMAND = 5;
 const CALC_ICON = 'accessories-calculator-symbolic';
 /** How often, 10 ms apart, the search waits for the D-Bus proxies of freshly loaded providers. */
 const PROXY_WAITS = 50;
+/** Microseconds a change of the list may spend before new icons are left for later. */
+const ICON_BUDGET = 6000;
 
 export interface SearchHost {
   /** Closes the panel. */
@@ -165,7 +167,7 @@ export class Search {
       });
     }
     const providers = this.remote.loaded ? this.providersFor(parts, previous) : null;
-    this.render(true);
+    this.render(true, start);
     const local = GLib.get_monotonic_time() - start;
 
     for (const { entry, source } of parts.sources)
@@ -230,10 +232,14 @@ export class Search {
     this.results?.set([], true);
   }
 
-  private render(fresh: boolean): void {
+  private render(fresh: boolean, start = GLib.get_monotonic_time()): void {
     if (!this.results) return;
     const empty = this.groups.every(group => group.items.length === 0);
-    this.results.set(empty && this.none ? [...this.groups, this.none] : this.groups, fresh);
+    this.results.set(
+      empty && this.none ? [...this.groups, this.none] : this.groups,
+      fresh,
+      start + ICON_BUDGET,
+    );
     if (!this.shown) this.mount.setOverlay(this.results.actor);
     this.shown = true;
   }

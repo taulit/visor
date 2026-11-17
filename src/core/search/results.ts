@@ -3,6 +3,7 @@
 import Atk from 'gi://Atk';
 import Clutter from 'gi://Clutter';
 import type Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import St from 'gi://St';
 
 import { ensureActorVisibleInScrollView } from 'resource:///org/gnome/shell/misc/animationUtils.js';
@@ -61,6 +62,8 @@ class Line {
   private subtitle: St.Label;
   private hint: St.Label;
   private selected = false;
+  /** The icon the line gets as soon as there is time for it. */
+  private late: Gio.Icon | null = null;
 
   constructor(owner: { pick(line: Line): void; activate(item: Item): void }) {
     this.actor = new St.BoxLayout({
@@ -103,7 +106,8 @@ class Line {
     this.actor.add_action(click);
   }
 
-  fill(key: string, item: Item): void {
+  /** After `deadline` (monotonic time) a new icon is not looked up but left to showLateIcon(). */
+  fill(key: string, item: Item, deadline: number): void {
     // A line that is filled with another result is not the selected one any more.
     const selected = this.selected && key === this.key;
     this.key = key;
@@ -117,7 +121,7 @@ class Line {
     const subtitle = item.subtitle ?? '';
     if (this.subtitle.text !== subtitle) this.subtitle.text = subtitle;
     this.subtitle.visible = subtitle !== '';
-    this.fillIcon(item);
+    this.fillIcon(item, deadline);
     this.select(selected);
   }
 
@@ -125,6 +129,7 @@ class Line {
   clear(): void {
     this.key = '';
     this.item = null;
+    this.late = null;
     this.actor.visible = false;
     this.select(false);
   }
@@ -138,7 +143,18 @@ class Line {
     this.hint.visible = hint !== '';
   }
 
-  private fillIcon(item: Item): void {
+  /** True when the line still waits for its icon. */
+  get waits(): boolean {
+    return this.late !== null;
+  }
+
+  showLateIcon(): void {
+    if (this.late && this.icon) this.icon.gicon = this.late;
+    this.late = null;
+  }
+
+  private fillIcon(item: Item, deadline: number): void {
+    this.late = null;
     const app = item.iconStyle === 'app';
     let custom: Clutter.Actor | null = null;
     if (item.createIcon) {
@@ -161,7 +177,14 @@ class Line {
       if (typeof item.icon === 'string') {
         if (this.icon.icon_name !== item.icon) this.icon.icon_name = item.icon;
       } else if (this.icon.gicon !== item.icon && !(this.icon.gicon?.equal(item.icon) ?? false)) {
-        this.icon.gicon = item.icon;
+        // Finding an icon in the theme takes a millisecond or two. A list full
+        // of new ones would hold up its own text, so the rest follows a moment later.
+        if (GLib.get_monotonic_time() > deadline) {
+          this.late = item.icon;
+          this.icon.set_gicon(null as unknown as Gio.Icon);
+        } else {
+          this.icon.gicon = item.icon;
+        }
       }
     }
     this.tile.visible = custom !== null || item.icon !== undefined;
@@ -196,6 +219,8 @@ export class Results {
   private selectedKey: string | null = null;
   /** The user moved the selection since the query changed. */
   private picked = false;
+  /** Idle source that gives lines the icons there was no time for. */
+  private later = 0;
 
   constructor(private callbacks: ResultsCallbacks) {
     this.box = new St.BoxLayout({
@@ -219,14 +244,15 @@ export class Results {
   /**
    * Shows the groups in this order. A group whose `items` is the list it
    * already shows is left alone. `fresh` is true for a new query: the first
-   * line is selected again and the list scrolls back to the top.
+   * line is selected again and the list scrolls back to the top. Icons that
+   * are not in place by `deadline` (monotonic time) follow when the shell is idle.
    */
-  set(groups: readonly Group[], fresh: boolean): void {
+  set(groups: readonly Group[], fresh: boolean, deadline = Infinity): void {
     const wanted = new Set(groups.map(group => group.id));
     for (const [id, section] of this.sections) {
       if (wanted.has(id)) continue;
       if (section.reserved) {
-        if (section.items?.length !== 0) this.fill(section, { id, label: '', items: [] });
+        if (section.items?.length !== 0) this.fill(section, { id, label: '', items: [] }, deadline);
       } else {
         section.box.destroy();
         this.sections.delete(id);
@@ -237,8 +263,9 @@ export class Results {
       const section = this.section(group.id);
       if (this.box.get_child_at_index(index) !== section.box)
         this.box.set_child_at_index(section.box, index);
-      if (section.items !== group.items) this.fill(section, group);
+      if (section.items !== group.items) this.fill(section, group, deadline);
     });
+    this.scheduleIcons();
 
     if (fresh) {
       this.picked = false;
@@ -274,6 +301,8 @@ export class Results {
   }
 
   destroy(): void {
+    if (this.later) GLib.source_remove(this.later);
+    this.later = 0;
     this.sections.clear();
     this.order = [];
     this.actor.destroy();
@@ -340,7 +369,24 @@ export class Results {
     }
   }
 
-  private fill(section: Section, group: Group): void {
+  private scheduleIcons(): void {
+    const waiting = [...this.sections.values()].some(section =>
+      section.lines.some(line => line.waits),
+    );
+    if (!waiting && this.later) {
+      GLib.source_remove(this.later);
+      this.later = 0;
+    } else if (waiting && !this.later) {
+      this.later = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+        this.later = 0;
+        for (const section of this.sections.values())
+          for (const line of section.lines) line.showLateIcon();
+        return GLib.SOURCE_REMOVE;
+      });
+    }
+  }
+
+  private fill(section: Section, group: Group, deadline: number): void {
     const { items } = group;
     section.items = items;
     section.box.visible = items.length > 0;
@@ -364,7 +410,7 @@ export class Results {
       // Below the label, in the order of the list; a line from the reserve may sit elsewhere.
       if (section.box.get_child_at_index(index + 1) !== line.actor)
         section.box.set_child_at_index(line.actor, index + 1);
-      line.fill(`${group.id}\u0000${item.id}`, item);
+      line.fill(`${group.id}\u0000${item.id}`, item, deadline);
     });
   }
 }
