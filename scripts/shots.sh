@@ -24,6 +24,15 @@ shots=(
     "search-convert=search-convert"
     "ahead=modules-ahead"
     "open-real=open-real"
+    "prefs-general=prefs-general"
+    "prefs-modules=prefs-modules"
+    "prefs-about=prefs-about"
+)
+
+# Extensions with modules of their own, installed in the sandbox of the settings window.
+fixtures=(
+    --extension "$repo/tests/shell/fixtures/notes-visor@example.org"
+    --extension "$repo/tests/shell/fixtures/old-visor@example.org"
 )
 
 fail=0
@@ -65,8 +74,10 @@ for name in "${names[@]}"; do
         scenario="$name" dir="$repo/.shell-test/shots"
         [[ -f "$repo/scripts/scenarios/$scenario.sh" ]] || { echo "FAIL  unknown name: $name"; fail=1; continue; }
     fi
+    options=()
+    [[ "$name" == prefs-* ]] && options=("${fixtures[@]}")
     for scheme in dark light; do
-        shot "$scenario" "$dir/$name-$scheme.png" --scheme "$scheme"
+        shot "$scenario" "$dir/$name-$scheme.png" --scheme "$scheme" "${options[@]}"
     done
     # The accent colour comes from the system; one screenshot shows another one.
     [[ "$name" == open ]] && shot "$scenario" "$dir/open-dark-green.png" --scheme dark --accent green
