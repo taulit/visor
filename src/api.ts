@@ -37,6 +37,11 @@ export interface VisorModule {
    * Visor owns the returned widget and destroys it when the module is disabled.
    */
   buildView?(): St.Widget;
+  /**
+   * Slot 'dock': buttons on the right of the header of the view, such as
+   * 'Open in app' or 'New'. Read every time the view is shown.
+   */
+  viewActions?: Action[];
   /** Results of this module in the search. */
   search?: SearchSource;
   /** Commands such as 'note <text>'. */
@@ -128,6 +133,12 @@ export interface RowProps {
   progress?: number | 'indeterminate';
   /** Colour of the progress line. */
   progressTone?: 'muted' | 'accent';
+  /**
+   * A switch at the very end of the row. A click on a row without `activate`
+   * and `primary`, or Enter while it has the focus, flips it as well.
+   * onChange gets the new state; the switch shows `active` of the last update().
+   */
+  toggle?: { active: boolean; onChange(active: boolean): void };
 }
 
 /** A row in "Now". Rows are matched by id between two calls of now.set(). */

@@ -349,12 +349,6 @@ function setIcon(icon: St.Icon, value: string | Gio.Icon): void {
   }
 }
 
-/** Options only Visor itself uses; modules build rows from RowProps alone. */
-export interface RowOptions {
-  /** A widget at the very end of the row, such as the switch in the list of modules. */
-  trailing?: St.Widget;
-}
-
 export class Row implements KitRow {
   /** Takes the place in the column. */
   readonly actor: St.Widget;
@@ -386,6 +380,7 @@ export class Row implements KitRow {
   private primary: ActionButton | null = null;
   private chevron: St.Button | null = null;
   private chevronIcon: St.Icon | null = null;
+  private toggle: Toggle | null = null;
   private more: St.Widget | null = null;
   private moreBuiltFrom: (() => St.Widget) | null = null;
 
@@ -399,7 +394,6 @@ export class Row implements KitRow {
   constructor(
     props: RowProps,
     private guard: Guard,
-    options: RowOptions = {},
   ) {
     this.props = cleanRow(props);
     this.actor = new St.Widget({ layout_manager: new OutsetLayout(), x_expand: true });
@@ -439,10 +433,6 @@ export class Row implements KitRow {
       y_align: Clutter.ActorAlign.CENTER,
     });
     this.line.add_child(this.end);
-    if (options.trailing) {
-      options.trailing.y_align = Clutter.ActorAlign.CENTER;
-      this.end.add_child(options.trailing);
-    }
 
     const click = new Clutter.ClickGesture();
     click.connect('recognize', () => this.click());
@@ -586,7 +576,7 @@ export class Row implements KitRow {
 
   /**
    * The end of the row, from left to right: actions and meta (in one place),
-   * spinner, value, controls, primary button, arrow, trailing widget.
+   * spinner, value, controls, primary button, arrow, switch.
    */
   private placeInEnd(child: Clutter.Actor, rank: number): void {
     const order = [
@@ -682,6 +672,38 @@ export class Row implements KitRow {
       this.primary.actor.destroy();
       this.primary = null;
     }
+
+    if (props.toggle) {
+      if (!this.toggle) {
+        this.toggle = new Toggle(
+          {
+            label: props.title,
+            active: Boolean(props.toggle.active),
+            onChange: active => this.props.toggle?.onChange(active),
+          },
+          this.guard,
+        );
+        this.watchFocus(this.toggle.actor);
+        this.end.add_child(this.toggle.actor);
+      }
+      this.toggle.active = Boolean(props.toggle.active);
+      if (this.toggle.actor.accessible_name !== props.title)
+        this.toggle.actor.accessible_name = props.title;
+    } else if (this.toggle) {
+      if (this.toggle.actor.has_key_focus()) this.main.grab_key_focus();
+      this.toggle.actor.destroy();
+      this.toggle = null;
+    }
+  }
+
+  /** Flips the switch of the row as a click on the switch itself would. */
+  private flipToggle(): void {
+    const { toggle } = this;
+    const props = this.props.toggle;
+    if (!toggle || !props) return;
+    const active = !toggle.active;
+    toggle.active = active;
+    this.guard.call(() => props.onChange(active));
   }
 
   private applyExpand(): void {
@@ -771,8 +793,9 @@ export class Row implements KitRow {
   }
 
   private click(): void {
-    const { activate, expand } = this.props;
+    const { activate, primary, toggle, expand } = this.props;
     if (activate) this.guard.call(activate);
+    else if (toggle && !primary) this.flipToggle();
     else if (expand) this.setExpanded(!this.expanded);
   }
 
@@ -785,10 +808,11 @@ export class Row implements KitRow {
         Clutter.ModifierType.SUPER_MASK);
     if (modifiers) return Clutter.EVENT_PROPAGATE;
     const symbol = event.get_key_symbol();
-    const { activate, primary, expand } = this.props;
+    const { activate, primary, toggle, expand } = this.props;
     if (isActivateKey(symbol)) {
       if (activate) this.guard.call(activate);
       else if (primary) this.guard.call(() => primary.run());
+      else if (toggle) this.flipToggle();
       else if (expand) this.setExpanded(!this.expanded);
       else return Clutter.EVENT_PROPAGATE;
       return Clutter.EVENT_STOP;

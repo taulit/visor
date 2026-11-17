@@ -12,6 +12,7 @@ import {
   type ModuleEntry,
   type RegistryListener,
 } from './registry.js';
+import { Search } from './search/controller.js';
 import { Sheet, type SearchMount } from './sheet.js';
 import type { Attention, NotchContent, NotchHost, NotchState } from './types.js';
 
@@ -22,6 +23,8 @@ export class Content implements NotchContent, RegistryListener {
   private registry: Registry;
   private sheet: Sheet;
   private peek: Peek;
+  /** The search behind the entry of the sheet. Does nothing until the first query. */
+  private finder: Search;
   private host: NotchHost | null = null;
   private attention: Attention = null;
   /** The view a module asked for with ctx.open(view), until the panel is open. */
@@ -34,6 +37,9 @@ export class Content implements NotchContent, RegistryListener {
     this.api = this.registry.api;
     this.sheet = new Sheet(this.registry, settings, s => extension.gettext(s), {
       changed: () => this.host?.contentChanged(),
+    });
+    this.finder = new Search(this.sheet, this.registry, settings, s => extension.gettext(s), {
+      close: () => this.close(),
     });
     this.peek = new Peek(this.registry, {
       activate: () => this.host?.open(),
@@ -85,6 +91,7 @@ export class Content implements NotchContent, RegistryListener {
       this.sheet.opened(view);
     } else {
       this.sheet.closed();
+      this.finder.closed();
     }
     this.registry.setOpen(open);
   }
@@ -98,6 +105,7 @@ export class Content implements NotchContent, RegistryListener {
     // Modules first: their disable() may still touch widgets they built.
     this.registry.setOpen(false);
     this.registry.destroy();
+    this.finder.destroy();
     this.sheet.destroy();
     this.peek.destroy();
     disposeHttpSession();
@@ -117,6 +125,7 @@ export class Content implements NotchContent, RegistryListener {
         this.syncAgain = false;
         this.sheet.sync();
         this.peek.sync();
+        this.finder.modulesChanged();
       } while (this.syncAgain);
     } finally {
       this.syncing = false;

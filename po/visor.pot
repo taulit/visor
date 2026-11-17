@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-16 22:24+0100\n"
+"POT-Creation-Date: 2026-11-17 10:43+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,49 +16,106 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: build/core/sheet.js:147 build/core/sheet.js:500
+#: build/core/search/controller.js:121
+msgid "Commands"
+msgstr ""
+
+#: build/core/search/controller.js:124
+msgid "Calculate"
+msgstr ""
+
+#: build/core/search/controller.js:125
+msgid "Apps"
+msgstr ""
+
+#: build/core/search/controller.js:164
+msgid "No results"
+msgstr ""
+
+#: build/core/search/controller.js:233
+msgid "Enter completes"
+msgstr ""
+
+#: build/core/search/controller.js:276 build/core/search/controller.js:301
+msgid "Enter copies"
+msgstr ""
+
+#: build/core/search/controller.js:286
+msgid "Currency rates are turned off"
+msgstr ""
+
+#: build/core/search/controller.js:289
+msgid "Rates are loading"
+msgstr ""
+
+#: build/core/sheet.js:156 build/core/sheet.js:519
 msgid "Modules"
 msgstr ""
 
-#: build/core/sheet.js:276
+#: build/core/sheet.js:287
 msgid "Search, calculate or run a command …"
 msgstr ""
 
-#: build/core/sheet.js:277
+#: build/core/sheet.js:288
 msgid "Search"
 msgstr ""
 
-#: build/core/sheet.js:299 build/core/sheet.js:371
+#: build/core/sheet.js:313 build/core/sheet.js:390
+#: build/modules/upcoming/when.js:35
 msgid "Now"
 msgstr ""
 
-#: build/core/sheet.js:313
+#: build/core/sheet.js:327
 msgid "Back"
 msgstr ""
 
-#: build/core/sheet.js:371
+#: build/core/sheet.js:390
 msgid "Shows up only while something is running."
 msgstr ""
 
-#: build/core/sheet.js:372
+#: build/core/sheet.js:391
 msgid "Up Next"
 msgstr ""
 
-#: build/core/sheet.js:372
+#: build/core/sheet.js:391
 msgid "A short section next to “Now”."
 msgstr ""
 
-#: build/core/sheet.js:373
+#: build/core/sheet.js:392
 msgid "Dock"
 msgstr ""
 
-#: build/core/sheet.js:373
+#: build/core/sheet.js:392
 msgid "A view of its own behind an icon."
 msgstr ""
 
-#: build/core/sheet.js:571
+#: build/core/sheet.js:590
 msgid "No modules"
+msgstr ""
+
+#: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
+msgid "Today"
+msgstr ""
+
+#: build/modules/upcoming/when.js:40
+msgid "Tomorrow"
+msgstr ""
+
+#: build/modules/upcoming/when.js:59
+msgid "now"
+msgstr ""
+
+#: build/modules/upcoming/when.js:61
+#, javascript-format
+msgid "%d min ago"
+msgid_plural "%d min ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/modules/upcoming/when.js:66
+msgid "Yesterday"
 msgstr ""
 
 #: build/prefs.js:5

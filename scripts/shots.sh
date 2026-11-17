@@ -19,6 +19,8 @@ shots=(
     "open-one-column=content-one-column"
     "modules-view=content-modules-view"
     "empty=content-empty"
+    "search=search-results"
+    "search-convert=search-convert"
 )
 
 fail=0

@@ -12,6 +12,7 @@ cd "$repo"
 # name|command
 tests=(
     "content-shell|tests/shell/content-shell.sh"
+    "search|tests/shell/search.sh"
     "notch-behaviour|scripts/nested.sh -- tests/shell/notch-behaviour.sh"
     "notch-motion|scripts/nested.sh --animations -- tests/shell/notch-motion.sh"
     "notch-motion-no-animations|scripts/nested.sh -- tests/shell/notch-motion.sh"
