@@ -79,6 +79,8 @@ export class Search {
   private query: Query | null = null;
   /** The groups in the order they are shown; `items` of a group is replaced, never changed. */
   private groups: Group[] = [];
+  /** Shown below everything else. */
+  private completion: Group | null = null;
   /** The command whose results are in the first group. */
   private command: Command | null = null;
   private none: Group | null = null;
@@ -156,9 +158,15 @@ export class Search {
       label: _('Commands'),
       items: this.commandItems(query, parts, previous.get('command'), generation),
     });
-    groups.push({ id: 'calc', label: _('Calculate'), items: this.calcItems(query) });
-    groups.push({ id: 'apps', label: _('Apps'), items: searchApps(terms) });
-    for (const { entry, source } of parts.sources) {
+    // A recognised command is the whole answer: 'timer' neither launches an app from a
+    // group further down nor asks anybody else.
+    const recognised = query.command !== null && parts.commands[query.command.index] !== undefined;
+    const sources = recognised ? [] : parts.sources;
+    if (!recognised) {
+      groups.push({ id: 'calc', label: _('Calculate'), items: this.calcItems(query) });
+      groups.push({ id: 'apps', label: _('Apps'), items: searchApps(terms) });
+    }
+    for (const { entry, source } of sources) {
       const id = `source:${entry.module.id}`;
       groups.push({
         id,
@@ -166,11 +174,18 @@ export class Search {
         items: previous.get(id) ?? [],
       });
     }
-    const providers = this.remote.loaded ? this.providersFor(parts, previous) : null;
+    const providers =
+      recognised || this.remote.loaded ? this.providersFor(parts, previous, recognised) : null;
+    // Completing a keyword is offered last: Enter on 't' launches the first app, not 'timer'.
+    this.completion = {
+      id: 'complete',
+      label: _('Commands'),
+      items: recognised ? [] : this.completionItems(query, parts),
+    };
     this.render(true, start);
     const local = GLib.get_monotonic_time() - start;
 
-    for (const { entry, source } of parts.sources)
+    for (const { entry, source } of sources)
       this.askSource(entry, source.search.bind(source), query.text, generation, cancellable);
     if (providers) {
       this.askProviders(providers, terms, generation, cancellable);
@@ -227,6 +242,7 @@ export class Search {
     this.query = null;
     this.command = null;
     this.groups = [];
+    this.completion = null;
     if (this.shown) this.mount.setOverlay(null);
     this.shown = false;
     this.results?.set([], true);
@@ -234,9 +250,10 @@ export class Search {
 
   private render(fresh: boolean, start = GLib.get_monotonic_time()): void {
     if (!this.results) return;
-    const empty = this.groups.every(group => group.items.length === 0);
+    const groups = this.completion ? [...this.groups, this.completion] : this.groups;
+    const empty = groups.every(group => group.items.length === 0);
     this.results.set(
-      empty && this.none ? [...this.groups, this.none] : this.groups,
+      empty && this.none ? [...groups, this.none] : groups,
       fresh,
       start + ICON_BUDGET,
     );
@@ -261,28 +278,10 @@ export class Search {
     previous: Item[] | undefined,
     generation: number,
   ): Item[] {
-    const _ = this.gettext;
     const last = this.command;
     this.command = null;
     const match = query.command ? parts.commands[query.command.index] : undefined;
-    if (!query.command || !match) {
-      return completions(
-        query.text,
-        parts.commands.map(({ command }) => command.keyword),
-      ).flatMap(({ index, keyword }) => {
-        const offered = parts.commands[index];
-        if (!offered) return [];
-        return {
-          id: `complete:${offered.entry.module.id}:${keyword}`,
-          title: keyword,
-          subtitle: text(offered.command.hint) || offered.entry.module.name,
-          icon: offered.entry.module.icon,
-          hint: _('Enter completes'),
-          keepOpen: true,
-          activate: () => this.mount.setQuery(`${keyword} `),
-        };
-      });
-    }
+    if (!query.command || !match) return [];
 
     const { entry, command } = match;
     const { icon, name } = entry.module;
@@ -311,6 +310,27 @@ export class Search {
       },
     );
     return last === command && previous && previous.length > 0 ? previous : hint;
+  }
+
+  /** `tim` offers `timer`: choosing the line writes the keyword into the entry. */
+  private completionItems(query: Query, parts: SearchParts): Item[] {
+    const _ = this.gettext;
+    return completions(
+      query.text,
+      parts.commands.map(({ command }) => command.keyword),
+    ).flatMap(({ index, keyword }) => {
+      const offered = parts.commands[index];
+      if (!offered) return [];
+      return {
+        id: `complete:${offered.entry.module.id}:${keyword}`,
+        title: keyword,
+        subtitle: text(offered.command.hint) || offered.entry.module.name,
+        icon: offered.entry.module.icon,
+        hint: _('Enter completes'),
+        keepOpen: true,
+        activate: () => this.mount.setQuery(`${keyword} `),
+      };
+    });
   }
 
   private calcItems(query: Query): Item[] {
@@ -384,7 +404,12 @@ export class Search {
   }
 
   /** The providers no module stands in for, each with its group at the end of the list. */
-  private providersFor(parts: SearchParts, previous: Map<string, Item[]>): RemoteSearchProvider[] {
+  private providersFor(
+    parts: SearchParts,
+    previous: Map<string, Item[]>,
+    none = false,
+  ): RemoteSearchProvider[] {
+    if (none) return [];
     const providers = this.remote.load().filter(provider => !isReplaced(provider, parts.replaced));
     for (const provider of providers) {
       const id = `provider:${provider.id}`;

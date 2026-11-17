@@ -292,10 +292,27 @@ check 'Ctrl+Enter opens a new window of the app' \
     '(async () => { await T.ask(T.app.query, 300); const keys = T.finder.groups.flatMap(g => g.items.filter(i => i.activate).map(i => i.id)); for (let i = 0; i < keys.indexOf(T.app.id); i++) await T.key(Clutter.KEY_Down); await T.ctrlEnter(); return T.app.calls.join() === "activate,new-window" && visor.notch.state === "idle" || [T.app.calls.join(), visor.notch.state].join(); })()'
 
 echo "# commands"
-check 'the beginning of a keyword offers the command' \
-    'T.ask("tim").then(() => T.groups()[0] === "COMMANDS" && T.lines()[0] === ">timer|timer 25m Pizza|Enter completes" || T.lines().join(" / "))'
-check 'Enter completes the keyword in the entry and leaves the panel open' \
-    'T.key(Clutter.KEY_Return).then(() => T.wait(100)).then(() => T.text() === "timer " && T.sheet.entry.clutter_text.get_cursor_position() === -1 && visor.notch.state === "open" && T.focus() === T.sheet.entry.clutter_text || [T.text(), visor.notch.state].join())'
+check 'the beginning of a keyword offers the command, below everything else' \
+    'T.ask("tim", 300).then(() => { const groups = T.groups(), lines = T.lines(); return groups[groups.length - 1] === "COMMANDS" && lines[lines.length - 1].endsWith("timer|timer 25m Pizza|Enter completes") && (lines.length === 1 || !lines[lines.length - 1].startsWith(">")) || [groups.join(), lines.join(" / ")].join(" # "); })'
+check 'a prefix of a keyword that is also an app: Enter launches the first app, not the completion' \
+    '(async () => {
+        const keyword = T.app.query + "zz";
+        visor.api.register({ id: "prefix", name: "Prefix", icon: "dialog-information-symbolic", slot: "now", enable() {}, disable() {},
+            commands: [{ keyword: [keyword], hint: keyword + " now", resolve: () => [] }] });
+        await T.ask(T.app.query, 300);
+        const apps = T.finder.groups.find(g => g.id === "apps").items;
+        // The test does not start apps: the first one may be another than the app under test.
+        const top = Shell.AppSystem.get_default().lookup_app(apps[0].id);
+        if (apps[0].id !== T.app.id) top.activate = () => T.app.calls.push("activate");
+        const lines = T.lines(), selected = T.selected(), before = T.app.calls.length;
+        await T.key(Clutter.KEY_Return);
+        await T.wait(100);
+        visor.api.unregister("prefix");
+        const offered = lines[lines.length - 1] === keyword + "|" + keyword + " now|Enter completes";
+        return offered && selected === top.get_name() && T.app.calls.length === before + 1 && T.app.calls[before] === "activate" && visor.notch.state === "idle" && T.text() === "" || [lines.join(" / "), selected, T.app.calls.join(), visor.notch.state, T.text()].join(" # ");
+    })()'
+check 'Enter on the completion writes the keyword into the entry and leaves the panel open' \
+    '(async () => { await T.ask("tim", 300); for (let i = 0; i < 12 && T.selected() !== "timer"; i++) await T.key(Clutter.KEY_Down); await T.key(Clutter.KEY_Return); await T.wait(100); return T.text() === "timer " && T.sheet.entry.clutter_text.get_cursor_position() === -1 && visor.notch.state === "open" && T.focus() === T.sheet.entry.clutter_text || [T.text(), visor.notch.state].join(); })()'
 check 'without arguments the hint of the command is a line that cannot be chosen' \
     '(() => { const line = T.lines()[0]; return line === "-timer 25m Pizza|Timers|" && T.group("command").join() === "timer 25m Pizza" && !T.finder.groups[0].items[0].activate && T.demo.log.length === 0 || line; })()'
 check 'with arguments the command shows what Enter would do, without doing it' \
@@ -306,6 +323,19 @@ check 'Enter runs activate; a keyword in another language works too' \
     'T.ask("wecker 12m").then(() => T.key(Clutter.KEY_Return)).then(() => T.logged("timer:12:") === 1 && visor.notch.state === "idle" || T.demo.log.join())'
 check 'Enter on nothing but a hint does nothing' \
     '(async () => { await T.ask("wecker"); const lines = T.lines().join(" / "); await T.key(Clutter.KEY_Return); return lines === "-timer 25m Pizza|Timers|" && T.selected() === null && visor.notch.state === "open" && T.text() === "wecker" || [lines, visor.notch.state].join(); })()'
+check 'a recognised command asks neither apps nor providers, and Enter on its hint launches nothing' \
+    '(async () => {
+        visor.api.register({ id: "named", name: "Named", icon: "dialog-information-symbolic", slot: "now", enable() {}, disable() {},
+            commands: [{ keyword: [T.app.query], hint: T.app.query + " 5m", resolve: () => [] }] });
+        const before = T.app.calls.length;
+        await T.ask(T.app.query, 400);
+        const lines = T.lines().join(" / "), groups = T.finder.groups.map(g => g.id).join();
+        await T.key(Clutter.KEY_Return);
+        await T.wait(100);
+        const state = visor.notch.state, text = T.text(), selected = T.selected();
+        visor.api.unregister("named");
+        return lines === "-" + T.app.query + " 5m|Named|" && groups === "command" && selected === null && T.app.calls.length === before && state === "open" && text === T.app.query || [lines, groups, T.app.calls.join(), state, text].join(" # ");
+    })()'
 check 'Ctrl+Enter on a result without alternate does nothing' \
     '(async () => { await T.ask("2*21"); await T.ctrlEnter(); const open = visor.notch.state === "open" && T.text() === "2*21"; return open && T.lines()[0].startsWith(">= 42") || [visor.notch.state, T.lines().join(" / ")].join(); })()'
 check 'a command that answers later shows its hint first, then its result' \
@@ -327,9 +357,9 @@ check 'a new text selects the first result again' \
 check 'the selection stays where the user put it when a slower group answers' \
     '(async () => {
         visor.api.register({ id: "demo-three", name: "Three", icon: "folder-symbolic", slot: "now", enable() {}, disable() {},
-            commands: [{ keyword: ["three"], hint: "three", resolve: () => ["a", "b", "c"].map(id => ({ id, title: "Three " + id, activate() {} })) }],
             search: { id: "three", title: "Three", search: () => new Promise(resolve => { T.late = () => resolve([{ id: "late", title: "Late result", activate() {} }]); }) } });
-        await T.ask("three", 150);
+        await T.ask("shop", 300);
+        const first = T.selected();
         await T.key(Clutter.KEY_Down, Clutter.KEY_Down);
         const picked = T.selected();
         T.late();
@@ -337,7 +367,7 @@ check 'the selection stays where the user put it when a slower group answers' \
         const kept = T.selected();
         const arrived = T.titles().includes("Late result");
         visor.api.unregister("demo-three");
-        return picked === "Three c" && kept === "Three c" && arrived || [picked, kept, arrived].join();
+        return picked !== null && picked !== first && kept === picked && arrived || [first, picked, kept, arrived].join();
     })()'
 check 'a click on a line activates it and closes the panel' \
     '(async () => { await T.ask("shop", 300); await T.click(T.line("Workshop notes")); return T.logged("note:Workshop notes") === 1 && visor.notch.state === "idle" || [T.demo.log.join(), visor.notch.state].join(); })()'
@@ -414,10 +444,10 @@ run 'visor.api.unregister("demo-broken")'
 echo "# long lists and short panels"
 check 'a long list scrolls inside the overlay and follows the selection' \
     '(async () => {
-        visor.api.register({ id: "demo-many", name: "Many", icon: "folder-symbolic", slot: "now", enable() {}, disable() {},
-            commands: [{ keyword: ["many"], hint: "many", resolve: () => Array.from({ length: 5 }, (_v, i) => ({ id: "c" + i, title: "Command result " + i, activate() {} })) }],
-            search: { id: "many", title: "Many", search: () => Promise.resolve(Array.from({ length: 9 }, (_v, i) => ({ id: "m" + i, title: "Many result " + i, subtitle: "More than fits", activate() {} }))) } });
-        await T.ask("many shop", 300);
+        for (const id of ["demo-many", "demo-more"])
+            visor.api.register({ id, name: id, icon: "folder-symbolic", slot: "now", enable() {}, disable() {},
+                search: { id, title: id, search: () => Promise.resolve(Array.from({ length: 9 }, (_v, i) => ({ id: "m" + i, title: id + " result " + i, subtitle: "More than fits", activate() {} }))) } });
+        await T.ask("shop", 300);
         const scroll = T.finder.results.actor;
         const many = T.group("source:demo-many").length;
         const fits = scroll.height <= 460 && scroll.vadjustment.upper > scroll.vadjustment.page_size && scroll.vadjustment.value === 0;
@@ -429,7 +459,7 @@ check 'a long list scrolls inside the overlay and follows the selection' \
         const bottom = visor.notch.body.get_transformed_position()[1] + visor.notch.body.height;
         return many === 5 && fits && visible && bottom <= global.stage.height || [many, scroll.height, scroll.vadjustment.upper, scroll.vadjustment.value, y, top, bottom].join();
     })()'
-run 'visor.api.unregister("demo-many")'
+run 'visor.api.unregister("demo-many"), visor.api.unregister("demo-more")'
 check 'a panel that is too short for the list grows, and shrinks back without it' \
     '(async () => {
         visor.notch.close();
