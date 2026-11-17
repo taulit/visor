@@ -22,6 +22,11 @@
       <summary>Flash on events</summary>
       <description>Briefly expand the island when a module reports an event.</description>
     </key>
+    <key name="flash-on-waiting-agents" type="b">
+      <default>true</default>
+      <summary>Flash on waiting agents</summary>
+      <description>Briefly expand the island when an agent waits for you.</description>
+    </key>
     <key name="width" type="s">
       <choices>
         <choice value="compact"/>
