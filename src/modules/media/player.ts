@@ -67,7 +67,8 @@ export class Player implements PlayerState {
           () => this.read(),
           'g-signal',
           (_proxy: Gio.DBusProxy, _sender: string, signal: string, parameters: GLib.Variant) => {
-            if (signal === 'Seeked') this.setPosition(parameters.get_child_value(0));
+            if (signal === 'Seeked' && parameters.get_type_string() === '(x)')
+              this.setPosition(parameters.get_child_value(0));
           },
           this,
         );
