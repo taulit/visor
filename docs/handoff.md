@@ -9,23 +9,18 @@ other sessions: `docs/STATUS.md`, API facts: `docs/verified.md`, structure: `doc
 - Gate checks: `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pot`,
   `pnpm run test:shell` (sandboxed headless shell), `scripts/shots.sh` (screenshots in `docs/screenshots/`).
 
-## Running now: V3 on branch `phase/v3-t3` (based on `main`)
+## Running now: V3 on branch `phase/v3-t3` (based on `main`, pushed)
 
-Three agents, each in its own git worktree under `~/.t3/worktrees/visor/` (see `git worktree list`). Their
-branches are local only until merged; they were told to commit after each block.
+Merged into the branch and green (766 unit tests, 16 shell tests): the T3 Code module with its mock server
+(`docs/t3-protocol.md`, `tests/t3-mock/`, `src/modules/t3/`), the settings window (`src/prefs.ts`,
+`src/prefs/`), the SDK (`sdk/`) and the template (`examples/module-template/`).
 
-| Task                                                                                               | Model  | Thread                                                                                                                                                                                                                |
-| -------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| T3 Code module: `docs/t3-protocol.md`, mock server `tests/t3-mock/`, `src/modules/t3/`, scenario 3 | Fable  | `[V3 T3 Code module](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3Ab8a3cbba-25c3-446a-8e6c-e755e20c69e1%3Adelegate-task%3A8a168891-d3d6-459d-9e96-a39ac8e725e4)`          |
-| Settings window `src/prefs.ts`, `src/prefs/`                                                       | Sonnet | `[V3 settings (prefs)](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3Ab8a3cbba-25c3-446a-8e6c-e755e20c69e1%3Adelegate-task%3Af0840ed0-6de1-48fb-9d1f-4029e95728e6)`        |
-| SDK `sdk/`, `examples/module-template/`, `docs/module-ideas.md`                                    | Sonnet | `[V3 SDK and module template](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3Ab8a3cbba-25c3-446a-8e6c-e755e20c69e1%3Adelegate-task%3A1780880d-7a72-47be-9522-48893dd9bac8)` |
-
-If an agent stopped at the usage limit: send "continue" to its thread; its worktree keeps the state.
+In progress: pairing with T3 Code in the settings (pairing link → token, stored in `t3-access-token`) and the
+full command of an approval in the expanded row.
 
 ## Next
 
-1. Merge the three V3 branches into `phase/v3-t3` (expect conflicts in `src/modules/index.ts`,
-   `scripts/shell-tests.sh`, `scripts/shots.sh`, `po/`, the schema key `flash-on-waiting-agents`).
+1. Finish the pairing (see above).
 2. V3 gate: scenario 3 (agent waits → amber dot → peek → Allow → mock got the approval), the template builds a
    store ZIP. One bug review on the phase diff by a fresh agent, fix findings together.
 3. Create the private repo `taulit/visor-module-template` from `examples/module-template/` (approved; mark it
@@ -36,6 +31,11 @@ If an agent stopped at the usage limit: send "continue" to its thread; its workt
    module table, `docs/release-checklist.md`.
 
 ## Open items carried forward
+
+- T3 Code: nothing is verified against a real server (token exchange, ticket, socket, approve/deny/reply/stop).
+  The access token is stored as plain text in dconf; move it to the keyring (libsecret) in V4.
+- "Open in T3 Code" opens the thread in the browser; the desktop app has no deep link for threads.
+- API v1 has no kit element for body text or a text field; the T3 module builds both itself.
 
 - Peek chip click should mark and, if needed, expand the matching section (plan 01 §8); today it only opens.
 - Search: the frame showing local results came up to 30 ms after the debounce (list itself ≤ 14.6 ms); measure
