@@ -94,8 +94,13 @@ expect_mock() {
 
 # expect_keyring NAME ORIGIN TOKEN: what the keyring of the sandbox holds for ORIGIN.
 expect_keyring() {
-    local got
-    got="$(keyring_lookup "$2")"
+    local got tries
+    # The window stores and clears asynchronously: wait for it, up to 10 s.
+    for tries in $(seq 50); do
+        got="$(keyring_lookup "$2")"
+        [[ "$got" == "$3" ]] && break
+        sleep 0.2
+    done
     if [[ "$got" == "$3" ]]; then echo "ok    $1"; else echo "FAIL  $1: the keyring has ${got:+another token}${got:-nothing}"; failures=$((failures + 1)); fi
 }
 # The settings as dconf has them, as text and as the file on disk.
