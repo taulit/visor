@@ -378,6 +378,16 @@ export const COMMAND_LINES = 8;
 export const COMMAND_LINE_CHARS = 16;
 
 /**
+ * The text the expanded row gets: the first COMMAND_LINES lines by line break.
+ * Pango keeps a line of every paragraph however little room there is, so more
+ * of them would be drawn below the box instead of being cut.
+ */
+export function commandLines(text: string): string {
+  const lines = text.split('\n');
+  return lines.length <= COMMAND_LINES ? text : `${lines.slice(0, COMMAND_LINES).join('\n')}…`;
+}
+
+/**
  * True when the expanded row surely shows the command whole and as it runs.
  * Decided from the text alone, before any layout: a wrong "yes" would offer
  * Allow for a command whose end is not on screen.

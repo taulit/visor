@@ -113,6 +113,7 @@ prefs_type "http://127.0.0.1:$port/pair#token=first-code-123"
 prefs_click 530 "$row_y"
 expect_setting 'Connect with the pairing link stores the token' t3-access-token "'mock-token'"
 expect_setting 'the address of the local server is not stored' t3-server-url "''"
+expect_setting 'but the origin the token is for' t3-token-origin "'http://127.0.0.1:$port'"
 expect_mock 'the server saw one exchange, labelled Visor, for both scopes' \
     "len(s['pairings']) == 1 and s['pairings'][0]['label'].startswith('Visor (') and s['pairings'][0]['scope'] == 'orchestration:read orchestration:operate'"
 wait_check 'the module connects without a restart and shows the sessions' \
@@ -121,12 +122,14 @@ wait_check 'the module connects without a restart and shows the sessions' \
 # --- disconnect ----------------------------------------------------------------
 prefs_click 514 "$paired_y"
 expect_setting 'Disconnect clears the token' t3-access-token "''"
+expect_setting 'and its origin' t3-token-origin "''"
 wait_check 'the rows are gone and the socket is closed' "$t3.rows.length === 0 && !$t3.module.client.connected"
 sleep 0.5
 expect_mock 'the server sees no client' "s['clients'] == 0"
 
 # --- a token the server refuses ------------------------------------------------
 before="$(curl -s "http://127.0.0.1:$port/__mock/state" | python3 -c 'import json,sys; print(json.load(sys.stdin)["ticketRequests"])')"
+gs t3-token-origin "http://127.0.0.1:$port"
 gs t3-access-token refused-token-abc
 sleep 5
 expect_mock 'a refused token is tried once in five seconds' "s['ticketRequests'] == $before + 1"
@@ -151,6 +154,16 @@ gs t3-server-url "http://127.0.0.1:1"
 wait_check 'another address: the module leaves the server' "!$t3.module.client.connected && $t3.rows.length === 0"
 gs t3-server-url "http://127.0.0.1:$port/"
 wait_check 'the address of the mock: connected again' "$t3.module.client.connected && $t3.rows.length === 4"
+
+
+# --- a token goes to its own server only -------------------------------------------
+before="$(curl -s "http://127.0.0.1:$port/__mock/state" | python3 -c 'import json,sys; print(json.load(sys.stdin)["ticketRequests"])')"
+gs t3-token-origin "http://127.0.0.1:1"
+wait_check 'a token issued by another server: the module leaves' "!$t3.module.client.connected && $t3.rows.length === 0"
+sleep 2.5
+expect_mock 'and does not offer it to this one' "s['ticketRequests'] == $before"
+gs t3-token-origin "http://127.0.0.1:$port"
+wait_check 'the origin of the token again: connected' "$t3.module.client.connected && $t3.rows.length === 4"
 
 prefs_close
 if tail -n "+$((log_start + 1))" "$HOME/shell.log" | grep -qE "$secrets"; then

@@ -3,7 +3,9 @@
 # server of tests/t3-mock/: an agent waits, the dot turns amber, the island
 # flashes, Allow reaches the server and the row runs again; then Deny, a
 # reply, Stop, the expanded row, a finished session, "+ n more", a server
-# that goes and comes back, and the command `t3`.
+# that goes and comes back, and the command `t3`. And what must not have an
+# Allow button: a command that is cut, one with invisible characters, one the
+# server does not tell, and a click meant for the request before.
 #
 # The two minutes a finished session keeps its row are shortened by the mock:
 # it reports a run that ended 117 seconds ago.
@@ -112,6 +114,7 @@ wait_title='Spawn a subagent for the fixture'
 
 check 'without a token the module is empty and waits for nothing' \
     "A.rows().length === 0 && A.chip() === null && A.mod().client.retrySource === 0 && !A.mod().client.connecting"
+run "visor.getSettings().set_string('t3-token-origin', 'http://127.0.0.1:$port')"
 run "visor.getSettings().set_string('t3-access-token', 'mock-token')"
 run 'A.wait(1500)'
 check 'without a server the module is empty' "A.rows().length === 0 && !A.mod().client.connected"
@@ -165,6 +168,7 @@ mock 'wait?thread=thread-run&request=request-2&prompt=rm%20-rf%20build'
 wait_check 'a second approval: the row waits, on top' "A.ids().startsWith('thread-run,') && A.row('thread-run').detail === 'rm -rf build'"
 check 'a short command is answered in the row: Deny is a ghost button, Allow the primary one' \
     "A.row('thread-run').controls.map(a => a.label + ':' + a.style).join() === 'Deny:ghost' && A.row('thread-run').primary.label === 'Allow' && A.row('thread-run').primary.style === 'primary'"
+sleep 0.6
 check 'no flash while the panel is open, but the dot' "visor.notch.state === 'open' && visor.content.attention === 'waiting'"
 mock fail-next
 run "A.action(A.row('thread-run'), 'Deny').run()"
@@ -202,10 +206,66 @@ wait_check 'a very long command: one line in the row, no Allow there' \
     "A.row('thread-run').status === 'waiting' && A.row('thread-run').detail?.endsWith('…') && A.row('thread-run').primary === undefined"
 check 'expanded it is complete in the label, cut after eight lines on screen, with the hint' \
     "(async () => { A.chevron(A.row('thread-run').title).emit('clicked', 1); await A.wait(400); const label = A.find('visor-t3-command').find(a => a.mapped); const hint = A.find('visor-t3-cut').find(a => a.mapped); const lines = label ? label.clutter_text.get_layout().get_line_count() : 0; return label != null && label.text === '$long_command' && label.clutter_text.get_layout().is_ellipsized() && lines === 8 && hint?.text === 'Open T3 Code to read all of it' || (label ? lines + ' lines, hint ' + (hint != null) : 'no label'); })()"
-run "A.answers()[0].emit('clicked', 1)"
-wait_check 'Deny below it: the row runs again' "A.row('thread-run').status === undefined && A.answers().length === 0"
+check 'a command that is cut has no Deny and no Allow, only the way to T3 Code' \
+    "A.answers().length === 0 && A.row('thread-run').controls === undefined && A.find('visor-t3-buttons').find(a => a.mapped).get_children().map(b => b.label_actor.text).join() === 'Stop,Open in T3 Code'"
+
+# quote TEXT: for the query of a mock control.
+quote() { python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$1"; }
+# The command label and the hint of the expanded row, as they are on screen.
+label="A.find('visor-t3-command').find(a => a.mapped)"
+hint="A.find('visor-t3-cut').find(a => a.mapped)"
+
+# --- what must not be allowed from Visor -----------------------------------------
+
+mock "wait?thread=thread-run&request=request-4&prompt=$(quote $'l1\nl2\nl3\nl4\nl5\nl6\nl7\nl8')"
+wait_check 'eight short lines are on screen whole: Deny and Allow below them' \
+    "$label?.text.split(String.fromCharCode(10)).length === 8 && !$label.clutter_text.get_layout().is_ellipsized() && $hint === undefined && A.answers().map(b => b.label_actor.text).join() === 'Deny,Allow'"
+check 'but not in the row, which shows one line' "A.row('thread-run').primary === undefined && A.row('thread-run').controls === undefined"
+mock "wait?thread=thread-run&request=request-5&prompt=$(quote $'l1\nl2\nl3\nl4\nl5\nl6\nl7\nl8\nrm -rf ~')"
+wait_check 'nine lines: the ninth is not on screen' "$label?.text.endsWith('l8…') && $label.text.split(String.fromCharCode(10)).length === 8 && A.row('thread-run').detail.endsWith('rm -rf ~')"
+run 'A.wait(300)'
+check 'so there is no Allow, in the row or below the command, and the hint says where to read it' \
+    "A.answers().length === 0 && !A.find('visor-t3-buttons').some(a => a.mapped && a.get_children().some(b => b.label_actor.text === 'Allow')) && A.row('thread-run').primary === undefined && $hint?.text === 'Open T3 Code to read all of it'"
+
+mock "wait?thread=thread-run&request=request-6&prompt=$(quote $'ls ‮-la')"
+wait_check 'a command with a bidi override shows it as U+FFFD' \
+    "A.row('thread-run').detail === 'ls �-la' && $label?.text === 'ls �-la'"
+run 'A.wait(300)'
+check 'and has no Allow, however short it is' \
+    "A.answers().length === 0 && A.row('thread-run').primary === undefined && A.row('thread-run').controls === undefined && $hint?.text === 'Has characters that cannot be shown. Open T3 Code to read it'"
+
+mock 'wait?thread=thread-run&request=request-7&prompt=ls&projection=fail'
+wait_check 'a command the server does not tell is asked for three times, then no more' \
+    "A.mod().failures.get('request-7')?.count === 3 && A.mod().failures.get('request-7').retryAt === null && !A.mod().asking.has('request-7')" 8
+check 'the mock was asked three times' "$(mock_state "s['projections'] >= 7")"
+check 'the row has no Allow and no Deny, it sends the user to T3 Code' \
+    "A.row('thread-run').status === 'waiting' && A.row('thread-run').subtitle === 'visor · Answer this request in T3 Code' && A.row('thread-run').detail === undefined && A.row('thread-run').controls === undefined && A.row('thread-run').primary.label === 'Open in T3 Code'"
+check 'and nothing to allow in the expanded row' \
+    "A.answers().length === 0 && $label === undefined && !A.find('visor-t3-buttons').some(a => a.mapped && a.get_children().some(b => b.label_actor.text === 'Allow'))"
+before="$(curl -s "http://127.0.0.1:$port/__mock/state" | python3 -c 'import json,sys; print(json.load(sys.stdin)["projections"])')"
+run 'A.wait(2500)'
+check 'it is not asked for again' "$(mock_state "s['projections'] == $before")"
+
+# --- a click meant for the request before ----------------------------------------
+
+mock 'wait?thread=thread-run&request=request-8&prompt=rm%20-rf%20a'
+wait_check 'a short command again: Allow in the row' "A.row('thread-run').detail === 'rm -rf a' && A.row('thread-run').primary?.label === 'Allow'"
+run "globalThis.oldAllow = A.action(A.row('thread-run'), 'Allow')"
+mock reset
+(sleep 0.4; mock 'wait?thread=thread-run&request=request-9&prompt=rm%20-rf%20b') &
+late=$!
+check 'another request takes its place: a click right then does nothing' \
+    "(async () => { for (let i = 0; i < 150 && A.row('thread-run').detail !== 'rm -rf b'; i++) await A.wait(20); A.action(A.row('thread-run'), 'Allow').run(); oldAllow.run(); await A.wait(300); return A.row('thread-run').detail === 'rm -rf b' && A.row('thread-run').status === 'waiting' && A.mod().answered.size === 0; })()"
+wait "$late"
+run 'A.wait(400)'
+run 'oldAllow.run()'
 sleep 0.3
-check 'the mock received the denial of that request' "$(actions "a[-1]['type'] == 'runtime-request.respond' and a[-1]['decision'] == 'decline' and a[-1]['requestId'] == 'request-3'")"
+check 'and the button of the old request stays dead: the mock received nothing' \
+    "$(actions "len(a) == 0") && A.row('thread-run').status === 'waiting'"
+run "A.action(A.row('thread-run'), 'Deny').run()"
+wait_check 'Deny of the new request: the row runs again' "A.row('thread-run').status === undefined && A.answers().length === 0"
+sleep 0.3
+check 'the mock received the denial of that request' "$(actions "len(a) == 1 and a[-1]['type'] == 'runtime-request.respond' and a[-1]['decision'] == 'decline' and a[-1]['requestId'] == 'request-9'")"
 run "A.chevron(A.row('thread-run').title).emit('clicked', 1)"
 
 # --- "+ n more" and a finished session ---------------------------------------
@@ -263,6 +323,14 @@ check 'and one line in the log' "$(tail -n "+$((log_before + 1))" "$HOME/shell.l
 stop_mock
 start_mock
 wait_check 'a compatible server again' "A.mod().client.connected && A.rows().length === 4" 8
+mock 'wait?thread=thread-run&request=request-big&prompt=ls&projection=big'
+wait_check 'an answer of 5 MB closes the socket; after three of them the command stays unknown' \
+    "A.mod().failures.get('request-big')?.count === 3 && A.mod().client.connected && A.mod().client.synced" 15
+check 'the row has no Allow' \
+    "A.row('thread-run').subtitle === 'visor · Answer this request in T3 Code' && A.row('thread-run').controls === undefined && A.row('thread-run').primary.label === 'Open in T3 Code'"
+before="$(curl -s "http://127.0.0.1:$port/__mock/state" | python3 -c 'import json,sys; print(json.load(sys.stdin)["tickets"])')"
+run 'A.wait(2500)'
+check 'and the connection stays' "A.mod().client.connected && $(mock_state "s['tickets'] == $before")"
 run "visor.content.registry.setEnabled('t3', false)"
 check 'disable closes the socket and removes every source' \
     "(() => { const m = A.mod(); return m.client === null && m.tickSource === 0 && m.expirySource === 0 && A.rows().length === 0 && visor.content.attention === null; })()"

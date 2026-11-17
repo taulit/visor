@@ -21,8 +21,11 @@
 //                               pairings: [{label, scope}] of the exchanges that worked;
 //                               exchanges: how often a code was offered
 //   POST /__mock/pairing?code=C a new one-time pairing code
-//   POST /__mock/wait?thread=ID[&request=ID][&prompt=TEXT][&kind=KIND]
-//                               the thread asks for approval
+//   POST /__mock/wait?thread=ID[&request=ID][&prompt=TEXT][&kind=KIND][&projection=MODE]
+//                               the thread asks for approval; a request the thread already
+//                               has is replaced. MODE says what getThreadProjection answers
+//                               for it: "fail" (an error), "empty" (no such item) or "big"
+//                               (a frame of 5 MB); `projections` in the state counts them
 //   POST /__mock/thread         body: a thread shell (at least {id}); merged and announced
 //   POST /__mock/remove?thread=ID
 //   POST /__mock/fail-next      the next command fails
@@ -56,6 +59,9 @@ const pairings = [];
 const fixture = FIXTURES[option('fixture', 'default')](Date.now());
 const threads = new Map(fixture.threads.map(t => [t.id, t]));
 const prompts = new Map(Object.entries(fixture.prompts));
+/** How getThreadProjection misbehaves, by request id. */
+const projectionModes = new Map();
+let projections = 0;
 const actions = [];
 const tickets = new Set();
 /** Open sockets with the id of their shell subscription. */
@@ -151,6 +157,20 @@ function rpc(client, frame) {
     case 'orchestration.getThreadProjection': {
       const pending = threads.get(payload.threadId)?.pendingRuntimeRequest;
       const prompt = pending ? prompts.get(pending.id) : undefined;
+      const mode = pending ? projectionModes.get(pending.id) : undefined;
+      projections++;
+      if (mode === 'fail') {
+        fail('The mock was told to fail this projection.');
+        break;
+      }
+      if (mode === 'big') {
+        succeed({ turnItems: [approvalItem(pending.id, prompt)], filler: 'x'.repeat(5 << 20) });
+        break;
+      }
+      if (mode === 'empty') {
+        succeed({ turnItems: [] });
+        break;
+      }
       succeed({ turnItems: prompt === undefined ? [] : [approvalItem(pending.id, prompt)] });
       break;
     }
@@ -320,6 +340,7 @@ const server = createServer(async (request, response) => {
       ticketRequests,
       pairings,
       exchanges,
+      projections,
     });
   if (request.method !== 'POST') return json(404, {});
   const id = url.searchParams.get('thread');
@@ -327,6 +348,8 @@ const server = createServer(async (request, response) => {
     case '/__mock/wait': {
       const requestId = url.searchParams.get('request') ?? `request-${randomUUID()}`;
       prompts.set(requestId, url.searchParams.get('prompt') ?? 'pnpm test');
+      if (url.searchParams.has('projection'))
+        projectionModes.set(requestId, url.searchParams.get('projection'));
       patch(id, {
         status: 'waiting',
         activityRunStatus: 'waiting',

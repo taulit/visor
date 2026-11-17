@@ -16,6 +16,7 @@ import {
   METHODS,
   MAX_REPLY,
   approvalPrompt,
+  commandLines,
   fitsExpanded,
   fitsPreview,
   isWaiting,
@@ -603,7 +604,7 @@ class T3Module implements VisorModule {
       if (prompt?.text !== shown?.text) {
         // Another text: what was known about the layout is about the old one.
         laidOut = 'unknown';
-        command.text = prompt?.text ?? '';
+        command.text = prompt ? commandLines(prompt.text) : '';
         look();
       }
       shown = prompt;

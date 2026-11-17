@@ -9,6 +9,7 @@ import {
   approvalPrompt,
   ANSWER_GUARD_MS,
   clean,
+  commandLines,
   mayAnswer,
   promptRetryMs,
   commandPrompt,
@@ -531,6 +532,12 @@ describe('commands', () => {
     expect(fitsPreview(exact('日'.repeat(8)))).toBe(true);
     expect(fitsPreview(exact('日'.repeat(9)))).toBe(false);
     expect(fitsPreview({ text: 'ls', exact: false, hidden: false })).toBe(false);
+  });
+
+  it('gives the expanded row eight lines at most', () => {
+    expect(commandLines('a\nb')).toBe('a\nb');
+    expect(commandLines('1\n2\n3\n4\n5\n6\n7\n8')).toBe('1\n2\n3\n4\n5\n6\n7\n8');
+    expect(commandLines('1\n2\n3\n4\n5\n6\n7\n8\nrm -rf ~')).toBe('1\n2\n3\n4\n5\n6\n7\n8…');
   });
 
   it('asks for a command three times, waiting longer, then gives up', () => {
