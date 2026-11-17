@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 11:26+0100\n"
+"POT-Creation-Date: 2026-11-17 11:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +50,7 @@ msgstr ""
 msgid "Rates are loading"
 msgstr ""
 
-#: build/core/sheet.js:156 build/core/sheet.js:519
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
 msgid "Modules"
 msgstr ""
 
@@ -58,12 +58,12 @@ msgstr ""
 msgid "Search, calculate or run a command …"
 msgstr ""
 
-#: build/core/sheet.js:288
+#: build/core/sheet.js:288 build/prefs/general.js:75
 msgid "Search"
 msgstr ""
 
 #: build/core/sheet.js:313 build/core/sheet.js:390
-#: build/modules/upcoming/when.js:35
+#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
 msgid "Now"
 msgstr ""
 
@@ -77,7 +77,8 @@ msgstr ""
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/core/sheet.js:391 build/modules/upcoming/module.js:28
-#: build/modules/upcoming/module.js:99
+#: build/modules/upcoming/module.js:99 build/prefs/builtin-modules.js:8
+#: build/prefs/builtin-modules.js:19
 msgid "Up Next"
 msgstr ""
 
@@ -85,7 +86,7 @@ msgstr ""
 msgid "A short section next to “Now”."
 msgstr ""
 
-#: build/core/sheet.js:392
+#: build/core/sheet.js:392 build/prefs/builtin-modules.js:20
 msgid "Dock"
 msgstr ""
 
@@ -97,7 +98,7 @@ msgstr ""
 msgid "No modules"
 msgstr ""
 
-#: build/modules/downloads/module.js:15
+#: build/modules/downloads/module.js:15 build/prefs/builtin-modules.js:6
 msgid "Downloads"
 msgstr ""
 
@@ -113,7 +114,7 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: build/modules/media/module.js:20
+#: build/modules/media/module.js:20 build/prefs/builtin-modules.js:4
 msgid "Media"
 msgstr ""
 
@@ -135,7 +136,7 @@ msgstr ""
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/modules/notifications/module.js:19
-#: build/modules/notifications/module.js:92
+#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:13
 msgid "Notifications"
 msgstr ""
 
@@ -164,7 +165,7 @@ msgstr ""
 msgid "Dismiss"
 msgstr ""
 
-#: build/modules/timers/module.js:19
+#: build/modules/timers/module.js:19 build/prefs/builtin-modules.js:5
 msgid "Timers"
 msgstr ""
 
@@ -292,6 +293,169 @@ msgstr[1] ""
 msgid "Yesterday"
 msgstr ""
 
-#: build/prefs.js:5
+#: build/prefs/about.js:18
+msgid "About"
+msgstr ""
+
+#: build/prefs/about.js:26
+msgid "Version"
+msgstr ""
+
+#: build/prefs/about.js:27
+msgid "License"
+msgstr ""
+
+#: build/prefs/about.js:29
+msgid "Links"
+msgstr ""
+
+#: build/prefs/about.js:30 build/prefs/discover.js:13
+msgid "Website"
+msgstr ""
+
+#: build/prefs/about.js:31
+msgid "Source code"
+msgstr ""
+
+#: build/prefs/about.js:32
+msgid "Report an issue"
+msgstr ""
+
+#: build/prefs/builtin-modules.js:7
+msgid "T3 Code"
+msgstr ""
+
+#: build/prefs/discover.js:8
+msgid "The catalog of modules arrives with a later version."
+msgstr ""
+
+#: build/prefs/general.js:10
+msgid "Compact"
+msgstr ""
+
+#: build/prefs/general.js:11
+msgid "Normal"
+msgstr ""
+
+#: build/prefs/general.js:12
+msgid "Wide"
+msgstr ""
+
+#: build/prefs/general.js:21
+msgid "Delay before the preview"
+msgstr ""
+
+#: build/prefs/general.js:22
+msgid "In milliseconds"
+msgstr ""
+
+#: build/prefs/general.js:36
+msgid "Width"
+msgstr ""
+
+#: build/prefs/general.js:37
+msgid "Of the open panel"
+msgstr ""
+
+#: build/prefs/general.js:56
 msgid "General"
+msgstr ""
+
+#: build/prefs/general.js:59
+msgid "Shortcut"
+msgstr ""
+
+#: build/prefs/general.js:61
+msgid "Notification list"
+msgstr ""
+
+#: build/prefs/general.js:62
+msgid ""
+"The shortcut of the shell for the notification list, Super+V by default, "
+"always opens Visor. Change it in the keyboard settings."
+msgstr ""
+
+#: build/prefs/general.js:66
+msgid "Behavior"
+msgstr ""
+
+#: build/prefs/general.js:67
+msgid "Preview on hover"
+msgstr ""
+
+#: build/prefs/general.js:69
+msgid "Show briefly on events"
+msgstr ""
+
+#: build/prefs/general.js:70
+msgid "Show briefly when an agent is waiting"
+msgstr ""
+
+#: build/prefs/general.js:72
+msgid "Appearance"
+msgstr ""
+
+#: build/prefs/general.js:76
+msgid "Load currency rates"
+msgstr ""
+
+#: build/prefs/general.js:76
+msgid "The rates come from the European Central Bank, at most once a day."
+msgstr ""
+
+#: build/prefs/modules.js:71
+msgid "Discover"
+msgstr ""
+
+#: build/prefs/modules.js:104
+msgid "Move up"
+msgstr ""
+
+#: build/prefs/modules.js:105
+msgid "Move down"
+msgstr ""
+
+#: build/prefs/modules.js:108
+msgid "Change the order"
+msgstr ""
+
+#: build/prefs/modules.js:118
+msgid "Drag to change the order"
+msgstr ""
+
+#: build/prefs/modules.js:145
+msgid "Built for another version of Visor"
+msgstr ""
+
+#: build/prefs/modules.js:147
+msgid "Turned off in the extensions"
+msgstr ""
+
+#: build/prefs/modules.js:157
+msgid "Settings of the module"
+msgstr ""
+
+#: build/prefs/shortcut.js:14 build/prefs/shortcut.js:45
+msgid "Additional shortcut"
+msgstr ""
+
+#: build/prefs/shortcut.js:15
+msgid "Opens Visor as well."
+msgstr ""
+
+#: build/prefs/shortcut.js:20
+msgid "None"
+msgstr ""
+
+#: build/prefs/shortcut.js:25
+msgid "Remove the shortcut"
+msgstr ""
+
+#: build/prefs/shortcut.js:46
+msgid ""
+"Press the keys you want to use. Esc cancels, Backspace removes the shortcut."
+msgstr ""
+
+#: build/prefs/shortcut.js:48
+msgid "Cancel"
 msgstr ""
