@@ -477,7 +477,7 @@ Gio.DBus.session.call('org.gnome.Shell', '/org/gnome/Shell', 'org.gnome.Shell.Ex
 - `org.gnome.shell.keybindings toggle-message-tray` is `['<Shift><Control><Super>i']` here, and the enabled extension `copyous@boerdereinar.dev` binds `<Super>v`. With the recommended takeover, Super+V will not open Visor on this machine until the user changes one of the two.
 - The accent colour is the non-standard `'maia'`; any hard-coded accent table would miss it.
 - `color-scheme` is `prefer-dark`, and `user-theme` plus `legacyschemeautoswitcher` are enabled, so the panel colour may not match the stock values in section 1. Always read it from the theme node.
-- Notification banners appear top-centre directly under the panel (`ui/messageTray.js:724-735`, alignment set in `ui/panel.js:641-647`) and will overlap the notch. Block them while Visor is open; the collapsed state needs a design decision.
+- Notification banners appear top-centre directly under the panel (`ui/messageTray.js:724-735`, alignment set in `ui/panel.js:641-647`) and will overlap the notch. Block them while Visor is open; for hint and peek see "Banners and the notch" below.
 - Sections 2 and 6 are source-derived and need a first runtime check in the headless shell.
 
 ## Decisions taken from this
@@ -497,5 +497,28 @@ The plan in `docs/design/plan/` was edited where an assumption turned out wrong.
 | Headless tests | Sandbox (`scripts/nested.sh`) and a separate test helper extension exporting `io.github.taulit.Visor.Debug`              | `gnome-extensions install/enable` would write to the real session; D-Bus `Eval`/`Screenshot` are closed to tools; Visor must ship no debug code |
 | Store ZIP      | Plain `zip` of `build/`                                                                                                  | `gnome-extensions pack` does not handle the nested output of `tsc` well and would need gnome-shell in CI                                        |
 
-Open design question for V2: notification banners appear top-centre right under the panel and would cover
-the peek state. To be settled with a runtime test when the notifications module is built.
+### Banners and the notch
+
+Runtime test in the sandbox (a real notification over the session bus while a module flashes): the banner is
+521 × 114 px at the lower edge of the panel, the peek body is about 270 × 56 px at the same place, and the tray
+is stacked above the notch. The banner covered the chip completely, and a click there went to the banner.
+
+Decision: the shell keeps its banners and Visor moves them. While the notch shows the hint or the peek state,
+`core/banners.ts` sets `Main.messageTray.translation_y` to the height of the body (eased over 200 ms while a
+banner is on screen), so a banner slides out below the body and both can be seen and clicked. It goes back to
+the stock value when the notch is idle again and when Visor is disabled. While the panel is open the banners
+are blocked, as with the stock date menu. The whole tray is moved, not `_bannerBin`: its clip moves along, so
+a banner never slides over the chips, and no private field is touched. This lives in the notch, not in the
+notifications module, because every flash meets a banner (timers and downloads send notifications too) and
+the overlap is there with the notifications module turned off as well.
+
+Two more facts from the same test:
+
+- The shell sets `acknowledged = true` the moment it shows the banner of a notification
+  (`ui/messageTray.js:1167`). "Unread" in Visor therefore is "arrived since the panel was last open", kept by
+  the notifications module itself; with `acknowledged` alone the dot would go out before anybody saw it.
+- An `EDataServer.SourceRegistry` that is still alive when the process exits crashes it in its dispose
+  (libedataserver 3.60 under gjs 1.88, seen with `gjs` and with the shell). Disposed while the process runs it
+  is harmless, a moment after the last call. `modules/upcoming/links.ts` therefore opens registry and client
+  for a round of lookups only and disposes them a second later. `gnome-calendar --uuid <source>:<uid>` (two
+  parts) was confirmed by hand: it opens the event.

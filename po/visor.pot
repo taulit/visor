@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-16 22:24+0100\n"
+"POT-Creation-Date: 2026-11-17 11:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,49 +16,280 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: build/core/sheet.js:147 build/core/sheet.js:500
+#: build/core/search/controller.js:123 build/core/search/controller.js:146
+msgid "Commands"
+msgstr ""
+
+#: build/core/search/controller.js:131
+msgid "Calculate"
+msgstr ""
+
+#: build/core/search/controller.js:132
+msgid "Apps"
+msgstr ""
+
+#: build/core/search/controller.js:178
+msgid "No results"
+msgstr ""
+
+#: build/core/search/controller.js:279
+msgid "Enter completes"
+msgstr ""
+
+#: build/core/search/controller.js:295 build/core/search/controller.js:320
+msgid "Enter copies"
+msgstr ""
+
+#: build/core/search/controller.js:305
+msgid "Currency rates are turned off"
+msgstr ""
+
+#: build/core/search/controller.js:308
+msgid "Rates are loading"
+msgstr ""
+
+#: build/core/sheet.js:156 build/core/sheet.js:519
 msgid "Modules"
 msgstr ""
 
-#: build/core/sheet.js:276
+#: build/core/sheet.js:287
 msgid "Search, calculate or run a command …"
 msgstr ""
 
-#: build/core/sheet.js:277
+#: build/core/sheet.js:288
 msgid "Search"
 msgstr ""
 
-#: build/core/sheet.js:299 build/core/sheet.js:371
+#: build/core/sheet.js:313 build/core/sheet.js:390
+#: build/modules/upcoming/when.js:35
 msgid "Now"
 msgstr ""
 
-#: build/core/sheet.js:313
+#: build/core/sheet.js:327
 msgid "Back"
 msgstr ""
 
-#: build/core/sheet.js:371
+#: build/core/sheet.js:390
 msgid "Shows up only while something is running."
 msgstr ""
 
-#: build/core/sheet.js:372
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/core/sheet.js:391 build/modules/upcoming/module.js:28
+#: build/modules/upcoming/module.js:99
 msgid "Up Next"
 msgstr ""
 
-#: build/core/sheet.js:372
+#: build/core/sheet.js:391
 msgid "A short section next to “Now”."
 msgstr ""
 
-#: build/core/sheet.js:373
+#: build/core/sheet.js:392
 msgid "Dock"
 msgstr ""
 
-#: build/core/sheet.js:373
+#: build/core/sheet.js:392
 msgid "A view of its own behind an icon."
 msgstr ""
 
-#: build/core/sheet.js:571
+#: build/core/sheet.js:590
 msgid "No modules"
+msgstr ""
+
+#: build/modules/downloads/module.js:15
+msgid "Downloads"
+msgstr ""
+
+#: build/modules/downloads/module.js:336 build/modules/timers/module.js:229
+msgid "Done"
+msgstr ""
+
+#: build/modules/downloads/module.js:342
+msgid "Show in folder"
+msgstr ""
+
+#: build/modules/downloads/module.js:349
+msgid "Open"
+msgstr ""
+
+#: build/modules/media/module.js:20
+msgid "Media"
+msgstr ""
+
+#: build/modules/media/module.js:147
+msgid "Previous"
+msgstr ""
+
+#: build/modules/media/module.js:153 build/modules/timers/module.js:241
+msgid "Pause"
+msgstr ""
+
+#: build/modules/media/module.js:153
+msgid "Play"
+msgstr ""
+
+#: build/modules/media/module.js:160
+msgid "Next"
+msgstr ""
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/modules/notifications/module.js:19
+#: build/modules/notifications/module.js:92
+msgid "Notifications"
+msgstr ""
+
+#: build/modules/notifications/module.js:94
+msgid "Do Not Disturb"
+msgstr ""
+
+#: build/modules/notifications/module.js:101
+msgid "No new notifications"
+msgstr ""
+
+#: build/modules/notifications/module.js:298
+msgid "Show less"
+msgstr ""
+
+#: build/modules/notifications/module.js:300
+#, javascript-format
+msgid "Show all %d"
+msgstr ""
+
+#: build/modules/notifications/module.js:323
+msgid "Clear all"
+msgstr ""
+
+#: build/modules/notifications/module.js:345
+msgid "Dismiss"
+msgstr ""
+
+#: build/modules/timers/module.js:19
+msgid "Timers"
+msgstr ""
+
+#: build/modules/timers/module.js:25
+msgid "timer 25m Pizza"
+msgstr ""
+
+#: build/modules/timers/module.js:30
+msgid "stopwatch Research"
+msgstr ""
+
+#: build/modules/timers/module.js:92
+#, javascript-format
+msgid "Alarm at %s"
+msgstr ""
+
+#: build/modules/timers/module.js:102
+#, javascript-format
+msgid "Start timer · %s"
+msgstr ""
+
+#: build/modules/timers/module.js:118
+msgid "Start stopwatch"
+msgstr ""
+
+#: build/modules/timers/module.js:205
+msgid "Stopwatch"
+msgstr ""
+
+#: build/modules/timers/module.js:206
+msgid "Alarm"
+msgstr ""
+
+#: build/modules/timers/module.js:206 build/modules/timers/module.js:321
+msgid "Timer"
+msgstr ""
+
+#: build/modules/timers/module.js:230 build/modules/timers/module.js:341
+msgid "Restart"
+msgstr ""
+
+#: build/modules/timers/module.js:236
+msgid "Resume"
+msgstr ""
+
+#: build/modules/timers/module.js:246
+msgid "Stop"
+msgstr ""
+
+#: build/modules/timers/module.js:251
+msgid "+1 min"
+msgstr ""
+
+#: build/modules/timers/module.js:261 build/modules/timers/module.js:266
+msgid "Paused"
+msgstr ""
+
+#: build/modules/timers/module.js:266 build/modules/timers/module.js:295
+#: build/modules/upcoming/plan.js:32
+#, javascript-format
+msgid "until %s"
+msgstr ""
+
+#: build/modules/timers/module.js:301
+#, javascript-format
+msgid "%s done"
+msgstr ""
+
+#: build/modules/timers/module.js:317
+msgid "Timer finished"
+msgstr ""
+
+#: build/modules/timers/module.js:334
+#, javascript-format
+msgid "Ended at %s"
+msgstr ""
+
+#: build/modules/upcoming/module.js:100
+msgid "Nothing else today"
+msgstr ""
+
+#: build/modules/upcoming/module.js:182
+msgid "Join"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:21
+#, javascript-format
+msgid "in %d min"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:23
+#, javascript-format
+msgid "in %d h"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:24
+#, javascript-format
+msgid "in %d h %d min"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:29
+msgid "all day"
+msgstr ""
+
+#: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
+msgid "Today"
+msgstr ""
+
+#: build/modules/upcoming/when.js:40
+msgid "Tomorrow"
+msgstr ""
+
+#: build/modules/upcoming/when.js:59
+msgid "now"
+msgstr ""
+
+#: build/modules/upcoming/when.js:61
+#, javascript-format
+msgid "%d min ago"
+msgid_plural "%d min ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/modules/upcoming/when.js:66
+msgid "Yesterday"
 msgstr ""
 
 #: build/prefs.js:5

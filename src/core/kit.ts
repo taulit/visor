@@ -18,6 +18,7 @@ import type {
   KitToggle,
   PeekChip,
   RowProps,
+  ToggleProps,
 } from '../api.js';
 
 /** Runs code of a module so that an exception cannot leave it. */
@@ -349,6 +350,33 @@ function setIcon(icon: St.Icon, value: string | Gio.Icon): void {
   }
 }
 
+/** Rows by their actor, to find the rows next to one. */
+const rowsByActor = new WeakMap<Clutter.Actor, Row>();
+
+/**
+ * The `lead` column is as wide as the stylesheet says, or as the longest text
+ * in it: 'Tomorrow' is wider than '15:00'. The rows of one container share
+ * that width, so their titles line up.
+ */
+function alignLeads(container: Clutter.Actor | null): void {
+  if (!container) return;
+  const labels: St.Label[] = [];
+  for (const child of container.get_children()) {
+    const label = rowsByActor.get(child)?.leadLabel;
+    // Off the stage a label has no style yet, so neither its font nor its width is known.
+    if (label?.get_stage()) labels.push(label);
+  }
+  let widest = 0;
+  for (const label of labels) {
+    widest = Math.max(
+      widest,
+      label.get_theme_node().get_min_width(),
+      Math.ceil(label.clutter_text.get_preferred_width(-1)[1]),
+    );
+  }
+  for (const label of labels) label.set_width(widest);
+}
+
 /** Options only Visor itself uses; modules build rows from RowProps alone. */
 export interface RowOptions {
   /** A widget at the very end of the row, such as the switch in the list of modules. */
@@ -386,6 +414,7 @@ export class Row implements KitRow {
   private primary: ActionButton | null = null;
   private chevron: St.Button | null = null;
   private chevronIcon: St.Icon | null = null;
+  private toggle: Toggle | null = null;
   private more: St.Widget | null = null;
   private moreBuiltFrom: (() => St.Widget) | null = null;
 
@@ -399,10 +428,15 @@ export class Row implements KitRow {
   constructor(
     props: RowProps,
     private guard: Guard,
-    options: RowOptions = {},
   ) {
     this.props = cleanRow(props);
     this.actor = new St.Widget({ layout_manager: new OutsetLayout(), x_expand: true });
+    rowsByActor.set(this.actor, this);
+    this.actor.connect('parent-set', (_actor, old: Clutter.Actor | null) => {
+      if (this.leadIs !== 'text') return;
+      alignLeads(old);
+      alignLeads(this.actor.get_parent());
+    });
     this.frame = new St.BoxLayout({
       style_class: 'visor-row',
       vertical: true,
@@ -439,10 +473,6 @@ export class Row implements KitRow {
       y_align: Clutter.ActorAlign.CENTER,
     });
     this.line.add_child(this.end);
-    if (options.trailing) {
-      options.trailing.y_align = Clutter.ActorAlign.CENTER;
-      this.end.add_child(options.trailing);
-    }
 
     const click = new Clutter.ClickGesture();
     click.connect('recognize', () => this.click());
@@ -457,6 +487,11 @@ export class Row implements KitRow {
   update(props: RowProps): void {
     this.props = cleanRow(props);
     this.apply();
+  }
+
+  /** The label of the `lead` text, null for a row with an icon or nothing in front. */
+  get leadLabel(): St.Label | null {
+    return this.lead instanceof St.Label ? this.lead : null;
   }
 
   /** The actor that takes the focus when the keyboard moves to this row. */
@@ -491,15 +526,19 @@ export class Row implements KitRow {
     const { props } = this;
     const kind = leadKind(props);
     if (kind !== this.leadIs) {
+      const wasText = this.leadIs === 'text';
       this.lead?.destroy();
       this.lead = null;
       this.coverUri = '';
       this.leadIs = kind;
+      if (wasText) alignLeads(this.actor.get_parent());
       if (kind === 'text') {
         this.lead = new St.Label({
           style_class: 'visor-row-lead',
           y_align: Clutter.ActorAlign.CENTER,
         });
+        // The font is known once the label has its style, and may change with it.
+        this.lead.connect('style-changed', () => alignLeads(this.actor.get_parent()));
       } else if (kind === 'picture') {
         this.lead = new St.Widget({
           style_class: 'visor-row-cover',
@@ -516,7 +555,10 @@ export class Row implements KitRow {
     if (!this.lead) return;
     if (this.lead instanceof St.Label) {
       const lead = props.lead ?? '';
-      if (this.lead.text !== lead) this.lead.text = lead;
+      if (this.lead.text !== lead) {
+        this.lead.text = lead;
+        alignLeads(this.actor.get_parent());
+      }
     } else if (this.lead instanceof St.Icon) {
       setIcon(this.lead, props.icon!);
     } else {
@@ -586,7 +628,7 @@ export class Row implements KitRow {
 
   /**
    * The end of the row, from left to right: actions and meta (in one place),
-   * spinner, value, controls, primary button, arrow, trailing widget.
+   * spinner, value, controls, primary button, arrow, switch.
    */
   private placeInEnd(child: Clutter.Actor, rank: number): void {
     const order = [
@@ -682,6 +724,38 @@ export class Row implements KitRow {
       this.primary.actor.destroy();
       this.primary = null;
     }
+
+    if (props.toggle) {
+      if (!this.toggle) {
+        this.toggle = new Toggle(
+          {
+            label: props.title,
+            active: Boolean(props.toggle.active),
+            onChange: active => this.props.toggle?.onChange(active),
+          },
+          this.guard,
+        );
+        this.watchFocus(this.toggle.actor);
+        this.end.add_child(this.toggle.actor);
+      }
+      this.toggle.active = Boolean(props.toggle.active);
+      if (this.toggle.actor.accessible_name !== props.title)
+        this.toggle.actor.accessible_name = props.title;
+    } else if (this.toggle) {
+      if (this.toggle.actor.has_key_focus()) this.main.grab_key_focus();
+      this.toggle.actor.destroy();
+      this.toggle = null;
+    }
+  }
+
+  /** Flips the switch of the row as a click on the switch itself would. */
+  private flipToggle(): void {
+    const { toggle } = this;
+    const props = this.props.toggle;
+    if (!toggle || !props) return;
+    const active = !toggle.active;
+    toggle.active = active;
+    this.guard.call(() => props.onChange(active));
   }
 
   private applyExpand(): void {
@@ -771,8 +845,9 @@ export class Row implements KitRow {
   }
 
   private click(): void {
-    const { activate, expand } = this.props;
+    const { activate, primary, toggle, expand } = this.props;
     if (activate) this.guard.call(activate);
+    else if (toggle && !primary) this.flipToggle();
     else if (expand) this.setExpanded(!this.expanded);
   }
 
@@ -785,10 +860,11 @@ export class Row implements KitRow {
         Clutter.ModifierType.SUPER_MASK);
     if (modifiers) return Clutter.EVENT_PROPAGATE;
     const symbol = event.get_key_symbol();
-    const { activate, primary, expand } = this.props;
+    const { activate, primary, toggle, expand } = this.props;
     if (isActivateKey(symbol)) {
       if (activate) this.guard.call(activate);
       else if (primary) this.guard.call(() => primary.run());
+      else if (toggle) this.flipToggle();
       else if (expand) this.setExpanded(!this.expanded);
       else return Clutter.EVENT_PROPAGATE;
       return Clutter.EVENT_STOP;
@@ -804,13 +880,14 @@ export class Row implements KitRow {
 class Section implements KitSection {
   readonly actor: St.Widget;
   readonly body: St.Widget;
+  readonly toggle: KitToggle | null = null;
   private title: St.Label;
   private linksBox: St.BoxLayout;
   private links: ActionList;
   /** The link that has the keyboard focus. */
   private focused: Clutter.Actor | null = null;
 
-  constructor(props: { title: string; links?: Action[] }, guard: Guard) {
+  constructor(props: { title: string; links?: Action[]; toggle?: ToggleProps }, guard: Guard) {
     this.actor = new St.BoxLayout({
       style_class: 'visor-section',
       vertical: true,
@@ -834,6 +911,24 @@ class Section implements KitSection {
       opacity: 0,
     });
     header.add_child(this.linksBox);
+    if (props.toggle) {
+      // Always visible, with its name next to it: a bare switch says nothing.
+      const box = new St.BoxLayout({
+        style_class: 'visor-section-toggle',
+        y_align: Clutter.ActorAlign.CENTER,
+      });
+      const label = new St.Label({
+        style_class: 'visor-section-toggle-label',
+        text: str(props.toggle.label),
+        y_align: Clutter.ActorAlign.CENTER,
+      });
+      const toggle = new Toggle(props.toggle, guard);
+      toggle.actor.label_actor = label;
+      box.add_child(label);
+      box.add_child(toggle.actor);
+      header.add_child(box);
+      this.toggle = toggle;
+    }
     this.actor.add_child(header);
     this.body = new St.BoxLayout({
       style_class: 'visor-section-body',
@@ -875,10 +970,7 @@ class Toggle implements KitToggle {
   readonly actor: St.Button;
   private knob: St.Widget;
 
-  constructor(
-    props: { label: string; active: boolean; onChange(active: boolean): void },
-    guard: Guard,
-  ) {
+  constructor(props: ToggleProps, guard: Guard) {
     this.knob = new St.Widget({ style_class: 'visor-toggle-knob' });
     // The track has the size of the inside of the switch and a fixed layout,
     // so the knob starts at its edge whatever the button does with its child.

@@ -16,9 +16,14 @@ shots=(
     "hint=hint"
     "peek=content-peek"
     "open=content-demo"
+    "now=modules-now"
     "open-one-column=content-one-column"
     "modules-view=content-modules-view"
     "empty=content-empty"
+    "search=search-results"
+    "search-convert=search-convert"
+    "ahead=modules-ahead"
+    "open-real=open-real"
 )
 
 fail=0

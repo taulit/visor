@@ -6,11 +6,13 @@ import type St from 'gi://St';
 
 import {
   API_VERSION,
+  type Command,
   type Kit,
   type ModuleContext,
   type ModuleOwner,
   type NowRow,
   type PeekChip,
+  type SearchSource,
   type Slot,
   type VisorApi,
   type VisorModule,
@@ -54,6 +56,14 @@ export interface IncompatibleModule {
   uuid: string;
   /** The version the extension asked for. */
   api: number;
+}
+
+/** What the running modules add to the search, in display order. */
+export interface SearchParts {
+  commands: { entry: ModuleEntry; command: Command }[];
+  sources: { entry: ModuleEntry; source: SearchSource }[];
+  /** Desktop ids of the GNOME search providers the modules stand in for. */
+  replaced: string[];
 }
 
 /** What the registry tells the content about. */
@@ -112,6 +122,31 @@ export class Registry {
   /** The running modules of a slot in display order. */
   active(slot: Slot): ModuleEntry[] {
     return this.all().filter(entry => entry.active && entry.module.slot === slot);
+  }
+
+  /** Commands, search sources and replaced search providers of the running modules. */
+  searchParts(): SearchParts {
+    const parts: SearchParts = { commands: [], sources: [], replaced: [] };
+    for (const entry of this.all()) {
+      if (!entry.active) continue;
+      const { commands, search, replacesSearchProvider } = entry.module;
+      if (Array.isArray(commands)) {
+        for (const command of commands) {
+          if (
+            command &&
+            typeof command.resolve === 'function' &&
+            Array.isArray(command.keyword) &&
+            command.keyword.every(keyword => typeof keyword === 'string' && keyword !== '')
+          )
+            parts.commands.push({ entry, command });
+        }
+      }
+      if (search && typeof search.search === 'function')
+        parts.sources.push({ entry, source: search });
+      if (typeof replacesSearchProvider === 'string' && replacesSearchProvider !== '')
+        parts.replaced.push(replacesSearchProvider);
+    }
+    return parts;
   }
 
   get(id: string): ModuleEntry | null {

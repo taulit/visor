@@ -16,19 +16,19 @@ export type Slot = 'now' | 'ahead' | 'dock';
 export interface VisorModule {
   /** Unique, lower case letters, digits and dashes: 'notes'. */
   id: string;
-  /** Translated name, shown in the settings and as tooltip of the dock icon. */
+  /** Translated name: title of the module's view, entry in the Modules view, accessible name of the dock icon. */
   name: string;
   /** Symbolic icon name. */
   icon: string;
   slot: Slot;
   /** Called when the module is registered and not turned off, and again when the user turns it back on. */
   enable(ctx: ModuleContext): void;
-  /** The context is dead after this. Visor removes rows, chip, badge, section and view of the module itself. */
+  /** Calls that change something through the context do nothing after this. Visor removes rows, chip, badge, section and view of the module itself. Must cope with an enable() that threw halfway. */
   disable(): void;
   /**
-   * Slot 'ahead': called once per enable(), the first time the panel opens.
+   * Slot 'ahead': called once per enable(): the first time the panel opens, or at once if it has been open before.
    * Visor owns the returned widget and destroys it when the module is disabled.
-   * Hide the widget to take the section out of the panel.
+   * A hidden widget leaves a gap; the right column stays.
    */
   buildSection?(): St.Widget;
   /**
@@ -37,6 +37,11 @@ export interface VisorModule {
    * Visor owns the returned widget and destroys it when the module is disabled.
    */
   buildView?(): St.Widget;
+  /**
+   * Slot 'dock': buttons on the right of the header of the view, such as
+   * 'Open in app' or 'New'. Read every time the view is shown.
+   */
+  viewActions?: Action[];
   /** Results of this module in the search. */
   search?: SearchSource;
   /** Commands such as 'note <text>'. */
@@ -49,7 +54,7 @@ export interface ModuleContext {
   kit: Kit;
   /** Slot 'now': the rows of this module. Rows are matched by id, so set() can be called often. */
   now: { set(rows: NowRow[]): void; clear(): void };
-  /** The chip of this module in the peek state. flash() also shows the peek state for a moment. */
+  /** The chip of this module in the peek state. flash() also shows the peek state for three seconds, unless the user turned that off, Do Not Disturb is on or a window is in fullscreen. */
   peek: { set(chip: PeekChip | null): void; flash(chip: PeekChip): void };
   /** Number on the dock icon, null removes it. */
   badge(count: number | null): void;
@@ -121,13 +126,19 @@ export interface RowProps {
   actions?: Action[];
   /**
    * Content shown below the row when it is expanded. Built on first expand.
-   * A row without `activate` expands on click; every expandable row has an arrow that does it.
+   * A row without `activate` and `toggle` expands on click; every expandable row has an arrow that does it. Pass the same function on every update(), a new one rebuilds the content.
    */
   expand?: () => St.Widget;
   /** 0..1 draws a thin line under the text, 'indeterminate' a small spinner when the end is unknown. */
   progress?: number | 'indeterminate';
   /** Colour of the progress line. */
   progressTone?: 'muted' | 'accent';
+  /**
+   * A switch at the very end of the row. A click on a row without `activate`
+   * and `primary`, or Enter while it has the focus, flips it as well.
+   * onChange gets the new state; the switch shows `active` of the last update().
+   */
+  toggle?: { active: boolean; onChange(active: boolean): void };
 }
 
 /** A row in "Now". Rows are matched by id between two calls of now.set(). */
@@ -166,24 +177,40 @@ export interface SearchSource {
 export interface Command {
   /** Words that trigger the command, in every supported language: ['timer']. */
   keyword: string[];
-  /** Shown while typing: 'timer 25m Pizza'. */
+  /** Example shown while the arguments are incomplete: 'timer 25m Pizza'. */
   hint: string;
-  /** Results to show for the arguments typed so far, or nothing when Enter runs the command directly. */
-  run(args: string): Promise<Result[] | void>;
+  /**
+   * Called while the user types, so it must not change anything. Returns what
+   * Enter would do for these arguments as results, each with its own
+   * activate(). An empty list means the arguments are incomplete; then the
+   * hint is shown.
+   */
+  resolve(args: string): Result[] | Promise<Result[]>;
 }
 
 /** UI building blocks. Modules use only these, so everything follows the theme. */
 export interface Kit {
-  section(props: { title: string; links?: Action[] }): KitSection;
+  /**
+   * `toggle` puts a switch with its label at the right end of the header. Unlike
+   * the links it is always visible, such as 'Do Not Disturb' for notifications.
+   */
+  section(props: { title: string; links?: Action[]; toggle?: ToggleProps }): KitSection;
   row(props: RowProps): KitRow;
   button(action: Action): St.Widget;
   iconButton(action: Action & { icon: string }): St.Widget;
   /** A switch without visible text; `label` is its accessible name. */
-  toggle(props: { label: string; active: boolean; onChange(active: boolean): void }): KitToggle;
+  toggle(props: ToggleProps): KitToggle;
   progress(props: { value: number | 'indeterminate'; tone?: 'muted' | 'accent' }): KitProgress;
   /** Quiet line for a section without content, such as 'No new notifications'. */
   empty(text: string): St.Widget;
   chip(chip: PeekChip): St.Widget;
+}
+
+export interface ToggleProps {
+  label: string;
+  active: boolean;
+  /** The user moved the switch. */
+  onChange(active: boolean): void;
 }
 
 export interface KitSection {
@@ -192,6 +219,8 @@ export interface KitSection {
   body: St.Widget;
   /** Links on the right of the title; they appear on hover or keyboard focus of the section. */
   setLinks(links: Action[]): void;
+  /** The switch in the header, null when the section was built without `toggle`. */
+  readonly toggle: KitToggle | null;
 }
 
 export interface KitRow {

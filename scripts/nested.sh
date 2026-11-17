@@ -73,6 +73,7 @@ env -i \
     XDG_CONFIG_HOME="$sandbox/home/.config" XDG_DATA_HOME="$sandbox/home/.local/share" \
     XDG_CACHE_HOME="$sandbox/home/.cache" XDG_STATE_HOME="$sandbox/home/.local/state" \
     XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=GNOME \
+    XDG_DATA_DIRS="$sandbox/share:/usr/local/share:/usr/share" \
     GIO_USE_VOLUME_MONITOR=unix GVFS_DISABLE_FUSE=1 \
     VISOR_REPO="$repo" VISOR_SANDBOX="$sandbox" \
     VISOR_SIZE="$size" VISOR_SCHEME="$scheme" VISOR_ACCENT="$accent" \
