@@ -4,17 +4,22 @@
 // fixtures.js. No dependencies; the WebSocket side is a small RFC 6455 server.
 //
 // Usage: node tests/t3-mock/server.js [--port N] [--token T] [--fixture NAME]
-//                                     [--protocol N] [--home DIR]
+//                                     [--protocol N] [--home DIR] [--pairing CODE]
 //   --port      port on 127.0.0.1 (default 3799)
 //   --token     the bearer token it accepts (default "mock-token")
 //   --fixture   a set of fixtures.js (default "default")
 //   --protocol  the orchestration protocol it claims to speak (default 2)
+//   --pairing   the one-time pairing code `POST /oauth/token` exchanges for the
+//               token (default "mock-pairing"); it works once, as on the real server
 //   --home      writes <DIR>/userdata/server-runtime.json while it runs, as
 //               the real server does below ~/.t3
 //
 // Test controls, plain HTTP on the same port:
 //   GET  /__mock/actions        what clients did: [{type, threadId, …}]
-//   GET  /__mock/state          {clients, acks, tickets}
+//   GET  /__mock/state          {clients, acks, tickets, ticketRequests, pairings}
+//                               tickets: issued; ticketRequests: asked for, refused ones too;
+//                               pairings: [{label, scope}] of the exchanges that worked
+//   POST /__mock/pairing?code=C a new one-time pairing code
 //   POST /__mock/wait?thread=ID[&request=ID][&prompt=TEXT][&kind=KIND]
 //                               the thread asks for approval
 //   POST /__mock/thread         body: a thread shell (at least {id}); merged and announced
@@ -44,6 +49,8 @@ const port = Number(option('port', '3799'));
 const token = option('token', 'mock-token');
 const protocol = Number(option('protocol', '2'));
 const home = option('home', '');
+const pairingCodes = new Set([option('pairing', 'mock-pairing')]);
+const pairings = [];
 
 const fixture = FIXTURES[option('fixture', 'default')](Date.now());
 const threads = new Map(fixture.threads.map(t => [t.id, t]));
@@ -54,6 +61,7 @@ const tickets = new Set();
 const clients = new Set();
 let acks = 0;
 let ticketCount = 0;
+let ticketRequests = 0;
 let failNext = false;
 let sequence = 1;
 
@@ -256,7 +264,7 @@ function accept(socket) {
 
 // --- HTTP ---
 
-const server = createServer((request, response) => {
+const server = createServer(async (request, response) => {
   const url = new URL(request.url, `http://127.0.0.1:${port}`);
   const json = (status, value) => {
     response.writeHead(status, { 'content-type': 'application/json' });
@@ -270,7 +278,28 @@ const server = createServer((request, response) => {
     });
 
   if (url.pathname === '/.well-known/t3/environment') return json(200, descriptor(protocol));
+  if (url.pathname === '/oauth/token' && request.method === 'POST') {
+    const form = new URLSearchParams(await body());
+    const wellFormed =
+      request.headers['content-type']?.startsWith('application/x-www-form-urlencoded') &&
+      form.get('grant_type') === 'urn:ietf:params:oauth:grant-type:token-exchange' &&
+      form.get('subject_token_type') === 'urn:t3:params:oauth:token-type:environment-bootstrap' &&
+      form.get('requested_token_type') === 'urn:ietf:params:oauth:token-type:access_token';
+    if (!wellFormed) return json(400, { _tag: 'EnvironmentRequestInvalidError' });
+    if (!pairingCodes.delete(form.get('subject_token')))
+      return json(401, { _tag: 'EnvironmentAuthInvalidError', reason: 'invalid_credential' });
+    const scope = form.get('scope') ?? 'orchestration:read orchestration:operate';
+    pairings.push({ label: form.get('client_label'), scope });
+    return json(200, {
+      access_token: token,
+      issued_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+      token_type: 'Bearer',
+      expires_in: 3600,
+      scope,
+    });
+  }
   if (url.pathname === '/api/auth/websocket-ticket/rpc' && request.method === 'POST') {
+    ticketRequests++;
     if (request.headers.authorization !== `Bearer ${token}`)
       return json(401, { _tag: 'EnvironmentAuthInvalidError', reason: 'invalid_credential' });
     const ticket = randomUUID();
@@ -281,7 +310,13 @@ const server = createServer((request, response) => {
 
   if (url.pathname === '/__mock/actions') return json(200, actions);
   if (url.pathname === '/__mock/state')
-    return json(200, { clients: clients.size, acks, tickets: ticketCount });
+    return json(200, {
+      clients: clients.size,
+      acks,
+      tickets: ticketCount,
+      ticketRequests,
+      pairings,
+    });
   if (request.method !== 'POST') return json(404, {});
   const id = url.searchParams.get('thread');
   switch (url.pathname) {
@@ -314,6 +349,9 @@ const server = createServer((request, response) => {
           location: 'active',
           threadId: id,
         });
+      return json(200, {});
+    case '/__mock/pairing':
+      pairingCodes.add(url.searchParams.get('code') ?? 'mock-pairing');
       return json(200, {});
     case '/__mock/fail-next':
       failNext = true;
