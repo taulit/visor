@@ -14,13 +14,22 @@ other sessions: `docs/STATUS.md`, API facts: `docs/verified.md`, structure: `doc
 Branch `phase/v3-t3`, pull request https://github.com/taulit/visor/pull/5 against `main` (not stacked), waiting for the user to merge. Bug
 review done, 11 of 12 findings fixed. The private template repo `taulit/visor-module-template` exists.
 
-## Next
+## Running now: V4 on branch `phase/v4-hardening` (branched from `phase/v3-t3`)
 
-1. After the merge: branch `phase/v4-hardening` from `main`.
-2. V4: budgets (`docs/performance.md`, GSettings `debug-metrics`), accessibility, translations (es, fr, pt_BR,
-   it, pl, ru, zh_CN, ja by a Sonnet agent, glossary in `docs/design/plan/04-design.md`), one
-   simplicity review and one spec review, `docs/ego-checklist.md`, AUR `build-aux/aur/PKGBUILD`, README with
-   module table, `docs/release-checklist.md`.
+Four agents, each in its own worktree (`git worktree list`); they commit after each block. If one stopped at
+the usage limit, send "continue" to its thread.
+
+| Task                                                                                      | Model  | Thread                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Budgets (`debug-metrics`, `scripts/measure.sh`, `docs/performance.md`) and accessibility  | Fable  | `[V4 budgets and accessibility](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3Aee7fc700-384c-4077-9a36-f2372be5e33c%3Adelegate-task%3A2567145d-2e25-482d-a0ea-f413398734c9)`        |
+| T3 token into the keyring, untested parts of the settings, `visor.id` for foreign modules | Fable  | `[V4 keyring and settings checks](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3Aee7fc700-384c-4077-9a36-f2372be5e33c%3Adelegate-task%3Aa22919f7-2b71-4ba4-8522-741bb47b82c3)`      |
+| Translations es, fr, pt_BR, it, pl, ru, zh_CN, ja                                         | Sonnet | `[V4 translations](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3Aee7fc700-384c-4077-9a36-f2372be5e33c%3Adelegate-task%3A5c67a253-d067-4c26-940e-c6ccefbe8ee8)`                     |
+| README, `docs/ego-checklist.md`, AUR, release checklist, changelog, CI                    | Sonnet | `[V4 README, EGO checklist, packaging](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3Aee7fc700-384c-4077-9a36-f2372be5e33c%3Adelegate-task%3A9e0a821b-8db6-4b91-8b53-f54931c08b1d)` |
+
+Then: merge the four branches (conflicts expected in `po/`, the schema, `scripts/shell-tests.sh`,
+`scripts/shots.sh`), translate strings the Fable agents added into all nine languages, gate, one bug review,
+one simplicity review and one spec review on the diff, fix, and open the V4 pull request against `main` once
+the V3 pull request is merged (otherwise say clearly that it is stacked on V3).
 
 ## Open items carried forward
 
