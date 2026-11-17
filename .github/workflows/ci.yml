@@ -25,6 +25,10 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Compile the schema strictly
+        run: glib-compile-schemas --strict --dry-run schemas
+      - name: Check that the module table of the README is current
+        run: pnpm run readme:check
       - run: pnpm sdk:check
       - name: Build the module template in a clean copy
         run: pnpm template:check
