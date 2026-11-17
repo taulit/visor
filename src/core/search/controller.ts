@@ -18,6 +18,7 @@ import { parseQuery, type Query } from './parser.js';
 import {
   fromResults,
   isReplaced,
+  MAX_APPS,
   MAX_PER_SOURCE,
   RemoteProviders,
   searchApps,
@@ -193,6 +194,20 @@ export class Search {
     this.locale = locale;
     this.homeCurrency = region ? homeCurrencyForRegion(region) : 'EUR';
     this.none = { id: 'none', label: '', items: [{ id: 'none', title: _('No results') }] };
+    this.results.reserve('command', 1);
+    this.results.reserve('calc', 1);
+    this.results.reserve('apps', MAX_APPS);
+  }
+
+  /**
+   * The first key in the entry: what the first query would otherwise pay for
+   * is done now, in the 40 ms before that query arrives.
+   */
+  private warmUp(): void {
+    this.start();
+    const query = parseQuery('1+1', { commands: [], locale: this.locale, homeCurrency: 'EUR' });
+    if (query.calc) formatResult(query.calc.value, this.locale);
+    searchApps(['a']);
   }
 
   /** Ends the running query: its answers are dropped from now on. */
@@ -403,6 +418,7 @@ export class Search {
   // --- choosing ---
 
   private onKey(event: Clutter.Event): boolean {
+    if (!this.results) this.warmUp();
     const symbol = event.get_key_symbol();
     const step = symbol === Clutter.KEY_Down ? 1 : symbol === Clutter.KEY_Up ? -1 : 0;
     if (step === 0 && !isActivateKey(symbol)) return false;

@@ -9,6 +9,8 @@ globalThis.visorSearchDemoRegister = () => {
     // While true the notes source answers only when the test calls answer(index).
     hold: false,
     pending: [],
+    // The cancellable of every call of the notes source.
+    cancellables: [],
     answer(index) {
       demo.pending[index]();
     },
@@ -52,7 +54,9 @@ globalThis.visorSearchDemoRegister = () => {
           new Promise(resolve => {
             demo.later = () =>
               resolve(
-                args ? [{ id: 'later', title: `Later: ${args}`, activate: note(`later:${args}`) }] : [],
+                args
+                  ? [{ id: 'later', title: `Later: ${args}`, activate: note(`later:${args}`) }]
+                  : [],
               );
           }),
       },
@@ -67,8 +71,9 @@ globalThis.visorSearchDemoRegister = () => {
     search: {
       id: 'notes',
       title: 'Notes',
-      search(query) {
+      search(query, cancellable) {
         demo.queries.push(query);
+        demo.cancellables.push(cancellable);
         const results = notes
           .filter(title => title.toLowerCase().includes(query.toLowerCase()))
           .map(title => ({

@@ -1,10 +1,10 @@
 /*
  * Search: the list of results. It floats over the columns, 6 px below the
- * search row (56 px), as wide as that row. The tokens are explained in
+ * search row (56 px and its hairline), as wide as that row. The tokens are explained in
  * 20-kit.css.
  */
 .visor-search-overlay {
-  margin: 62px 8px 0;
+  margin: 63px 8px 0;
   padding: 6px;
   border-radius: 16px;
   box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.6);
