@@ -24,7 +24,7 @@ tests=(
     "notch-leak-after-use|scripts/nested.sh --animations -- tests/shell/notch-leak-after-use.sh"
     "content-leak|tests/shell/content-leak.sh 20"
     "leak-test|scripts/leak-test.sh 50"
-    "leak-test-t3|VISOR_T3_MOCK=1 scripts/leak-test.sh 50"
+    "leak-test-t3|scripts/leak-test.sh 50 --t3"
 )
 
 for wanted in "$@"; do

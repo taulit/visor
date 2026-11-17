@@ -243,8 +243,8 @@ msgstr "Antworten"
 
 #: build/modules/t3/module.js:381
 #, javascript-format
-msgid "Reply to %s …"
-msgstr "Antwort an %s …"
+msgid "Reply to %s"
+msgstr "Antwort an %s"
 
 #: build/modules/t3/module.js:381 build/modules/t3/module.js:382
 msgid "Reply"

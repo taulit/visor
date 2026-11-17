@@ -427,7 +427,7 @@ class T3Module implements VisorModule {
     const name = truncate(session?.title ?? '', 24);
     const entry = new St.Entry({
       style_class: 'visor-t3-reply',
-      hint_text: name ? _('Reply to %s …').replace('%s', name) : _('Reply'),
+      hint_text: name ? _('Reply to %s').replace('%s', name) : _('Reply'),
       accessible_name: _('Reply'),
       can_focus: true,
       x_expand: true,

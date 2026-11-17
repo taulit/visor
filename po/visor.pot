@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 11:51+0100\n"
+"POT-Creation-Date: 2026-11-17 11:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -246,7 +246,7 @@ msgstr ""
 
 #: build/modules/t3/module.js:381
 #, javascript-format
-msgid "Reply to %s …"
+msgid "Reply to %s"
 msgstr ""
 
 #: build/modules/t3/module.js:381 build/modules/t3/module.js:382

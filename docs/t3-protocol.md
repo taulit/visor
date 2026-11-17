@@ -96,7 +96,8 @@ UUIDs (`packages/client-runtime/src/operations/commands.ts`).
 - Approve / deny: `{type:"runtime-request.respond", commandId, threadId, requestId, decision:"accept"|"decline"}`
 - Reply: `{type:"message.dispatch", commandId, createdBy:"user", creationSource:"web", threadId, messageId,
 text, attachments:[], dispatchMode:{type:"start_immediately"}, deliveryIntent:"auto"}`
-- Stop: `{type:"thread.stop", commandId, threadId}`
+- Stop: `{type:"thread.stop", commandId, threadId}`; servers without the capability
+  `threadStop` get `{type:"run.interrupt", commandId, threadId, runId}` with the `activeRunId` of the shell
 - New thread: `orchestration.launchThread` with `{commandId, creationSource:"web", threadId, projectId,
 title, generateTitle:true, modelSelection, runtimeMode, interactionMode, workspaceStrategy:{type:"root"},
 initialMessage:{messageId, text, attachments:[]}}`
