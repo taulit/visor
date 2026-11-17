@@ -65,6 +65,10 @@ export class MeetingLinks {
   /** Lookups that still run. */
   private running = 0;
   private complained = false;
+  /** The timeout that takes the last session down. */
+  private closing = 0;
+  private closingSessions: Session[] = [];
+  private destroyed = false;
 
   /** `found` is called when a link turned up for an event asked about before. */
   constructor(
@@ -85,6 +89,12 @@ export class MeetingLinks {
   }
 
   destroy(): void {
+    this.destroyed = true;
+    if (this.closing) GLib.source_remove(this.closing);
+    this.closing = 0;
+    // Let go, not disposed: the clients may still have work queued.
+    this.closingSessions = [];
+    this.session = null;
     this.cache.clear();
     this.loading.clear();
     this.failed.clear();
@@ -173,17 +183,20 @@ export class MeetingLinks {
     return { registry, clients: new Map(), opened };
   }
 
-  /**
-   * The last lookup is over: nothing of Evolution stays in the shell. The
-   * timeout holds only the objects it disposes, so it may outlive the module.
-   */
+  /** The last lookup is over: nothing of Evolution stays in the shell. */
   private closeSession(): void {
     const session = this.session;
     this.session = null;
-    if (!session) return;
-    GLib.timeout_add(GLib.PRIORITY_LOW, CLOSE_DELAY_MS, () => {
-      for (const object of session.opened.reverse()) object.run_dispose();
-      session.opened.length = 0;
+    if (!session || this.destroyed) return;
+    // One timeout for all that wait; a round that ends meanwhile starts it anew.
+    this.closingSessions.push(session);
+    if (this.closing) GLib.source_remove(this.closing);
+    this.closing = GLib.timeout_add(GLib.PRIORITY_LOW, CLOSE_DELAY_MS, () => {
+      this.closing = 0;
+      for (const closed of this.closingSessions.splice(0)) {
+        for (const object of closed.opened.reverse()) object.run_dispose();
+        closed.opened.length = 0;
+      }
       return GLib.SOURCE_REMOVE;
     });
   }

@@ -17,8 +17,6 @@ const DAY_MS = 86_400_000;
 const RANGE_DAYS = 7;
 const ICON = 'x-office-calendar-symbolic';
 const CHIP_PRIORITY = 60;
-/** How long after disable() the proxy of the event source is disposed, see retire(). */
-const RETIRE_MS = 1000;
 /** A timeout fires a little early now and then; this keeps it from firing twice. */
 const WAKE_SLACK_MS = 20;
 
@@ -103,9 +101,12 @@ class Upcoming implements VisorModule {
     this.source = null;
     if (source) {
       source.disconnectObject(this);
-      const ready =
-        this.sourceReady || (source as unknown as { _initialized: boolean })._initialized;
-      retire(source, ready);
+      // As the date menu does with its own. Not while the source still
+      // connects to the calendar server: the shell touches the proxy when
+      // that is done, and a disposed one makes it complain. Such a source is
+      // only let go.
+      const connected = (source as unknown as { _initialized: boolean })._initialized;
+      if (connected && !source.isLoading) source.destroy();
       giveRangeBack();
     }
     this.sourceReady = false;
@@ -258,30 +259,6 @@ class Upcoming implements VisorModule {
       return GLib.SOURCE_REMOVE;
     });
   }
-}
-
-/**
- * Takes an event source down. Its proxy cannot go while the source still
- * connects to the calendar server or waits for an answer: the shell touches
- * the proxy when either comes back, and a disposed one makes it complain. So
- * the proxy goes a moment later, by a timeout that holds nothing but the
- * source. A source that never connects has nothing to take down.
- */
-function retire(source: Calendar.DBusEventSource, ready: boolean): void {
-  const later = (): void => {
-    GLib.timeout_add(GLib.PRIORITY_LOW, RETIRE_MS, () => {
-      source.destroy();
-      return GLib.SOURCE_REMOVE;
-    });
-  };
-  if (ready) {
-    later();
-    return;
-  }
-  const id = source.connect('notify::has-calendars', () => {
-    source.disconnect(id);
-    later();
-  });
 }
 
 /**
