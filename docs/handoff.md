@@ -9,23 +9,15 @@ other sessions: `docs/STATUS.md`, API facts: `docs/verified.md`, structure: `doc
 - Gate checks: `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pot`,
   `pnpm run test:shell` (sandboxed headless shell), `scripts/shots.sh` (screenshots in `docs/screenshots/`).
 
-## Running now: V3 on branch `phase/v3-t3` (based on `main`, pushed)
+## State of V3
 
-Merged into the branch and green (766 unit tests, 16 shell tests): the T3 Code module with its mock server
-(`docs/t3-protocol.md`, `tests/t3-mock/`, `src/modules/t3/`), the settings window (`src/prefs.ts`,
-`src/prefs/`), the SDK (`sdk/`) and the template (`examples/module-template/`).
-
-In progress: pairing with T3 Code in the settings (pairing link → token, stored in `t3-access-token`) and the
-full command of an approval in the expanded row.
+Branch `phase/v3-t3`, pull request https://github.com/taulit/visor/pull/5 against `main` (not stacked), waiting for the user to merge. Bug
+review done, 11 of 12 findings fixed. The private template repo `taulit/visor-module-template` exists.
 
 ## Next
 
-1. Finish the pairing (see above).
-2. V3 gate: scenario 3 (agent waits → amber dot → peek → Allow → mock got the approval), the template builds a
-   store ZIP. One bug review on the phase diff by a fresh agent, fix findings together.
-3. Create the private repo `taulit/visor-module-template` from `examples/module-template/` (approved; mark it
-   as template repo). Open the V3 PR against `main` with screenshots. Only the user merges.
-4. V4: budgets (`docs/performance.md`, GSettings `debug-metrics`), accessibility, translations (es, fr, pt_BR,
+1. After the merge: branch `phase/v4-hardening` from `main`.
+2. V4: budgets (`docs/performance.md`, GSettings `debug-metrics`), accessibility, translations (es, fr, pt_BR,
    it, pl, ru, zh_CN, ja by a Sonnet agent, glossary in `docs/design/plan/04-design.md`), one
    simplicity review and one spec review, `docs/ego-checklist.md`, AUR `build-aux/aur/PKGBUILD`, README with
    module table, `docs/release-checklist.md`.

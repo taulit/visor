@@ -14,9 +14,9 @@ Session 1 (Visor). Other sessions read only this file. Plan: [design/plan](desig
 | ----- | -------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
 | V0    | Tooling, repo, CI, `docs/verified.md`, headless shell and screenshots                        | merged    | [#1](https://github.com/taulit/visor/pull/1)                                               |
 | V1    | Core: panel integration, states, spring, theme, clock, shortcuts, registry, kit, empty sheet | merged    | [#2](https://github.com/taulit/visor/pull/2), [#3](https://github.com/taulit/visor/pull/3) |
-| V2    | Modules: notifications, up next, media, timers, downloads. Search. Freeze API                | in review | [#4](https://github.com/taulit/visor/pull/4)                                               |
-| V3    | T3 Code, peek chips, settings, SDK, `visor-module-template`                                  | next      | –                                                                                          |
-| V4    | Hardening: budgets, accessibility, translations, reviews, EGO checklist, packages, README    | open      | –                                                                                          |
+| V2    | Modules: notifications, up next, media, timers, downloads. Search. Freeze API                | merged    | [#4](https://github.com/taulit/visor/pull/4)                                               |
+| V3    | T3 Code, peek chips, settings, SDK, `visor-module-template`                                  | in review | [#5](https://github.com/taulit/visor/pull/5)                                               |
+| V4    | Hardening: budgets, accessibility, translations, reviews, EGO checklist, packages, README    | next      | –                                                                                          |
 
 ## Done
 
