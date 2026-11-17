@@ -2,7 +2,8 @@
 # Disabling Visor gives the shell back as it was: the stock date menu is in
 # the panel again, opens through the handler of the shell's shortcut, shows
 # the calendar and the notification that is still in the tray, and closes; the
-# banners are where the shell puts them; nothing of Visor is left.
+# banners are where the shell puts them; the date menu gets the events of its
+# month from the calendar server again; nothing of Visor is left.
 #
 # Usage: tests/shell/disable-restores.sh
 # The log ends up in .shell-test/disable-restores.log.
@@ -53,12 +54,20 @@ shell_wait_for 'visor.notch.state === "peek"'
 check 'before: no date menu, the shortcut handler is taken over, the banners are moved below the body' \
     "!$menu.container.visible && Object.hasOwn(Main.panel, 'toggleCalendar') && Main.messageTray.translation_y === visor.notch.body.height && Main.messageTray.translation_y > 0 && $ours.length > 0"
 
+# The calendar server keeps one time range for all its clients, and Visor asks
+# for seven days. Nine days ahead is in the grid of the date menu, but not in those.
+far="$menu._eventSource.getEvents(new Date(), new Date(Date.now() + 10 * 86400000)).some(e => e.summary === 'Far away')"
+[[ "$(gjs -m "$repo/tests/shell/calendar-events.js" '[{"uid":"far","summary":"Far away","start":12960,"minutes":30}]' 2>/dev/null)" == done ]] ||
+    { echo "FAIL  writing the event"; fail=1; }
+
 echo "# disable"
 run "Main.extensionManager.disableExtension('$uuid')"
 shell_wait_for "!($enabled)"
 run 'new Promise(r => GLib.timeout_add(GLib.PRIORITY_LOW, 300, () => (r(true), false)))'
 check 'the date menu is back in the centre of the panel, alone' \
     "$menu.container.visible && $menu.container.mapped && $menu.container.get_parent() === Main.panel._centerBox && Main.panel._centerBox.get_n_children() === 1"
+shell_wait_for "$far" 5 2>/dev/null || true
+check 'the date menu has the events of its month again, past the seven days of Visor' "$far"
 check 'the shortcut handlers are the ones of the shell again' \
     "!Object.hasOwn(Main.panel, 'toggleCalendar') && !Object.hasOwn(Main.panel, 'closeCalendar') && Main.wm._allowedKeybindings['open-shortcut'] === Shell.ActionMode.NONE"
 check 'the banners are in their stock place and not blocked' \

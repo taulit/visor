@@ -5,6 +5,7 @@ import type St from 'gi://St';
 
 import { gettext } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Calendar from 'resource:///org/gnome/shell/ui/calendar.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import type { KitRow, KitSection, ModuleContext, RowProps, VisorModule } from '../../api.js';
 import { MeetingLinks } from './links.js';
@@ -105,6 +106,7 @@ class Upcoming implements VisorModule {
       const ready =
         this.sourceReady || (source as unknown as { _initialized: boolean })._initialized;
       retire(source, ready);
+      giveRangeBack();
     }
     this.sourceReady = false;
 
@@ -280,6 +282,18 @@ function retire(source: Calendar.DBusEventSource, ready: boolean): void {
     source.disconnect(id);
     later();
   });
+}
+
+/**
+ * The calendar server keeps one time range for all its clients (`SetTimeRange`
+ * has no client in it), and the last request was the seven days of Visor. The
+ * date menu asks again only when its month changes, so it would stay without
+ * the events of the rest of its month. Its source sends its own range again.
+ */
+function giveRangeBack(): void {
+  const menu = Main.panel.statusArea.dateMenu as unknown as { _eventSource?: unknown } | undefined;
+  const stock = menu?._eventSource as { _loadEvents?: (forceReload: boolean) => void } | undefined;
+  if (stock instanceof Calendar.DBusEventSource) stock._loadEvents?.(true);
 }
 
 export function upcomingModule(): VisorModule {
