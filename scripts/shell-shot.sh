@@ -3,7 +3,8 @@
 #
 # Usage: scripts/shell-shot.sh <scenario> [--scheme dark|light] [--accent NAME] [--out FILE]
 # Scenarios live in scripts/scenarios/<name>.sh; each one drives the shell into
-# a state with shell_eval (and sets SHOT_WINDOW to a window title to shoot only that window). The default output is docs/screenshots/<scenario>-<scheme>.png.
+# a state with shell_eval; it can set SHOT_WINDOW to a window title to shoot only that
+# window. The default output is docs/screenshots/<scenario>-<scheme>.png.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
