@@ -7,7 +7,15 @@ import {
   MAX_COMMAND,
   PREVIEW_CHARS,
   approvalPrompt,
-  cleanBlock,
+  ANSWER_GUARD_MS,
+  clean,
+  mayAnswer,
+  promptRetryMs,
+  commandPrompt,
+  fitsExpanded,
+  isInsecureOrigin,
+  COMMAND_LINE_CHARS,
+  type Prompt,
   fitsPreview,
   promptPreview,
   backoffSeconds,
@@ -57,9 +65,30 @@ describe('finding the server', () => {
     expect(cleanOrigin('http://127.0.0.1:3773/')).toBe('http://127.0.0.1:3773');
     expect(cleanOrigin('https://t3.example.org')).toBe('https://t3.example.org');
     expect(cleanOrigin('http://[::1]:3773')).toBe('http://[::1]:3773');
-    expect(cleanOrigin('http://user:secret@host')).toBeNull();
-    expect(cleanOrigin('http://host/path?x=1')).toBeNull();
+    expect(cleanOrigin('http://user:secret@localhost')).toBeNull();
+    expect(cleanOrigin('http://localhost/path?x=1')).toBeNull();
     expect(cleanOrigin(42)).toBeNull();
+  });
+
+  it('takes plain http for this machine only', () => {
+    for (const local of ['http://localhost:3773', 'http://LocalHost', 'http://127.8.9.10:1'])
+      expect(cleanOrigin(local)).toBe(local);
+    for (const remote of [
+      'http://t3.example.org',
+      'http://192.168.1.5:3773',
+      'http://127.0.0.1.example.org',
+      'http://127.0.0.256',
+      'http://localhost.example.org',
+      'http://[::2]:3773',
+      'http://[fe80::1]',
+    ]) {
+      expect(cleanOrigin(remote)).toBeNull();
+      expect(isInsecureOrigin(remote)).toBe(true);
+    }
+    expect(cleanOrigin('https://192.168.1.5:3773')).toBe('https://192.168.1.5:3773');
+    expect(isInsecureOrigin('http://127.0.0.1:3773')).toBe(false);
+    expect(isInsecureOrigin('ftp://host')).toBe(false);
+    expect(isInsecureOrigin('')).toBe(false);
   });
 
   it('builds the addresses', () => {
@@ -401,38 +430,135 @@ describe('commands', () => {
     expect(lastActive(emptyShell())).toBeNull();
   });
 
+  const exact = (text: string): Prompt => ({ text, exact: true, hidden: false });
+
   it('finds what an approval asks', () => {
     const projection = { turnItems: [{ type: 'message' }, fixtures.approvalItem('request-1')] };
-    expect(approvalPrompt(projection, 'request-1')).toBe(fixtures.APPROVAL_COMMAND);
-    expect(approvalPrompt(projection, 'request-2')).toBe('');
-    expect(approvalPrompt({ turnItems: 'none' }, 'request-1')).toBe('');
-    expect(approvalPrompt(null, 'request-1')).toBe('');
+    expect(approvalPrompt(projection, 'request-1')).toEqual(exact(fixtures.APPROVAL_COMMAND));
+    expect(approvalPrompt(projection, 'request-2')).toBeNull();
+    expect(approvalPrompt({ turnItems: 'none' }, 'request-1')).toBeNull();
+    expect(approvalPrompt(null, 'request-1')).toBeNull();
+  });
+
+  it('does not know a command the answer leaves empty', () => {
+    const item = (fields: object) => ({
+      turnItems: [{ type: 'approval_request', requestId: 'r', ...fields }],
+    });
+    expect(approvalPrompt(item({}), 'r')).toBeNull();
+    expect(approvalPrompt(item({ prompt: '' }), 'r')).toBeNull();
+    expect(approvalPrompt(item({ prompt: ' \n\t ' }), 'r')).toBeNull();
+    expect(approvalPrompt(item({ prompt: 7, reason: ['x'] }), 'r')).toBeNull();
+    expect(approvalPrompt(item({ prompt: '', reason: 'Edit a.txt' }), 'r')).toEqual(
+      exact('Edit a.txt'),
+    );
   });
 
   it('keeps a long command whole, with its lines', () => {
-    const long = `git commit -m "${'x'.repeat(500)}"\r\n  && git push\torigin\u0007 main  \n`;
-    const projection = { turnItems: [fixtures.approvalItem('request-1', long)] };
-    const prompt = approvalPrompt(projection, 'request-1');
-    expect(prompt).toBe(`git commit -m "${'x'.repeat(500)}"\n  && git push  origin  main`);
+    const long = `git commit -m "${'x'.repeat(500)}"\n  && git push\torigin main  \n`;
+    const prompt = commandPrompt(long)!;
+    expect(prompt).toEqual(exact(`git commit -m "${'x'.repeat(500)}"\n  && git push  origin main`));
     expect(promptPreview(prompt)).toHaveLength(200);
     expect(promptPreview(prompt).endsWith('…')).toBe(true);
-    expect(promptPreview('a\nb')).toBe('a b');
+    expect(promptPreview(exact('a\nb'))).toBe('a b');
   });
 
-  it('cuts a command only at its limit', () => {
-    expect(cleanBlock('y'.repeat(MAX_COMMAND), MAX_COMMAND)).toHaveLength(MAX_COMMAND);
-    const cut = cleanBlock('y'.repeat(MAX_COMMAND + 1), MAX_COMMAND);
-    expect(cut).toHaveLength(MAX_COMMAND);
-    expect(cut.endsWith('…')).toBe(true);
-    expect(cleanBlock(7, 10)).toBe('');
+  it('cuts a command only at its limit, and then it is not exact', () => {
+    expect(commandPrompt('y'.repeat(MAX_COMMAND))).toEqual(exact('y'.repeat(MAX_COMMAND)));
+    const cut = commandPrompt('y'.repeat(MAX_COMMAND + 1))!;
+    expect(cut.text).toHaveLength(MAX_COMMAND);
+    expect(cut.text.endsWith('…')).toBe(true);
+    expect(cut.exact).toBe(false);
+    expect(commandPrompt(7)).toBeNull();
+  });
+
+  it('shows what cannot be read as U+FFFD and calls the command not exact', () => {
+    // "rm -rf ~" hidden behind a right-to-left override, a zero-width space, a BOM,
+    // a carriage return, an escape, a bell and a lone surrogate.
+    for (const bad of [
+      '‮',
+      '‪',
+      '⁦',
+      '⁩',
+      '​',
+      '‏',
+      '‍',
+      '﻿',
+      '­',
+      '\r',
+      '\u001B',
+      '\u0007',
+      '\u0000',
+      '\u0085',
+      '\uD800',
+      '\uDFFF',
+    ]) {
+      const prompt = commandPrompt(`echo ok ${bad}# rm -rf ~`)!;
+      expect(prompt, JSON.stringify(bad)).toEqual({
+        text: 'echo ok �# rm -rf ~',
+        exact: false,
+        hidden: true,
+      });
+      expect(fitsPreview(prompt)).toBe(false);
+      expect(fitsExpanded(prompt)).toBe(false);
+      expect(fitsPreview(commandPrompt(`ls${bad}`)!)).toBe(false);
+    }
+    // Line breaks, tabs, emoji and other scripts are fine.
+    expect(commandPrompt('echo 😀 äöü 日本\n\tls')).toEqual(exact('echo 😀 äöü 日本\n  ls'));
+  });
+
+  it('strips format characters from titles and messages', () => {
+    expect(clean('a‮b​c﻿d⁦e\uD800f', 80)).toBe('abcdef');
+    expect(clean('safe ‮txt.exe', 80)).toBe('safe txt.exe');
+    const state = emptyShell();
+    applyShellItem(state, {
+      kind: 'thread.updated',
+      thread: fixtures.running('t', 0, {
+        title: 'Fix‮ the​ test',
+        latestVisibleMessage: { role: 'assistant', text: 'Done⁧.\u0007' },
+      }),
+    });
+    expect(state.threads.get('t')).toMatchObject({ title: 'Fix the test', lastMessage: 'Done.' });
   });
 
   it('knows when the one-line preview shows a command whole', () => {
-    expect(fitsPreview('rm -rf build')).toBe(true);
-    expect(fitsPreview('x'.repeat(PREVIEW_CHARS))).toBe(true);
-    expect(fitsPreview('x'.repeat(PREVIEW_CHARS + 1))).toBe(false);
-    expect(fitsPreview('ls\nrm -rf ~')).toBe(false);
-    expect(fitsPreview(fixtures.APPROVAL_COMMAND)).toBe(false);
+    expect(fitsPreview(exact('rm -rf build'))).toBe(true);
+    expect(fitsPreview(exact('x'.repeat(PREVIEW_CHARS)))).toBe(true);
+    expect(fitsPreview(exact('x'.repeat(PREVIEW_CHARS + 1)))).toBe(false);
+    expect(fitsPreview(exact('ls\nrm -rf ~'))).toBe(false);
+    expect(fitsPreview(exact(fixtures.APPROVAL_COMMAND))).toBe(false);
+    // The preview folds spaces and wide characters take two columns.
+    expect(fitsPreview(exact('ls  -la'))).toBe(false);
+    expect(fitsPreview(exact('日'.repeat(8)))).toBe(true);
+    expect(fitsPreview(exact('日'.repeat(9)))).toBe(false);
+    expect(fitsPreview({ text: 'ls', exact: false, hidden: false })).toBe(false);
+  });
+
+  it('asks for a command three times, waiting longer, then gives up', () => {
+    expect([1, 2, 3, 4].map(promptRetryMs)).toEqual([1000, 2000, null, null]);
+  });
+
+  it('ignores a click meant for another request or made right after it changed', () => {
+    const current = { id: 'request-2', since: 10_000 };
+    expect(mayAnswer(current, 'request-2', 10_000 + ANSWER_GUARD_MS)).toBe(true);
+    expect(mayAnswer(current, 'request-2', 10_000 + ANSWER_GUARD_MS - 1)).toBe(false);
+    expect(mayAnswer(current, 'request-1', 20_000)).toBe(false);
+    expect(mayAnswer(current, null, 20_000)).toBe(false);
+    expect(mayAnswer(undefined, 'request-2', 20_000)).toBe(false);
+  });
+
+  it('knows from the text alone when the expanded row shows a command whole', () => {
+    expect(fitsExpanded(exact(fixtures.APPROVAL_COMMAND))).toBe(true);
+    expect(fitsExpanded(exact('a\n'.repeat(7) + 'a'))).toBe(true);
+    expect(fitsExpanded(exact('a\n'.repeat(8) + 'a'))).toBe(false);
+    expect(fitsExpanded(exact('\n'.repeat(8)))).toBe(false);
+    expect(fitsExpanded(exact('x'.repeat(8 * COMMAND_LINE_CHARS)))).toBe(true);
+    expect(fitsExpanded(exact('x'.repeat(8 * COMMAND_LINE_CHARS + 1)))).toBe(false);
+    // Each line break starts a new line, each long line takes several.
+    expect(fitsExpanded(exact(`${'x'.repeat(7 * COMMAND_LINE_CHARS)}\ny`))).toBe(true);
+    expect(fitsExpanded(exact(`${'x'.repeat(7 * COMMAND_LINE_CHARS + 1)}\ny`))).toBe(false);
+    expect(fitsExpanded(exact('日'.repeat(4 * COMMAND_LINE_CHARS + 1)))).toBe(false);
+    expect(fitsExpanded(commandPrompt('y'.repeat(MAX_COMMAND + 1))!)).toBe(false);
+    expect(fitsExpanded({ text: 'ls', exact: false, hidden: false })).toBe(false);
   });
 });
 

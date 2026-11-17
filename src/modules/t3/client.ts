@@ -7,7 +7,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Soup from 'gi://Soup?version=3.0';
 
-import { SERVER_KEY, TOKEN_KEY } from './pairing.js';
+import { SERVER_KEY, TOKEN_KEY, TOKEN_ORIGIN_KEY, tokenFits } from './pairing.js';
 import {
   METHODS,
   PONG_FRAME,
@@ -22,6 +22,7 @@ import {
   descriptorUrl,
   emptyShell,
   isCompatible,
+  isSnapshot,
   requestFrame,
   socketUrl,
   subscribeShellPayload,
@@ -31,10 +32,13 @@ import {
   type ShellState,
 } from './protocol.js';
 
-export { SERVER_KEY, TOKEN_KEY };
+export { SERVER_KEY, TOKEN_KEY, TOKEN_ORIGIN_KEY };
 
-/** A thread projection can be large; anything beyond this is not from a sane server. */
-const MAX_FRAME_BYTES = 64 * 1024 * 1024;
+/**
+ * A larger frame closes the socket. A thread projection that large is not
+ * read: its command stays unknown and is answered in T3 Code.
+ */
+const MAX_FRAME_BYTES = 4 * 1024 * 1024;
 const MAX_HTTP_BYTES = 256 * 1024;
 /** The shared session drops a socket that is silent for its timeout; a ping keeps it. */
 const KEEPALIVE_SECONDS = 10;
@@ -57,6 +61,8 @@ export class T3Client {
   shell: ShellState = emptyShell();
   descriptor: Descriptor | null = null;
   connected = false;
+  /** The first snapshot of this connection has arrived: `shell` is what the server has. */
+  synced = false;
 
   private origin: string | null = null;
   private cancellable: Gio.Cancellable | null = null;
@@ -88,6 +94,8 @@ export class T3Client {
       `changed::${SERVER_KEY}`,
       () => this.restart(),
       `changed::${TOKEN_KEY}`,
+      () => this.restart(),
+      `changed::${TOKEN_ORIGIN_KEY}`,
       () => this.restart(),
       this,
     );
@@ -129,7 +137,8 @@ export class T3Client {
   request(method: string, payload: unknown): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const socket = this.socket;
-      if (!socket || !this.connected) {
+      // A socket that is closing takes no request; waiting for the timeout helps nobody.
+      if (!socket || !this.connected || socket.get_state() !== Soup.WebsocketState.OPEN) {
         reject(new Error('not connected'));
         return;
       }
@@ -144,7 +153,7 @@ export class T3Client {
         },
       );
       this.pending.set(requestId, { resolve, reject, timeout });
-      socket.send_text(requestFrame(requestId, method, payload));
+      this.sendText(socket, requestFrame(requestId, method, payload));
     });
   }
 
@@ -207,6 +216,8 @@ export class T3Client {
       ? cleanOrigin(configured)
       : decodeRuntimeState((await this.readFile(runtimeFile(), cancellable)) ?? '');
     if (!origin || cancellable.is_cancelled()) return false;
+    // The token goes to the server it was issued by and to no other.
+    if (!tokenFits(this.settings?.get_string(TOKEN_ORIGIN_KEY) ?? '', origin)) return false;
 
     const about = (await this.fetch('GET', descriptorUrl(origin), null, cancellable)).body;
     const descriptor = about ? decodeDescriptor(about) : null;
@@ -247,7 +258,9 @@ export class T3Client {
     this.descriptor = descriptor;
     this.socket = socket;
     this.connected = true;
-    this.attempt = 0;
+    // The wait before the next attempt starts over once the first snapshot is
+    // here, not now: a server that accepts and then ends the stream would be
+    // asked every second.
     socket.max_incoming_payload_size = MAX_FRAME_BYTES;
     socket.keepalive_interval = KEEPALIVE_SECONDS;
     socket.connectObject(
@@ -262,7 +275,8 @@ export class T3Client {
       this,
     );
     this.shellRequest = String(this.nextId++);
-    socket.send_text(
+    this.sendText(
+      socket,
       requestFrame(this.shellRequest, METHODS.subscribeShell, subscribeShellPayload(descriptor)),
     );
     return true;
@@ -296,6 +310,8 @@ export class T3Client {
         resolve({ status: 0, body: null });
         return;
       }
+      // A redirect would carry the token or the ticket to another place.
+      message.add_flags(Soup.MessageFlags.NO_REDIRECT);
       if (token) message.get_request_headers().append('Authorization', `Bearer ${token}`);
       this.http.send_and_read_async(
         message,
@@ -327,6 +343,8 @@ export class T3Client {
         resolve(null);
         return;
       }
+      // The ticket is in the address.
+      message.add_flags(Soup.MessageFlags.NO_REDIRECT);
       this.http.websocket_connect_async(
         message,
         null,
@@ -346,6 +364,18 @@ export class T3Client {
 
   // --- the socket ---
 
+  /** Sends on a socket that is open; one that is closing would warn and send nothing. */
+  private sendText(socket: Soup.WebsocketConnection, text: string): boolean {
+    if (socket.get_state() !== Soup.WebsocketState.OPEN) return false;
+    socket.send_text(text);
+    return true;
+  }
+
+  private close(socket: Soup.WebsocketConnection): void {
+    if (socket.get_state() === Soup.WebsocketState.OPEN)
+      socket.close(Soup.WebsocketCloseCode.NORMAL, null);
+  }
+
   private receive(type: Soup.WebsocketDataType, bytes: GLib.Bytes): void {
     const socket = this.socket;
     const data = bytes.get_data();
@@ -357,15 +387,21 @@ export class T3Client {
       switch (frame.tag) {
         case 'chunk':
           // Without the ack the server sends nothing more on this stream.
-          socket.send_text(ackFrame(frame.requestId));
+          this.sendText(socket, ackFrame(frame.requestId));
           if (frame.requestId !== this.shellRequest) break;
-          for (const item of frame.values)
-            if (applyShellItem(this.shell, item)) shellChanged = true;
+          for (const item of frame.values) {
+            if (!applyShellItem(this.shell, item)) continue;
+            shellChanged = true;
+            if (!this.synced && isSnapshot(item)) {
+              this.synced = true;
+              this.attempt = 0;
+            }
+          }
           break;
         case 'exit': {
           if (frame.requestId === this.shellRequest) {
             // The stream ended; a new connection starts a new one.
-            socket.close(Soup.WebsocketCloseCode.NORMAL, null);
+            this.close(socket);
             break;
           }
           const pending = this.pending.get(frame.requestId);
@@ -377,10 +413,10 @@ export class T3Client {
           break;
         }
         case 'ping':
-          socket.send_text(PONG_FRAME);
+          this.sendText(socket, PONG_FRAME);
           break;
         case 'defect':
-          socket.close(Soup.WebsocketCloseCode.NORMAL, null);
+          this.close(socket);
           break;
         case 'pong':
           break;
@@ -417,6 +453,7 @@ export class T3Client {
     this.pending.clear();
     this.shellRequest = null;
     this.connected = false;
+    this.synced = false;
     this.descriptor = null;
     this.origin = null;
     this.shell = emptyShell();

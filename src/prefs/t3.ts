@@ -13,10 +13,13 @@ import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensio
 import {
   SERVER_KEY,
   TOKEN_KEY,
+  TOKEN_ORIGIN_KEY,
   decodeAccessToken,
   exchangeError,
+  isInsecurePairing,
   originToStore,
   parsePairing,
+  tokenFits,
   tokenRequestBody,
   tokenUrl,
   type PairingError,
@@ -27,6 +30,7 @@ import {
   decodeRuntimeState,
   descriptorUrl,
   isCompatible,
+  isInsecureOrigin,
 } from '../modules/t3/protocol.js';
 
 const TIMEOUT_SECONDS = 10;
@@ -62,8 +66,10 @@ function send(
     http.send_and_read_async(message, GLib.PRIORITY_DEFAULT, cancellable, (_source, result) => {
       try {
         const data = http.send_and_read_finish(result).get_data();
-        const fits = data !== null && data.length <= MAX_ANSWER_BYTES;
-        resolve({ status: message.get_status(), body: fits ? new TextDecoder().decode(data) : '' });
+        const status = message.get_status();
+        // Only a plain 200 has a body worth reading; a redirect is not followed.
+        const fits = status === Soup.Status.OK && data !== null && data.length <= MAX_ANSWER_BYTES;
+        resolve({ status, body: fits ? new TextDecoder().decode(data) : '' });
       } catch {
         resolve({ status: 0, body: '' });
       }
@@ -89,6 +95,9 @@ export async function exchangePairingCode(
   } catch {
     return { error: 'unreachable' };
   }
+  // The code goes to the server the link names and is not carried along by a redirect.
+  about.add_flags(Soup.MessageFlags.NO_REDIRECT);
+  exchange.add_flags(Soup.MessageFlags.NO_REDIRECT);
   // The version first: a server that speaks another protocol keeps its code unused.
   const descriptor = decodeDescriptor((await send(http, about, cancellable)).body);
   if (!descriptor) return { error: 'unreachable' };
@@ -109,6 +118,8 @@ function errorText(error: PairingError): string {
   switch (error) {
     case 'invalid':
       return _('This is not a pairing link');
+    case 'insecure':
+      return _('Use https for a server on another machine');
     case 'rejected':
       return _('The link is wrong or has expired');
     case 'incompatible':
@@ -152,11 +163,12 @@ export function t3Group(
   };
   const pair = async (): Promise<void> => {
     if (cancellable) return;
-    const pairing = parsePairing(entry.text);
+    const pasted = entry.text;
+    const pairing = parsePairing(pasted);
     // The code is good once; it does not stay in the window.
     entry.text = '';
     if (!pairing) {
-      showError('invalid');
+      showError(isInsecurePairing(pasted) ? 'insecure' : 'invalid');
       return;
     }
     const local = localOrigin();
@@ -183,6 +195,8 @@ export function t3Group(
       return;
     }
     if (pairing.origin) settings.set_string(SERVER_KEY, originToStore(pairing.origin, local));
+    // The token is for this origin; the module sends it nowhere else.
+    settings.set_string(TOKEN_ORIGIN_KEY, origin);
     settings.set_string(TOKEN_KEY, result.token);
   };
   const start = (): void => {
@@ -202,24 +216,41 @@ export function t3Group(
   paired.add_prefix(new Gtk.Image({ icon_name: 'object-select-symbolic' }));
   const disconnect = new Gtk.Button({ label: _('Disconnect'), valign: Gtk.Align.CENTER });
   // The protocol lets no session revoke itself, so the token is only forgotten here.
-  disconnect.connect('clicked', () => settings.set_string(TOKEN_KEY, ''));
+  const forget = (): void => {
+    settings.set_string(TOKEN_KEY, '');
+    settings.set_string(TOKEN_ORIGIN_KEY, '');
+  };
+  disconnect.connect('clicked', forget);
   paired.add_suffix(disconnect);
   group.add(paired);
 
   // --- the address ---
   const address = new Adw.ExpanderRow({ title: _('Server address') });
+  const addressTitle = _('Address, empty for this machine');
   const addressEntry = new Adw.EntryRow({
-    title: _('Address, empty for this machine'),
+    title: addressTitle,
     show_apply_button: true,
     input_purpose: Gtk.InputPurpose.URL,
   });
   addressEntry.connect('apply', () => {
     const text = addressEntry.text.trim();
     const origin = text ? cleanOrigin(text) : '';
-    if (origin === null) addressEntry.add_css_class('error');
-    else settings.set_string(SERVER_KEY, origin);
+    if (origin === null) {
+      addressEntry.add_css_class('error');
+      if (isInsecureOrigin(text))
+        addressEntry.title = _('Use https for a server on another machine');
+      return;
+    }
+    // Another server: the token was not issued by it and must not reach it.
+    const hasToken = settings.get_string(TOKEN_KEY) !== '';
+    if (hasToken && !tokenFits(settings.get_string(TOKEN_ORIGIN_KEY), origin || localOrigin()))
+      forget();
+    settings.set_string(SERVER_KEY, origin);
   });
-  addressEntry.connect('changed', () => addressEntry.remove_css_class('error'));
+  addressEntry.connect('changed', () => {
+    addressEntry.remove_css_class('error');
+    addressEntry.title = addressTitle;
+  });
   address.add_row(addressEntry);
   group.add(address);
 

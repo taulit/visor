@@ -48,6 +48,13 @@ with 400. The module reads the token from the setting, follows its changes witho
 empty and silent without one. A 401 or 403 on the ticket request means the token is no good: the module
 logs one line and asks again only when the token or the address changes.
 
+**Where the token goes.** The settings window stores the origin the token was issued by in
+`t3-token-origin`, and the module sends the token to that origin only: with another address in
+`t3-server-url` (or another local server in the runtime file) it stays disconnected until it is paired
+again, and changing the address in the settings to another origin forgets the token. Plain http is taken
+for this machine only (`localhost`, `127.0.0.0/8`, `[::1]`); any other server needs https. None of the
+requests that carry the pairing code, the token or the ticket follows a redirect.
+
 **Revoking.** `POST /api/auth/clients/revoke` (`{sessionId}`) needs the scope `access:write`, which Visor
 does not ask for, and refuses the session that calls it (`current_session_revoke_not_allowed`, 403). A
 client cannot end its own session, so Disconnect only forgets the token; the session stays listed in

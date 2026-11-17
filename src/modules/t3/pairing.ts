@@ -1,11 +1,13 @@
 // Pairing with a T3 Code server, see docs/t3-protocol.md §2: what the user
 // pastes, what the token endpoint is sent and what it answers. Pure, so the
 // settings window and the tests share it; nothing here may import the shell.
-import { cleanOrigin } from './protocol.js';
+import { cleanOrigin, isInsecureOrigin } from './protocol.js';
 
 /** The settings the module reads and the settings window writes. */
 export const SERVER_KEY = 't3-server-url';
 export const TOKEN_KEY = 't3-access-token';
+/** The origin the token was issued for; the token is sent nowhere else. */
+export const TOKEN_ORIGIN_KEY = 't3-token-origin';
 
 /** Where a server listens when nothing says otherwise. */
 export const DEFAULT_ORIGIN = 'http://127.0.0.1:3773';
@@ -39,6 +41,15 @@ function tokenOf(params: string): string | null {
   return null;
 }
 
+const LINK = /^(https?:\/\/[^/?#\s]*)(\/[^?#\s]*)?(?:\?([^#\s]*))?(?:#(\S*))?$/i;
+
+/** True for a link that is refused because it names another machine over plain http. */
+export function isInsecurePairing(input: unknown): boolean {
+  if (typeof input !== 'string' || input.length > MAX_INPUT) return false;
+  const match = LINK.exec(input.trim());
+  return match !== null && isInsecureOrigin(match[1]!.replace(/^https?/i, s => s.toLowerCase()));
+}
+
 /**
  * What the user pasted: a pairing link `<origin>/pair#token=<code>` or the
  * code alone. Null for anything else: other schemes, a name and password in
@@ -49,7 +60,7 @@ export function parsePairing(input: unknown): Pairing | null {
   const text = input.trim();
   if (isCode(text)) return { origin: null, code: text };
 
-  const match = /^(https?:\/\/[^/?#\s]*)(\/[^?#\s]*)?(?:\?([^#\s]*))?(?:#(\S*))?$/i.exec(text);
+  const match = LINK.exec(text);
   if (!match) return null;
   // cleanOrigin takes a host and a port only, so `user:password@host` fails here.
   const origin = cleanOrigin(match[1]!.replace(/^https?/i, scheme => scheme.toLowerCase()));
@@ -60,6 +71,10 @@ export function parsePairing(input: unknown): Pairing | null {
 /** What `t3-server-url` is set to after pairing: empty when the server is the local one. */
 export const originToStore = (origin: string, local: string | null): string =>
   origin === (local ?? DEFAULT_ORIGIN) ? '' : origin;
+
+/** True when a token issued for `tokenOrigin` may be sent to `origin`: only to that very origin. */
+export const tokenFits = (tokenOrigin: string, origin: string | null): boolean =>
+  origin !== null && origin !== '' && tokenOrigin === origin;
 
 export const tokenUrl = (origin: string): string => `${origin}/oauth/token`;
 
@@ -97,7 +112,7 @@ export function decodeAccessToken(text: string): string | null {
   return PAIRING_SCOPES.every(needed => granted.includes(needed)) ? token.trim() : null;
 }
 
-export type PairingError = 'invalid' | 'rejected' | 'unreachable' | 'incompatible';
+export type PairingError = 'invalid' | 'insecure' | 'rejected' | 'unreachable' | 'incompatible';
 
 /** What an answer of the token endpoint that is not a token means. */
 export const exchangeError = (status: number): PairingError =>

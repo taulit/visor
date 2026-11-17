@@ -32,11 +32,17 @@ type Json = Record<string, unknown>;
 const isObject = (value: unknown): value is Json =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-/** One line without control characters, at most `max` characters. */
+/**
+ * One line without control characters, at most `max` characters. Format
+ * characters go too: they are invisible, and the bidi ones reorder what follows.
+ */
 export function clean(value: unknown, max: number): string {
   if (typeof value !== 'string') return '';
   // The slice keeps a huge input from being scanned in full.
-  const text = value.slice(0, max * 4).replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, ' ');
+  const text = value
+    .slice(0, max * 4)
+    .replace(/[\p{Cf}\p{Cs}]+/gu, '')
+    .replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, ' ');
   const line = text.replace(/\s+/g, ' ').trim();
   return line.length > max ? `${line.slice(0, max - 1)}…` : line;
 }
@@ -54,14 +60,37 @@ function time(value: unknown): number | null {
 
 // --- finding and addressing the server ---
 
-/** The origin without a trailing slash, or null when it is not a plain http(s) address. */
-export function cleanOrigin(value: unknown): string | null {
+/** True for the names of this machine: `localhost`, `127.0.0.0/8` and `[::1]`. */
+const isLoopback = (host: string): boolean => {
+  const name = host.toLowerCase();
+  if (name === 'localhost' || name === '[::1]') return true;
+  const parts = /^127\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(name);
+  return parts !== null && parts.slice(1).every(part => Number(part) <= 255);
+};
+
+function parseOrigin(value: unknown): { origin: string; secure: boolean } | null {
   if (typeof value !== 'string' || value.length > 300) return null;
   const match = /^(https?):\/\/([A-Za-z0-9.-]+|\[[0-9A-Fa-f:.]+\])(:\d{1,5})?\/?$/.exec(
     value.trim(),
   );
-  return match ? `${match[1]}://${match[2]}${match[3] ?? ''}` : null;
+  if (!match) return null;
+  return {
+    origin: `${match[1]}://${match[2]}${match[3] ?? ''}`,
+    secure: match[1] === 'https' || isLoopback(match[2]!),
+  };
 }
+
+/**
+ * The origin without a trailing slash, or null when it is not a plain http(s)
+ * address. Plain http is taken for this machine only: the token travels there.
+ */
+export function cleanOrigin(value: unknown): string | null {
+  const parsed = parseOrigin(value);
+  return parsed?.secure ? parsed.origin : null;
+}
+
+/** True for a well-formed address that is refused only because it is http to another machine. */
+export const isInsecureOrigin = (value: unknown): boolean => parseOrigin(value)?.secure === false;
 
 /** The origin a running server wrote into `server-runtime.json`. */
 export function decodeRuntimeState(text: string): string | null {
@@ -266,40 +295,122 @@ export function launchPayload(
   };
 }
 
-/** Text with its line breaks but no other control characters, at most `max` characters. */
-export function cleanBlock(value: unknown, max: number): string {
-  if (typeof value !== 'string') return '';
-  const text = value
-    .slice(0, max * 4)
-    .replace(/\r\n?|[\p{Zl}\p{Zp}]/gu, '\n')
+/** What an approval asks about, as far as Visor can show it. */
+export interface Prompt {
+  /** What is shown. Differs from the command when `exact` is false. */
+  text: string;
+  /**
+   * True when `text` is the whole command and reads as it runs. False when it
+   * was cut at MAX_COMMAND or holds characters that cannot be shown.
+   */
+  exact: boolean;
+  /** True when characters that cannot be shown were replaced by U+FFFD. */
+  hidden: boolean;
+}
+
+/**
+ * Characters that are invisible or change how the text around them reads:
+ * format characters (bidi controls, zero-width ones, the BOM), control
+ * characters other than line break and tab, and lone surrogates.
+ */
+const UNREADABLE = /[\p{Cf}\p{Cs}]|[^\P{Cc}\n\t]/gu;
+
+/**
+ * A command as it is shown. Nothing is stripped, because then the shown text
+ * would not be the one that runs: what cannot be shown becomes U+FFFD and the
+ * command counts as not exact. Null when there is nothing to show.
+ */
+export function commandPrompt(value: unknown): Prompt | null {
+  if (typeof value !== 'string') return null;
+  const cut = value.length > MAX_COMMAND;
+  const raw = cut ? value.slice(0, MAX_COMMAND - 1) : value;
+  const replaced = raw.replace(UNREADABLE, '�');
+  const hidden = replaced !== raw;
+  const text = replaced
+    .replace(/[\p{Zl}\p{Zp}]/gu, '\n')
     .replace(/\t/g, '  ')
-    .replace(/[^\P{Cc}\n]/gu, ' ')
     .replace(/[ ]+$/gm, '')
     .replace(/^\n+|\n+$/g, '');
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  if (!text) return null;
+  return { text: cut ? `${text}…` : text, exact: !cut && !hidden, hidden };
 }
 
 /**
  * The whole command or file an approval asks about, from the answer of
- * getThreadProjection: line breaks kept, cut only at MAX_COMMAND.
+ * getThreadProjection. Null when the answer does not say: then the request
+ * can only be answered in T3 Code.
  */
-export function approvalPrompt(projection: unknown, requestId: string): string {
+export function approvalPrompt(projection: unknown, requestId: string): Prompt | null {
   const items =
     isObject(projection) && Array.isArray(projection.turnItems) ? projection.turnItems : [];
   for (let i = items.length - 1; i >= 0; i--) {
     const item: unknown = items[i];
     if (isObject(item) && item.type === 'approval_request' && item.requestId === requestId)
-      return cleanBlock(item.prompt, MAX_COMMAND) || cleanBlock(item.reason, MAX_COMMAND);
+      return commandPrompt(item.prompt) ?? commandPrompt(item.reason);
   }
-  return '';
+  return null;
 }
 
 /** The one line a collapsed row shows of a command. */
-export const promptPreview = (prompt: string): string => clean(prompt, MAX_DETAIL);
+export const promptPreview = (prompt: Prompt): string => clean(prompt.text, MAX_DETAIL);
 
-/** True when the one-line preview shows the command whole, so it can be allowed from there. */
-export const fitsPreview = (prompt: string): boolean =>
-  prompt.length <= PREVIEW_CHARS && !prompt.includes('\n');
+/** Columns a text takes in a monospace font: 2 for everything beyond ASCII, to be safe. */
+function columns(text: string): number {
+  let count = 0;
+  for (const char of text) count += char.codePointAt(0)! < 0x7f ? 1 : 2;
+  return count;
+}
+
+/**
+ * True when the one-line preview shows the command whole and as it runs, so
+ * it can be allowed from there. Counts what the preview shows.
+ */
+export const fitsPreview = (prompt: Prompt): boolean =>
+  prompt.exact && promptPreview(prompt) === prompt.text && columns(prompt.text) <= PREVIEW_CHARS;
+
+/** The lines the expanded row shows of a command, see `.visor-t3-command`. */
+export const COMMAND_LINES = 8;
+/**
+ * What one wrapped line holds for certain. The narrowest column gives the
+ * command about 32 columns, and wrapping at words wastes less than half of two
+ * lines in a row, so 16 per line is safe.
+ */
+export const COMMAND_LINE_CHARS = 16;
+
+/**
+ * True when the expanded row surely shows the command whole and as it runs.
+ * Decided from the text alone, before any layout: a wrong "yes" would offer
+ * Allow for a command whose end is not on screen.
+ */
+export function fitsExpanded(prompt: Prompt): boolean {
+  if (!prompt.exact) return false;
+  let lines = 0;
+  for (const line of prompt.text.split('\n'))
+    lines += Math.max(1, Math.ceil(columns(line) / COMMAND_LINE_CHARS));
+  return lines <= COMMAND_LINES;
+}
+
+/** How often the command of a request is asked for before it counts as unknown for good. */
+export const PROMPT_TRIES = 3;
+
+/** The wait before the command is asked for again after `failures` failures; null: not again. */
+export const promptRetryMs = (failures: number): number | null =>
+  failures >= PROMPT_TRIES ? null : 1000 * 2 ** Math.max(0, failures - 1);
+
+/** How long a request that took the place of another one ignores Allow and Deny. */
+export const ANSWER_GUARD_MS = 500;
+
+/**
+ * True when a click on a button rendered for `requestId` may answer: the row
+ * still waits for that request, and not only since a moment ago, when the
+ * click may have been meant for the request before it.
+ */
+export const mayAnswer = (
+  current: { id: string; since: number } | undefined,
+  requestId: string | null,
+  now: number,
+): boolean =>
+  current !== undefined && current.id === requestId && now - current.since >= ANSWER_GUARD_MS;
 
 // --- the threads ---
 
@@ -394,6 +505,9 @@ function setProject(state: ShellState, value: unknown): boolean {
   state.projects.set(projectId, clean(value.title, MAX_PROJECT));
   return true;
 }
+
+/** True for the item that carries the whole state, the first of a shell stream. */
+export const isSnapshot = (item: unknown): boolean => isObject(item) && item.kind === 'snapshot';
 
 /** Applies one item of the shell stream. Returns whether the state changed. */
 export function applyShellItem(state: ShellState, item: unknown): boolean {

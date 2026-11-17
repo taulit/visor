@@ -14,19 +14,22 @@ import { formatDuration, truncate } from '../../lib/format.js';
 import { T3Client } from './client.js';
 import {
   METHODS,
-  MAX_COMMAND,
   MAX_REPLY,
   approvalPrompt,
+  fitsExpanded,
   fitsPreview,
   isWaiting,
   lastActive,
   launchPayload,
+  mayAnswer,
   promptPreview,
+  promptRetryMs,
   replyCommand,
   respondCommand,
   sessionsOf,
   stopCommand,
   visibleSessions,
+  type Prompt,
   type Session,
 } from './protocol.js';
 
@@ -48,11 +51,13 @@ interface Details {
   expand: () => St.Widget;
   message: St.Label | null;
   stop: St.Widget | null;
-  /** The whole command of an approval, the hint that it is cut, and Deny and Allow next to it. */
-  command: St.Label | null;
-  cut: St.Widget | null;
-  answers: St.Widget | null;
+  /** The request Deny and Allow below the command were rendered for. */
+  requestId: string | null;
+  /** Shows the command of an approval, or none; null while the row is collapsed. */
+  showCommand: ((prompt: Prompt | null) => void) | null;
 }
+
+const monotonicMs = (): number => GLib.get_monotonic_time() / 1000;
 
 class T3Module implements VisorModule {
   readonly id = 't3';
@@ -70,8 +75,14 @@ class T3Module implements VisorModule {
   private ctx: ModuleContext | null = null;
   private client: T3Client | null = null;
   private sessions: Session[] = [];
-  /** What an approval asks, by request id; null while it is asked for. */
-  private prompts = new Map<string, string | null>();
+  /** What an approval asks, by request id. Only what is known and not empty. */
+  private prompts = new Map<string, Prompt>();
+  /** The requests whose command is asked for; the token tells an answer that came too late. */
+  private asking = new Map<string, object>();
+  /** Requests whose command could not be read: how often, and when to ask again (null: never). */
+  private failures = new Map<string, { count: number; retryAt: number | null }>();
+  /** The request each row waits for, and since when on the monotonic clock. */
+  private current = new Map<string, { id: string; since: number }>();
   /** Requests the user answered and the server has not confirmed yet. */
   private answered = new Set<string>();
   /** Threads the user stopped and the server has not confirmed yet. */
@@ -108,6 +119,9 @@ class T3Module implements VisorModule {
     this.tickSource = this.expirySource = 0;
     this.sessions = [];
     this.prompts.clear();
+    this.asking.clear();
+    this.failures.clear();
+    this.current.clear();
     this.answered.clear();
     this.stopped.clear();
     this.errors.clear();
@@ -164,6 +178,24 @@ class T3Module implements VisorModule {
           this.render();
         }),
     );
+  }
+
+  /**
+   * A click on Deny or Allow that was rendered for `requestId`. It counts only
+   * while the row still waits for that request and has for a moment.
+   */
+  private respond(
+    threadId: string,
+    requestId: string | null,
+    decision: 'accept' | 'decline',
+  ): void {
+    const session = this.sessions.find(s => s.id === threadId);
+    if (session?.phase !== 'approval' || session.request?.id !== requestId) return;
+    // Without the whole command on screen there was nothing to click.
+    const prompt = this.prompts.get(session.request.id);
+    if (!prompt?.exact) return;
+    if (mayAnswer(this.current.get(threadId), requestId, monotonicMs()))
+      this.answer(session, decision);
   }
 
   private answer(session: Session, decision: 'accept' | 'decline'): void {
@@ -231,21 +263,41 @@ class T3Module implements VisorModule {
     }
   }
 
-  /** Asks once per request what it is about. */
-  private fetchPrompt(session: Session): void {
+  /**
+   * Asks what a request is about. An answer that fails, is too large or does
+   * not say leaves the command unknown; it is asked for again a few times.
+   */
+  private fetchPrompt(session: Session, now: number): void {
     const client = this.client;
     const request = session.request;
-    if (!client || !request || this.prompts.has(request.id)) return;
-    this.prompts.set(request.id, null);
+    if (!client || !request) return;
+    const requestId = request.id;
+    if (this.prompts.has(requestId) || this.asking.has(requestId)) return;
+    const failure = this.failures.get(requestId);
+    if (failure && (failure.retryAt === null || now < failure.retryAt)) return;
+    const token = {};
+    this.asking.set(requestId, token);
+    const settle = (prompt: Prompt | null): void =>
+      this.safely(() => {
+        // Forgotten meanwhile, or asked again: this answer is nobody's.
+        if (!this.ctx || this.asking.get(requestId) !== token) return;
+        this.asking.delete(requestId);
+        if (prompt) {
+          this.prompts.set(requestId, prompt);
+          this.failures.delete(requestId);
+        } else {
+          const count = (this.failures.get(requestId)?.count ?? 0) + 1;
+          const wait = promptRetryMs(count);
+          this.failures.set(requestId, {
+            count,
+            retryAt: wait === null ? null : Date.now() + wait,
+          });
+        }
+        this.render();
+      });
     client.request(METHODS.getThreadProjection, { threadId: request.threadId }).then(
-      projection =>
-        this.safely(() => {
-          if (!this.ctx) return;
-          this.prompts.set(request.id, approvalPrompt(projection, request.id));
-          this.render();
-        }),
-      // The row says what kind of request it is; that has to do.
-      () => this.prompts.set(request.id, ''),
+      projection => settle(approvalPrompt(projection, requestId)),
+      () => settle(null),
     );
   }
 
@@ -268,7 +320,14 @@ class T3Module implements VisorModule {
     this.forget(client);
 
     const waiting = this.sessions.filter(isWaiting);
-    for (const session of waiting) if (session.phase === 'approval') this.fetchPrompt(session);
+    const since = monotonicMs();
+    for (const session of waiting) {
+      if (session.phase !== 'approval') continue;
+      this.fetchPrompt(session, now);
+      const requestId = session.request!.id;
+      if (this.current.get(session.id)?.id !== requestId)
+        this.current.set(session.id, { id: requestId, since });
+    }
 
     if (this.sessions.length === 0) {
       ctx.now.clear();
@@ -312,7 +371,16 @@ class T3Module implements VisorModule {
       if (session.request) requests.add(session.request.id);
     for (const map of [this.prompts, this.answered, this.announced])
       for (const requestId of [...map.keys()]) if (!requests.has(requestId)) map.delete(requestId);
+    // What failed is remembered across a connection that broke, or a projection
+    // that breaks it would be asked for on every new one.
+    if (client.synced) {
+      for (const map of [this.asking, this.failures])
+        for (const requestId of [...map.keys()])
+          if (!requests.has(requestId)) map.delete(requestId);
+    }
     const shown = new Set(this.sessions.map(session => session.id));
+    for (const threadId of [...this.current.keys()])
+      if (!shown.has(threadId)) this.current.delete(threadId);
     for (const threadId of [...this.details.keys()])
       if (!shown.has(threadId)) this.details.delete(threadId);
     for (const threadId of [...this.errors.keys()])
@@ -343,6 +411,7 @@ class T3Module implements VisorModule {
           ? _('Working')
           : `${_('Working')} · ${formatDuration(Math.max(0, now - session.startedAt))}`;
       case 'approval':
+        if (this.isUnknown(session)) return _('Answer this request in T3 Code');
         if (session.request?.kind === 'command') return _('Wants to run');
         return session.request?.kind === 'file'
           ? _('Wants to use a file')
@@ -354,6 +423,12 @@ class T3Module implements VisorModule {
       default:
         return session.error ? `${_('Failed')} · ${session.error}` : _('Failed');
     }
+  }
+
+  /** True when asking what an approval is about has failed and nothing is known. */
+  private isUnknown(session: Session): boolean {
+    const requestId = session.request?.id;
+    return requestId !== undefined && !this.prompts.has(requestId) && this.failures.has(requestId);
   }
 
   private row(session: Session, now: number): NowRow {
@@ -368,21 +443,43 @@ class T3Module implements VisorModule {
       expand: this.detailsOf(session).expand,
     };
     if (session.phase === 'approval') {
-      const prompt = this.prompts.get(session.request!.id);
+      const requestId = session.request!.id;
+      const prompt = this.prompts.get(requestId);
       const waiting: NowRow = {
         ...row,
         status: 'waiting',
         detail: prompt ? promptPreview(prompt) : undefined,
       };
-      // Nobody allows what they cannot read: while the command is asked for the row has no
-      // buttons, and a command the one line cuts off is answered next to its full text.
-      if (prompt === null || (prompt && !fitsPreview(prompt))) return waiting;
+      // Nobody allows what they cannot read. A command that is not known has no
+      // buttons, only the way to T3 Code once asking for it has failed; a command
+      // the one line cuts off or cannot show is answered next to its full text,
+      // if that shows it whole.
+      if (!prompt) {
+        if (!this.isUnknown(session)) return waiting;
+        return {
+          ...waiting,
+          primary: {
+            label: _('Open in T3 Code'),
+            style: 'primary',
+            run: () => this.openInApp(session.id),
+          },
+        };
+      }
+      if (!fitsPreview(prompt)) return waiting;
       return {
         ...waiting,
         controls: [
-          { label: _('Deny'), style: 'ghost', run: () => this.answer(session, 'decline') },
+          {
+            label: _('Deny'),
+            style: 'ghost',
+            run: () => this.respond(session.id, requestId, 'decline'),
+          },
         ],
-        primary: { label: _('Allow'), style: 'primary', run: () => this.answer(session, 'accept') },
+        primary: {
+          label: _('Allow'),
+          style: 'primary',
+          run: () => this.respond(session.id, requestId, 'accept'),
+        },
       };
     }
     if (session.phase === 'question') {
@@ -403,9 +500,8 @@ class T3Module implements VisorModule {
       const created: Details = {
         message: null,
         stop: null,
-        command: null,
-        cut: null,
-        answers: null,
+        requestId: null,
+        showCommand: null,
         expand: () => this.buildDetails(threadId, created),
       };
       this.details.set(threadId, (details = created));
@@ -415,20 +511,15 @@ class T3Module implements VisorModule {
       details.message.visible = session.lastMessage !== '';
     }
     if (details.stop) details.stop.visible = session.runId !== null;
-    if (details.command && details.cut && details.answers) {
-      const prompt = this.promptOf(session);
-      if (details.command.text !== prompt) details.command.text = prompt;
-      details.command.visible = prompt !== '';
-      if (!prompt) details.cut.visible = false;
-      details.answers.visible = prompt !== '' && !fitsPreview(prompt);
-    }
+    details.requestId = session.phase === 'approval' ? (session.request?.id ?? null) : null;
+    details.showCommand?.(this.promptOf(session));
     return details;
   }
 
-  /** The whole command a session waits for, empty when it waits for none or it is not known. */
-  private promptOf(session: Session | undefined): string {
-    if (session?.phase !== 'approval' || !session.request) return '';
-    return this.prompts.get(session.request.id) ?? '';
+  /** The command a session waits for, null when it waits for none or it is not known. */
+  private promptOf(session: Session | undefined): Prompt | null {
+    if (session?.phase !== 'approval' || !session.request) return null;
+    return this.prompts.get(session.request.id) ?? null;
   }
 
   private buildDetails(threadId: string, details: Details): St.Widget {
@@ -455,45 +546,24 @@ class T3Module implements VisorModule {
 
     // The whole command, so that what is allowed can be read: it wraps, and
     // after eight lines it ends in an ellipsis and says where the rest is.
-    const prompt = this.promptOf(session);
     const command = new St.Label({
       style_class: 'visor-t3-command',
-      text: prompt,
-      visible: prompt !== '',
+      visible: false,
       x_expand: true,
     });
     command.clutter_text.line_wrap = true;
     command.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
     command.clutter_text.ellipsize = Pango.EllipsizeMode.END;
     box.add_child(command);
-    const cut = new St.Label({
-      style_class: 'visor-t3-cut',
-      text: _('Open T3 Code to read all of it'),
-      visible: false,
-    });
+    const cut = new St.Label({ style_class: 'visor-t3-cut', visible: false });
     box.add_child(cut);
-    // Whether the eight lines were enough is known once the text is laid out.
-    let cutSource = 0;
-    command.connect('notify::allocation', () => {
-      if (cutSource) return;
-      cutSource = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-        cutSource = 0;
-        const text = command.clutter_text;
-        const shortened =
-          command.visible &&
-          (text.get_layout().is_ellipsized() || command.text.length >= MAX_COMMAND);
-        if (cut.visible !== shortened) cut.visible = shortened;
-        return GLib.SOURCE_REMOVE;
-      });
-    });
+    // Deny and Allow are for a command that is on screen whole and as it runs.
+    // That is decided from the text first, and the layout has to agree; until
+    // it has been looked at there are no buttons.
+    const answers = new St.BoxLayout({ style_class: 'visor-t3-buttons', visible: false });
     const respond = (decision: 'accept' | 'decline'): void => {
-      const current = this.sessions.find(s => s.id === threadId);
-      if (current?.phase === 'approval') this.answer(current, decision);
+      if (answers.visible) this.respond(threadId, details.requestId, decision);
     };
-    const answers = new St.BoxLayout({
-      style_class: 'visor-t3-buttons',
-      visible: prompt !== '' && !fitsPreview(prompt),
-    });
     answers.add_child(
       ctx.kit.button({ label: _('Deny'), style: 'ghost', run: () => respond('decline') }),
     );
@@ -501,6 +571,45 @@ class T3Module implements VisorModule {
       ctx.kit.button({ label: _('Allow'), style: 'primary', run: () => respond('accept') }),
     );
     box.add_child(answers);
+
+    let shown: Prompt | null = null;
+    let laidOut: 'unknown' | 'whole' | 'cut' = 'unknown';
+    const refresh = (): void => {
+      const fits = shown !== null && fitsExpanded(shown);
+      const hint = shown !== null && (!fits || laidOut === 'cut');
+      const offer = shown !== null && fits && laidOut === 'whole' && !fitsPreview(shown);
+      if (hint)
+        cut.text = shown?.hidden
+          ? _('Has characters that cannot be shown. Open T3 Code to read it')
+          : _('Open T3 Code to read all of it');
+      if (command.visible !== (shown !== null)) command.visible = shown !== null;
+      if (cut.visible !== hint) cut.visible = hint;
+      if (answers.visible !== offer) answers.visible = offer;
+    };
+    // Whether the eight lines were enough is known once the text is laid out.
+    let cutSource = 0;
+    const look = (): void => {
+      if (cutSource) return;
+      cutSource = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+        cutSource = 0;
+        if (shown === null || !command.has_allocation()) laidOut = 'unknown';
+        else laidOut = command.clutter_text.get_layout().is_ellipsized() ? 'cut' : 'whole';
+        refresh();
+        return GLib.SOURCE_REMOVE;
+      });
+    };
+    command.connect('notify::allocation', look);
+    const showCommand = (prompt: Prompt | null): void => {
+      if (prompt?.text !== shown?.text) {
+        // Another text: what was known about the layout is about the old one.
+        laidOut = 'unknown';
+        command.text = prompt?.text ?? '';
+        look();
+      }
+      shown = prompt;
+      refresh();
+    };
+    showCommand(this.promptOf(session));
 
     const name = truncate(session?.title ?? '', 24);
     const entry = new St.Entry({
@@ -543,14 +652,13 @@ class T3Module implements VisorModule {
 
     details.message = message;
     details.stop = stop;
-    details.command = command;
-    details.cut = cut;
-    details.answers = answers;
+    details.showCommand = showCommand;
     box.connect('destroy', () => {
       if (cutSource) GLib.source_remove(cutSource);
       cutSource = 0;
       if (details.message !== message) return;
-      details.message = details.stop = details.command = details.cut = details.answers = null;
+      details.message = details.stop = null;
+      details.showCommand = null;
     });
     return box;
   }
@@ -573,7 +681,11 @@ class T3Module implements VisorModule {
 
     if (this.expirySource) GLib.source_remove(this.expirySource);
     this.expirySource = 0;
-    const next = Math.min(...this.sessions.map(s => s.until ?? Infinity));
+    // The next finished session to go, or the next command to ask for again.
+    const retries = [...this.failures]
+      .filter(([requestId]) => !this.asking.has(requestId))
+      .map(([, failure]) => failure.retryAt ?? Infinity);
+    const next = Math.min(...this.sessions.map(s => s.until ?? Infinity), ...retries);
     if (next === Infinity) return;
     this.expirySource = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
