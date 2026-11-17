@@ -6,7 +6,7 @@
 # sessions, Disconnect removes it, a token the server refuses is asked for
 # once and not again, and a bare code pairs anew. Then once more in a sandbox
 # without a keyring: the window says so and keeps the code, the module logs
-# one line. And once with the keyring locked: the shell asks for its password
+# one line, and connects once a keyring appears on the bus. And once with the keyring locked: the shell asks for its password
 # before the code is spent, for as long as the user needs, a dismissed prompt
 # keeps the code, and a window closed while the server answers still leaves
 # the token in the keyring. The window is driven with the pointer and the keyboard, as
@@ -163,6 +163,17 @@ if [[ "${2:-}" == no-keyring ]]; then
     lines="$(tail -n "+$((log_start + 1))" "$HOME/shell.log" | grep -c 'The keyring is not available' || true)"
     if [[ "$lines" == 1 ]]; then echo 'ok    one line in the log says so, also after the module was turned off and on'; else echo "FAIL  $lines lines in the log about the keyring"; failures=$((failures + 1)); fi
     expect_mock 'the server was not asked for anything' "s['ticketRequests'] == 0"
+
+    # The keyring starts later (a session that brings it up after the shell):
+    # the module reads the token without being paired anew.
+    keyring_start
+    keyring_store "$origin" mock-token
+    kill "$keyring_pid"
+    shell_wait_for "$t3.module.client.keyringOwned === false"
+    check 'no keyring again: still nothing' "$t3.rows.length === 0 && !$t3.module.client.connected"
+    keyring_start
+    wait_check 'the keyring appears: the module reads the token and connects' \
+        "$t3.module.client.connected && $t3.rows.length === 4"
     check 'Visor is still enabled' "Main.extensionManager.lookup('$uuid').state === 1"
     noise="$(tail -n "+$((log_start + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|visor' | grep -v 'Tried to ping window' || true)"
     if [[ -z "$noise" ]]; then echo 'ok    the shell logged nothing else'; else echo 'FAIL  the shell logged:'; head -n 20 <<<"$noise"; failures=$((failures + 1)); fi

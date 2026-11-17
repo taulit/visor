@@ -110,3 +110,11 @@ export async function unlockKeyring(cancellable: Gio.Cancellable): Promise<boole
   await clearToken(probe, cancellable);
   return true;
 }
+
+/**
+ * The Secret Service left the bus: libsecret keeps its connection to the one
+ * that is gone and would ask the next one with a session it does not know.
+ */
+export function keyringServiceGone(): void {
+  Secret.Service.disconnect();
+}

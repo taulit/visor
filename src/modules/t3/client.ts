@@ -2,13 +2,15 @@
 // descriptor, WebSocket ticket, socket, the shell stream. It reconnects with
 // a growing wait and at once when the network or the server's runtime file
 // changes. The access token is in the keyring (keyring.ts) and is read when
-// the settings say that there is one. Without a token it does nothing at all,
-// and a token the server refuses is not tried again until the pairing changes.
+// the settings say that there is one; a keyring that had no answer is asked
+// again when the Secret Service appears on the session bus. Without a token
+// it does nothing at all, and a token the server refuses is not tried again
+// until the pairing changes.
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Soup from 'gi://Soup?version=3.0';
 
-import { lookupToken } from './keyring.js';
+import { keyringServiceGone, lookupToken } from './keyring.js';
 import { SERVER_KEY, TOKEN_ORIGIN_KEY, TOKEN_SERIAL_KEY, tokenFits } from './pairing.js';
 import {
   METHODS,
@@ -40,7 +42,7 @@ export { SERVER_KEY, TOKEN_ORIGIN_KEY, TOKEN_SERIAL_KEY };
  * The pairing the keyring had no answer for. A locked keyring asks for its
  * password; this keeps an extension that is disabled and enabled again (every
  * time the screen is unlocked) from asking over and over. It lasts as long as
- * the shell and ends when the pairing changes.
+ * the shell and ends when the pairing changes or a keyring service starts.
  */
 let keyringFailedFor: string | null = null;
 
@@ -92,6 +94,9 @@ export class T3Client {
   /** The access token, read from the keyring; empty until then and when not paired. */
   private token = '';
   private lookup: Gio.Cancellable | null = null;
+  private keyringWatch = 0;
+  /** Whether the Secret Service is on the session bus; null until the bus has said. */
+  private keyringOwned: boolean | null = null;
 
   /** `changed` is called when the threads or the connection changed. */
   constructor(
@@ -121,12 +126,33 @@ export class T3Client {
     } catch {
       this.monitor = null;
     }
+    this.keyringWatch = Gio.bus_watch_name(
+      Gio.BusType.SESSION,
+      'org.freedesktop.secrets',
+      Gio.BusNameWatcherFlags.NONE,
+      () => {
+        // Only a service that was not there before: one that was there and
+        // gave no answer had its prompt dismissed and is not asked again.
+        const appeared = this.keyringOwned === false;
+        this.keyringOwned = true;
+        if (!appeared || this.token) return;
+        keyringFailedFor = null;
+        this.load();
+      },
+      () => {
+        if (this.keyringOwned) keyringServiceGone();
+        this.keyringOwned = false;
+      },
+    );
     this.load();
   }
 
   stop(): void {
     if (!this.running) return;
     this.running = false;
+    Gio.bus_unwatch_name(this.keyringWatch);
+    this.keyringWatch = 0;
+    this.keyringOwned = null;
     this.settings?.disconnectObject(this);
     this.network?.disconnectObject(this);
     this.network = null;
@@ -211,7 +237,8 @@ export class T3Client {
           keyringFailedFor = pairing;
           log(
             'The keyring is not available, so the access token of T3 Code cannot be read; ' +
-              'its sessions are not shown. Not asking again until Visor is paired anew.',
+              'its sessions are not shown. Not asking again until a keyring service ' +
+              'starts or Visor is paired anew.',
           );
           return;
         }
