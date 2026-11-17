@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 17:02+0100\n"
+"POT-Creation-Date: 2026-11-17 22:22+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Simplified Chinese\n"
@@ -16,83 +16,111 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: build/core/search/controller.js:123 build/core/search/controller.js:146
+#: build/core/clock.js:61
+msgid "something waits for you"
+msgstr ""
+
+#: build/core/clock.js:63
+#, fuzzy
+msgid "unread notifications"
+msgstr "没有新通知"
+
+#: build/core/kit.js:351
+msgid "waits for you"
+msgstr ""
+
+#: build/core/kit.js:353
+#, fuzzy
+msgid "done"
+msgstr "%s 已完成"
+
+#: build/core/kit.js:797
+#, javascript-format
+msgid "Hide details of %s"
+msgstr ""
+
+#: build/core/kit.js:798
+#, fuzzy, javascript-format
+msgid "Show details of %s"
+msgstr "显示全部 %d 条"
+
+#: build/core/search/controller.js:124 build/core/search/controller.js:147
 msgid "Commands"
 msgstr "命令"
 
-#: build/core/search/controller.js:131
+#: build/core/search/controller.js:132
 msgid "Calculate"
 msgstr "计算"
 
-#: build/core/search/controller.js:132
+#: build/core/search/controller.js:133
 msgid "Apps"
 msgstr "应用"
 
-#: build/core/search/controller.js:178
+#: build/core/search/controller.js:179
 msgid "No results"
 msgstr "无结果"
 
-#: build/core/search/controller.js:279
+#: build/core/search/controller.js:280
 msgid "Enter completes"
 msgstr "回车补全"
 
-#: build/core/search/controller.js:295 build/core/search/controller.js:320
+#: build/core/search/controller.js:296 build/core/search/controller.js:321
 msgid "Enter copies"
 msgstr "回车复制"
 
-#: build/core/search/controller.js:305
+#: build/core/search/controller.js:306
 msgid "Currency rates are turned off"
 msgstr "汇率已关闭"
 
-#: build/core/search/controller.js:308
+#: build/core/search/controller.js:309
 msgid "Rates are loading"
 msgstr "正在加载汇率"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
+#: build/core/sheet.js:201 build/core/sheet.js:570 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "模块"
 
-#: build/core/sheet.js:287
+#: build/core/sheet.js:334
 msgid "Search, calculate or run a command …"
 msgstr "搜索、计算或运行命令 …"
 
-#: build/core/sheet.js:288 build/prefs/general.js:75
+#: build/core/sheet.js:335 build/prefs/general.js:75
 msgid "Search"
 msgstr "搜索"
 
-#: build/core/sheet.js:313 build/core/sheet.js:390
+#: build/core/sheet.js:360 build/core/sheet.js:441
 #: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
 msgid "Now"
 msgstr "现在"
 
-#: build/core/sheet.js:327
+#: build/core/sheet.js:374
 msgid "Back"
 msgstr "返回"
 
-#: build/core/sheet.js:390
+#: build/core/sheet.js:441
 msgid "Shows up only while something is running."
 msgstr "仅在有任务进行时显示。"
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:391 build/modules/upcoming/module.js:28
+#: build/core/sheet.js:442 build/modules/upcoming/module.js:28
 #: build/modules/upcoming/module.js:99 build/prefs/builtin-modules.js:8
 #: build/prefs/builtin-modules.js:19
 msgid "Up Next"
 msgstr "接下来"
 
-#: build/core/sheet.js:391
+#: build/core/sheet.js:442
 msgid "A short section next to “Now”."
 msgstr "“现在”旁的一个简短区域。"
 
-#: build/core/sheet.js:392 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:443 build/prefs/builtin-modules.js:20
 msgid "Dock"
 msgstr "Dock"
 
-#: build/core/sheet.js:392
+#: build/core/sheet.js:443
 msgid "A view of its own behind an icon."
 msgstr "图标后面的独立视图。"
 
-#: build/core/sheet.js:590
+#: build/core/sheet.js:641
 msgid "No modules"
 msgstr "没有模块"
 

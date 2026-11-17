@@ -132,7 +132,7 @@ check 'Enter expands a row that has neither activate nor primary' \
 check 'Up goes back row by row and ends in the search entry' \
     '(async () => { const seen = []; for (let i = 0; i < 3; i++) { await T.key(Clutter.KEY_Up); seen.push(T.focus()); } return T.row("taulit").contains(seen[0]) && T.row("Midnight City").contains(seen[1]) && seen[2] === T.sheet.entry.clutter_text || seen.map(String).join(); })()'
 check 'Shift+Tab goes backwards, Tab forwards again' \
-    '(async () => { await T.key(Clutter.KEY_Tab); const dock = T.focus(); await T.shiftTab(); const back = T.focus(); await T.shiftTab(); const last = T.focus(); await T.key(Clutter.KEY_Tab); return dock.has_style_class_name("visor-dock-button") && back === T.sheet.entry.clutter_text && last.has_style_class_name("visor-button") && T.focus() === back || [dock, back, last, T.focus()].map(String).join(); })()'
+    '(async () => { await T.key(Clutter.KEY_Tab); const row = T.focus(); await T.shiftTab(); const back = T.focus(); await T.shiftTab(); const last = T.focus(); await T.key(Clutter.KEY_Tab); return T.row("Midnight City").contains(row) && back === T.sheet.entry.clutter_text && last.has_style_class_name("visor-dock-button") && T.focus() === back || [row, back, last, T.focus()].map(String).join(); })()'
 check 'Tab walks every interactive element' \
     '(async () => {
         T.sheet.entry.grab_key_focus();
@@ -147,7 +147,7 @@ check 'Tab walks every interactive element' \
         }
         const wanted = [...T.find("visor-row-main"), ...T.find("visor-button"), ...T.find("visor-icon-button"), ...T.find("visor-dock-button")].filter(a => a.mapped);
         const missed = wanted.filter(a => !seen.has(a));
-        return missed.length === 0 && ["visor-row-main", "visor-button", "visor-icon-button", "visor-dock-button"].every(k => kinds.has(k)) || `missed ${missed.length} of ${wanted.length}: ${missed.map(a => a.style_class)}`;
+        return missed.length === 0 && ["visor-row-main", "visor-button", "visor-icon-button", "visor-dock-button"].every(k => kinds.has(k)) || `missed ${missed.length} of ${wanted.length}: ${missed.map(a => a.style_class + " " + a.accessible_name)} after ${[...seen].length} stops`;
     })()'
 
 echo "# pointer"

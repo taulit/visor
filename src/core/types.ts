@@ -1,3 +1,4 @@
+import type Clutter from 'gi://Clutter';
 import type St from 'gi://St';
 
 export type NotchState = 'idle' | 'hint' | 'peek' | 'open';
@@ -23,6 +24,11 @@ export interface NotchContent {
   sheetWidth(): number;
   /** Called after every state change, for focus, resetting views and starting or stopping live updates. */
   stateChanged(state: NotchState, previous: NotchState): void;
+  /**
+   * A press on the peek row is about to open the panel. `target` is the actor
+   * below the pointer; a chip opens the panel on what it is about.
+   */
+  pressed(target: Clutter.Actor | null): void;
   /** Escape while open. Returns true when it was used up (search cleared, module view left). */
   handleEscape(): boolean;
   destroy(): void;

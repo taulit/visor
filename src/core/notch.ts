@@ -25,6 +25,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { BannerShift } from './banners.js';
 import { Clock } from './clock.js';
 import { Keybindings } from './keybindings.js';
+import { metricsOn, now, reportMetric } from './metrics.js';
 import { Motion } from './motion.js';
 import { mix } from './spring.js';
 import {
@@ -179,7 +180,7 @@ export class Notch implements NotchHost {
       'leave-event',
       (_actor: Clutter.Actor, event: Clutter.Event) => this.onCrossing(this.root, event),
       'button-press-event',
-      () => this.onPress('activate'),
+      (_actor: Clutter.Actor, event: Clutter.Event) => this.onPress('activate', event),
       'touch-event',
       (_actor: Clutter.Actor, event: Clutter.Event) => this.onTouch(event, 'activate'),
       'notify::visible',
@@ -340,6 +341,13 @@ export class Notch implements NotchHost {
   }
 
   private enter(state: NotchState, previous: NotchState, animate: boolean): void {
+    // What a state change costs before its first frame, with debug metrics on.
+    const start = metricsOn(this.settings) ? now() : 0;
+    this.change(state, previous, animate);
+    if (start) reportMetric(`enter ${state} ms=${((now() - start) / 1000).toFixed(2)}`);
+  }
+
+  private change(state: NotchState, previous: NotchState, animate: boolean): void {
     // The new state is measured below, once its content is in the clip.
     this.updatePosition();
 
@@ -529,6 +537,7 @@ export class Notch implements NotchHost {
           });
         },
         done: () => this.settled(),
+        metrics: animate && metricsOn(this.settings) ? state : undefined,
       },
       animate,
     );
@@ -725,16 +734,22 @@ export class Notch implements NotchHost {
   }
 
   /** A press on the neck toggles; a press on the hint or peek area opens. */
-  private onPress(type: 'toggle' | 'activate'): boolean {
+  private onPress(type: 'toggle' | 'activate', event?: Clutter.Event): boolean {
     if (type === 'activate' && this.model.state === 'open') return Clutter.EVENT_PROPAGATE;
-    if (type === 'toggle') this.toggle();
-    else this.dispatch({ type });
+    if (type === 'toggle') {
+      this.toggle();
+    } else {
+      // The press opens the panel before a chip could report a click.
+      if (event && this.model.state === 'peek')
+        this.content.pressed(global.stage.get_event_actor(event));
+      this.dispatch({ type });
+    }
     return Clutter.EVENT_STOP;
   }
 
   private onTouch(event: Clutter.Event, type: 'toggle' | 'activate'): boolean {
     if (event.type() !== Clutter.EventType.TOUCH_BEGIN) return Clutter.EVENT_PROPAGATE;
-    return this.onPress(type);
+    return this.onPress(type, event);
   }
 
   private onNeckKey(event: Clutter.Event): boolean {

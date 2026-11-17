@@ -4,6 +4,7 @@
 import Clutter from 'gi://Clutter';
 import St from 'gi://St';
 
+import { FrameProbe, now } from './metrics.js';
 import { easeOutQuint, springValue } from './spring.js';
 
 export interface MotionRun {
@@ -15,10 +16,13 @@ export interface MotionRun {
   frame: (progress: number) => void;
   /** Called once after the last frame. Not called when the run is replaced or stopped. */
   done: () => void;
+  /** With debug metrics on: the name the frames of this run are reported under. */
+  metrics?: string;
 }
 
 export class Motion {
   private timeline: Clutter.Timeline | null = null;
+  private probe: FrameProbe | null = null;
 
   /** `clockActor` lends its frame clock; the timeline only advances while it is mapped. */
   constructor(private clockActor: Clutter.Actor) {}
@@ -46,14 +50,28 @@ export class Motion {
       actor: this.clockActor,
       duration: Math.max(1, Math.round(run.duration * slowDown)),
     });
+    // Null unless debug metrics are on: then nothing below measures anything.
+    const probe = run.metrics
+      ? new FrameProbe(this.clockActor.get_stage() as Clutter.Stage, run.metrics)
+      : null;
+    this.probe = probe;
     timeline.connect('new-frame', (_timeline, elapsed) => {
       const ms = elapsed / slowDown;
-      run.frame(run.curve === 'spring' ? springValue(ms / 1000) : easeOutQuint(ms / run.duration));
+      const progress =
+        run.curve === 'spring' ? springValue(ms / 1000) : easeOutQuint(ms / run.duration);
+      if (probe) {
+        const start = now();
+        run.frame(progress);
+        probe.visor(now() - start);
+      } else {
+        run.frame(progress);
+      }
     });
     timeline.connect('stopped', () => {
       // stop() forgets the timeline first, so this is the regular end.
       if (this.timeline !== timeline) return;
       this.timeline = null;
+      this.endProbe();
       run.frame(1);
       run.done();
     });
@@ -67,6 +85,12 @@ export class Motion {
     if (!timeline) return;
     this.timeline = null;
     timeline.stop();
+    this.endProbe();
+  }
+
+  private endProbe(): void {
+    this.probe?.finish();
+    this.probe = null;
   }
 
   destroy(): void {

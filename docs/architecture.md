@@ -14,6 +14,7 @@ src/
 │   ├── notch.ts        actors in and below the panel, state, position, modal
 │   ├── state.ts        state machine idle → hint → peek → open (pure logic)
 │   ├── motion.ts       damped spring on a Clutter.Timeline
+│   ├── metrics.ts      debug metrics for the journal, only with the GSettings key `debug-metrics` on
 │   ├── theme.ts        light or dark from the panel colour, high contrast
 │   ├── clock.ts        clock and attention dot in the neck
 │   ├── keybindings.ts  takes over the shell's notification-list shortcut, optional own one
@@ -50,6 +51,11 @@ about state changes. The content asks the notch to open, close, flash or re-meas
   shown. Budget for `enable()`: 5 ms.
 - **Quiet when idle.** No timeout and no polling while nothing runs and the panel is closed. Live updates
   (progress, countdowns, animations of content) run only while the panel is open.
+  The budgets, what was measured and every source that can fire with the panel closed are in
+  [performance.md](performance.md); `scripts/measure.sh` measures them again.
+- **Accessible.** Whatever reacts to the pointer or takes the focus has a role and a name, colour is never the
+  only carrier, font sizes are in pt so that Large Text scales them. Key map and details:
+  [accessibility.md](accessibility.md).
 - **Animate the reveal, not the layout.** Content is laid out once at its final size. Only a clip and a
   background actor without children change size per frame.
 - **One way out.** Every class has `destroy()`, connects signals with `connectObject(..., this)` and removes

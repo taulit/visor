@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 17:02+0100\n"
+"POT-Creation-Date: 2026-11-17 22:22+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: French\n"
@@ -16,83 +16,111 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: build/core/search/controller.js:123 build/core/search/controller.js:146
+#: build/core/clock.js:61
+msgid "something waits for you"
+msgstr ""
+
+#: build/core/clock.js:63
+#, fuzzy
+msgid "unread notifications"
+msgstr "Aucune nouvelle notification"
+
+#: build/core/kit.js:351
+msgid "waits for you"
+msgstr ""
+
+#: build/core/kit.js:353
+#, fuzzy
+msgid "done"
+msgstr "%s terminé"
+
+#: build/core/kit.js:797
+#, javascript-format
+msgid "Hide details of %s"
+msgstr ""
+
+#: build/core/kit.js:798
+#, fuzzy, javascript-format
+msgid "Show details of %s"
+msgstr "Tout afficher (%d)"
+
+#: build/core/search/controller.js:124 build/core/search/controller.js:147
 msgid "Commands"
 msgstr "Commandes"
 
-#: build/core/search/controller.js:131
+#: build/core/search/controller.js:132
 msgid "Calculate"
 msgstr "Calculer"
 
-#: build/core/search/controller.js:132
+#: build/core/search/controller.js:133
 msgid "Apps"
 msgstr "Applications"
 
-#: build/core/search/controller.js:178
+#: build/core/search/controller.js:179
 msgid "No results"
 msgstr "Aucun résultat"
 
-#: build/core/search/controller.js:279
+#: build/core/search/controller.js:280
 msgid "Enter completes"
 msgstr "Entrée complète"
 
-#: build/core/search/controller.js:295 build/core/search/controller.js:320
+#: build/core/search/controller.js:296 build/core/search/controller.js:321
 msgid "Enter copies"
 msgstr "Entrée copie"
 
-#: build/core/search/controller.js:305
+#: build/core/search/controller.js:306
 msgid "Currency rates are turned off"
 msgstr "Les taux de change sont désactivés"
 
-#: build/core/search/controller.js:308
+#: build/core/search/controller.js:309
 msgid "Rates are loading"
 msgstr "Chargement des taux"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
+#: build/core/sheet.js:201 build/core/sheet.js:570 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "Modules"
 
-#: build/core/sheet.js:287
+#: build/core/sheet.js:334
 msgid "Search, calculate or run a command …"
 msgstr "Rechercher, calculer ou lancer une commande …"
 
-#: build/core/sheet.js:288 build/prefs/general.js:75
+#: build/core/sheet.js:335 build/prefs/general.js:75
 msgid "Search"
 msgstr "Rechercher"
 
-#: build/core/sheet.js:313 build/core/sheet.js:390
+#: build/core/sheet.js:360 build/core/sheet.js:441
 #: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
 msgid "Now"
 msgstr "Maintenant"
 
-#: build/core/sheet.js:327
+#: build/core/sheet.js:374
 msgid "Back"
 msgstr "Retour"
 
-#: build/core/sheet.js:390
+#: build/core/sheet.js:441
 msgid "Shows up only while something is running."
 msgstr "Apparaît uniquement pendant qu’une action est en cours."
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:391 build/modules/upcoming/module.js:28
+#: build/core/sheet.js:442 build/modules/upcoming/module.js:28
 #: build/modules/upcoming/module.js:99 build/prefs/builtin-modules.js:8
 #: build/prefs/builtin-modules.js:19
 msgid "Up Next"
 msgstr "À venir"
 
-#: build/core/sheet.js:391
+#: build/core/sheet.js:442
 msgid "A short section next to “Now”."
 msgstr "Une courte section à côté de « Maintenant »."
 
-#: build/core/sheet.js:392 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:443 build/prefs/builtin-modules.js:20
 msgid "Dock"
 msgstr "Dock"
 
-#: build/core/sheet.js:392
+#: build/core/sheet.js:443
 msgid "A view of its own behind an icon."
 msgstr "Une vue dédiée derrière une icône."
 
-#: build/core/sheet.js:590
+#: build/core/sheet.js:641
 msgid "No modules"
 msgstr "Aucun module"
 

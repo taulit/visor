@@ -7,6 +7,8 @@ import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 
+import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
+
 import { Spinner } from 'resource:///org/gnome/shell/ui/animation.js';
 
 import type {
@@ -378,6 +380,18 @@ function alignLeads(container: Clutter.Actor | null): void {
 }
 
 /** Options only Visor itself uses; modules build rows from RowProps alone. */
+function setState(actor: St.Widget, state: Atk.StateType, on: boolean): void {
+  if (on) actor.add_accessible_state(state);
+  else actor.remove_accessible_state(state);
+}
+
+/** What the colour of a row or a chip says, for screen readers. */
+export function statusWords(status: string | undefined): string {
+  if (status === 'waiting') return _('waits for you');
+  if (status === 'done') return _('done');
+  return '';
+}
+
 export interface RowOptions {
   /** A widget at the very end of the row, such as the switch in the list of modules. */
   trailing?: St.Widget;
@@ -516,7 +530,16 @@ export class Row implements KitRow {
       this.status = status;
     }
 
-    const name = [props.lead, props.title, props.subtitle, props.detail, props.meta, props.value]
+    // Amber and the quieter look of a finished row are colour only; a screen reader gets the words.
+    const name = [
+      props.lead,
+      props.title,
+      props.subtitle,
+      props.detail,
+      props.meta,
+      props.value,
+      statusWords(status),
+    ]
       .filter(Boolean)
       .join(', ');
     if (this.main.accessible_name !== name) this.main.accessible_name = name;
@@ -810,9 +833,14 @@ export class Row implements KitRow {
     if (!this.chevron || !this.chevronIcon) return;
     const icon = this.expanded ? 'pan-down-symbolic' : 'pan-end-symbolic';
     if (this.chevronIcon.icon_name !== icon) this.chevronIcon.icon_name = icon;
-    this.chevron.accessible_name = this.props.title;
-    if (this.expanded) this.chevron.add_accessible_state(Atk.StateType.EXPANDED);
-    else this.chevron.remove_accessible_state(Atk.StateType.EXPANDED);
+    this.chevron.accessible_name = this.expanded
+      ? _('Hide details of %s').replace('%s', this.props.title)
+      : _('Show details of %s').replace('%s', this.props.title);
+    // The row says that it can be opened, the row and the button whether it is.
+    const expandable = Boolean(this.props.expand);
+    setState(this.main, Atk.StateType.EXPANDABLE, expandable);
+    setState(this.main, Atk.StateType.EXPANDED, expandable && this.expanded);
+    setState(this.chevron, Atk.StateType.EXPANDED, this.expanded);
   }
 
   /**
@@ -900,6 +928,7 @@ class Section implements KitSection {
     const header = new St.BoxLayout({ style_class: 'visor-section-header' });
     this.title = new St.Label({
       style_class: 'visor-section-title',
+      accessible_role: Atk.Role.HEADING,
       text: str(props.title),
       x_expand: true,
       y_align: Clutter.ActorAlign.CENTER,
@@ -1046,13 +1075,18 @@ export class Chip {
       accessible_role: interactive ? Atk.Role.PUSH_BUTTON : Atk.Role.LABEL,
       child: box,
     });
+    // The name set in update() is what a screen reader gets; the label stays linked for the rest.
     this.actor.label_actor = this.label;
     this.update(chip);
   }
 
-  update(chip: PeekChip, tone: PeekChip['tone'] = chip.tone): void {
+  /** `owner` is the name of the module the chip belongs to; a screen reader hears it first. */
+  update(chip: PeekChip, tone: PeekChip['tone'] = chip.tone, owner = ''): void {
     setIcon(this.icon, chip.icon);
     const text = str(chip.text);
+    // Amber is colour only; the name says it in words.
+    const name = [owner, text, statusWords(tone)].filter(Boolean).join(', ');
+    if (this.actor.accessible_name !== name) this.actor.accessible_name = name;
     if (this.label.text !== text) this.label.text = text;
     this.label.visible = text !== '';
     const next = tone ?? 'normal';

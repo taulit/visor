@@ -15,6 +15,7 @@ tests=(
     "prefs-t3|tests/shell/prefs-t3.sh"
     "content-shell|tests/shell/content-shell.sh"
     "search|tests/shell/search.sh"
+    "a11y|tests/shell/a11y.sh"
     "modules-now|tests/shell/modules-now.sh"
     "modules-ahead|tests/shell/modules-ahead.sh"
     "template|tests/shell/template.sh"

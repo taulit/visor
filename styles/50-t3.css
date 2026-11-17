@@ -3,20 +3,20 @@
   spacing: 8px;
 }
 .visor-t3-message {
-  font-size: 12.5px;
+  font-size: 9.375pt;
   /* Four lines. */
   max-height: 5.8em;
 }
 .visor-t3-command {
   font-family: 'Adwaita Mono', monospace;
-  font-size: 11.5px;
+  font-size: 8.625pt;
   padding: 6px 8px;
   border-radius: 8px;
   /* Eight lines, the padding is not part of it. */
   max-height: 11.6em;
 }
 .visor-t3-cut {
-  font-size: 11.5px;
+  font-size: 8.625pt;
 }
 .visor-t3-reply,
 .visor-t3-reply:hover,
@@ -27,7 +27,7 @@
   border-width: 0;
   border-radius: 10px;
   box-shadow: none !important;
-  font-size: 13px;
+  font-size: 9.75pt;
 }
 .visor-t3-buttons {
   spacing: 6px;

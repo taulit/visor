@@ -9,6 +9,7 @@ import type { RemoteSearchProvider } from 'resource:///org/gnome/shell/ui/remote
 
 import type { Command } from '../../api.js';
 import { ownGuard } from '../kit.js';
+import { metricsOn, reportSearch } from '../metrics.js';
 import type { ModuleEntry, Registry, SearchParts } from '../registry.js';
 import type { SearchMount } from '../sheet.js';
 import { formatResult } from './calc.js';
@@ -62,7 +63,7 @@ function isActivateKey(symbol: number): boolean {
 }
 
 export class Search {
-  /** For the tests and the debug metrics. */
+  /** For the tests. */
   timing: SearchTiming | null = null;
 
   private results: Results | null = null;
@@ -199,8 +200,7 @@ export class Search {
     }
 
     this.timing = { local, total: GLib.get_monotonic_time() - start };
-    if (this.settings.get_boolean('debug-metrics'))
-      log(`Visor: search took ${local} µs for the local results, ${this.timing.total} µs in all`);
+    if (metricsOn(this.settings)) reportSearch(local, this.timing.total);
   }
 
   /** Built on the first query, not before. */

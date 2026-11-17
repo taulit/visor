@@ -25,6 +25,8 @@ shots=(
     "ahead=modules-ahead"
     "open-real=open-real"
     "t3=t3"
+    "a11y-high-contrast=a11y-high-contrast"
+    "a11y-large-text=a11y-large-text"
     "prefs-general=prefs-general"
     "prefs-modules=prefs-modules"
     "prefs-about=prefs-about"
@@ -77,7 +79,10 @@ for name in "${names[@]}"; do
     fi
     options=()
     [[ "$name" == prefs-* ]] && options=("${fixtures[@]}")
-    for scheme in dark light; do
+    schemes=(dark light)
+    # The accessibility settings are shown once, in the dark scheme.
+    [[ "$name" == a11y-* ]] && schemes=(dark)
+    for scheme in "${schemes[@]}"; do
         shot "$scenario" "$dir/$name-$scheme.png" --scheme "$scheme" "${options[@]}"
     done
     # The settings window in German, to see that nothing is cut off or left in English.
