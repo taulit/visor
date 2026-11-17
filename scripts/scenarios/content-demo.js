@@ -251,8 +251,6 @@ globalThis.visorDemoRegister = only => {
   const registered = [];
   for (const module of [media, agents, timers, downloads, calendar, notifications, notes]) {
     if (!want(module.slot)) continue;
-    // The demo takes the place of the built-in module with the same id.
-    visor.api.unregister(module.id);
     visor.api.register(module);
     registered.push(module.id);
   }
