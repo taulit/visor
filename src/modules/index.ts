@@ -1,4 +1,5 @@
 import type { VisorModule } from '../api.js';
+import { notificationsModule } from './notifications/module.js';
 import { upcomingModule } from './upcoming/module.js';
 
 /**
@@ -6,5 +7,5 @@ import { upcomingModule } from './upcoming/module.js';
  * extensions. Creating a module does no work; that starts in enable().
  */
 export function builtinModules(): VisorModule[] {
-  return [upcomingModule()];
+  return [upcomingModule(), notificationsModule()];
 }
