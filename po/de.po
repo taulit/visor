@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-16 22:24+0100\n"
+"POT-Creation-Date: 2026-11-17 02:56+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -28,6 +28,7 @@ msgid "Search"
 msgstr "Suchen"
 
 #: build/core/sheet.js:299 build/core/sheet.js:371
+#: build/modules/upcoming/when.js:35
 msgid "Now"
 msgstr "Jetzt"
 
@@ -58,6 +59,138 @@ msgstr "Eigene Ansicht hinter einem Symbol."
 #: build/core/sheet.js:571
 msgid "No modules"
 msgstr "Keine Module"
+
+#: build/modules/downloads/module.js:15
+msgid "Downloads"
+msgstr "Downloads"
+
+#: build/modules/downloads/module.js:291 build/modules/timers/module.js:228
+msgid "Done"
+msgstr "Fertig"
+
+#: build/modules/downloads/module.js:297
+msgid "Show in folder"
+msgstr "Im Ordner zeigen"
+
+#: build/modules/downloads/module.js:304
+msgid "Open"
+msgstr "Öffnen"
+
+#: build/modules/media/module.js:20
+msgid "Media"
+msgstr "Medien"
+
+#: build/modules/media/module.js:147
+msgid "Previous"
+msgstr "Vorheriger Titel"
+
+#: build/modules/media/module.js:153 build/modules/timers/module.js:240
+msgid "Pause"
+msgstr "Pause"
+
+#: build/modules/media/module.js:153
+msgid "Play"
+msgstr "Abspielen"
+
+#: build/modules/media/module.js:160
+msgid "Next"
+msgstr "Nächster Titel"
+
+#: build/modules/timers/module.js:19
+msgid "Timers"
+msgstr "Timer"
+
+#: build/modules/timers/module.js:25
+msgid "timer 25m Pizza"
+msgstr "timer 25m Pizza"
+
+#: build/modules/timers/module.js:30
+msgid "stopwatch Research"
+msgstr "stoppuhr Recherche"
+
+#: build/modules/timers/module.js:92
+#, javascript-format
+msgid "Alarm at %s"
+msgstr "Wecker um %s"
+
+#: build/modules/timers/module.js:102
+#, javascript-format
+msgid "Start timer · %s"
+msgstr "Timer starten · %s"
+
+#: build/modules/timers/module.js:118
+msgid "Start stopwatch"
+msgstr "Stoppuhr starten"
+
+#: build/modules/timers/module.js:204
+msgid "Stopwatch"
+msgstr "Stoppuhr"
+
+#: build/modules/timers/module.js:205
+msgid "Alarm"
+msgstr "Wecker"
+
+#: build/modules/timers/module.js:205 build/modules/timers/module.js:313
+msgid "Timer"
+msgstr "Timer"
+
+#: build/modules/timers/module.js:229 build/modules/timers/module.js:331
+msgid "Restart"
+msgstr "Neu starten"
+
+#: build/modules/timers/module.js:235
+msgid "Resume"
+msgstr "Weiter"
+
+#: build/modules/timers/module.js:245
+msgid "Stop"
+msgstr "Stoppen"
+
+#: build/modules/timers/module.js:250
+msgid "+1 min"
+msgstr "+1 Min."
+
+#: build/modules/timers/module.js:260 build/modules/timers/module.js:265
+msgid "Paused"
+msgstr "Pausiert"
+
+#: build/modules/timers/module.js:265 build/modules/timers/module.js:294
+#, javascript-format
+msgid "until %s"
+msgstr "bis %s"
+
+#: build/modules/timers/module.js:300
+#, javascript-format
+msgid "%s done"
+msgstr "%s fertig"
+
+#: build/modules/timers/module.js:310
+msgid "Timer finished"
+msgstr "Timer abgelaufen"
+
+#: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
+msgid "Today"
+msgstr ""
+
+#: build/modules/upcoming/when.js:40
+msgid "Tomorrow"
+msgstr ""
+
+#: build/modules/upcoming/when.js:59
+#, fuzzy
+msgid "now"
+msgstr "Jetzt"
+
+#: build/modules/upcoming/when.js:61
+#, javascript-format
+msgid "%d min ago"
+msgid_plural "%d min ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/modules/upcoming/when.js:66
+msgid "Yesterday"
+msgstr ""
 
 #: build/prefs.js:5
 msgid "General"
