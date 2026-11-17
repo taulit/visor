@@ -271,6 +271,101 @@ run "N.row('timers', 'Recent').primary.run()"
 run "N.action(N.row('timers', 'Recent'), 'Stop').run()"
 check 'timers: nothing left, nothing saved, no timeout' "N.rows('timers').length === 0 && visor.getSettings().get_string('timers') === '[]' && N.mod('timers').source === 0"
 
+# --- downloads --------------------------------------------------------------
+
+dl="$HOME/Downloads"
+dl_row() { printf "N.row('downloads', '%s')" "$1"; }
+check 'downloads: no download directory, no monitor' "N.mod('downloads').monitor === null && N.rows('downloads').length === 0 && N.mod('downloads').source === 0"
+
+# The sandbox has no download directory; give it one and start the module anew.
+mkdir -p "$dl" "$HOME/.config"
+printf 'XDG_DOWNLOAD_DIR="$HOME/Downloads"\n' >"$HOME/.config/user-dirs.dirs"
+head -c 1000 /dev/zero >"$dl/running.zip.part"
+head -c 1000 /dev/zero >"$dl/abandoned.bin.part"
+touch -d '2 hours ago' "$dl/abandoned.bin.part"
+run 'GLib.reload_user_special_dirs_cache()'
+run "visor.content.registry.setEnabled('downloads', false)"
+run "visor.content.registry.setEnabled('downloads', true)"
+check 'downloads: the directory is watched' "N.mod('downloads').monitor !== null"
+wait_check 'downloads: a download that was running already is found' "N.rows('downloads').length === 1 && $(dl_row running.zip).meta === '1.0 kB'"
+
+: >"$dl/x.iso.part"
+wait_check 'downloads: a partial file makes a row with a spinner' "$(dl_row x.iso) !== undefined && $(dl_row x.iso).progress === 'indeterminate'"
+check 'downloads: no invented bar, no actions' "$(dl_row x.iso).subtitle === undefined && $(dl_row x.iso).actions === undefined && $(dl_row x.iso).meta === '0 kB'"
+check 'downloads: the chip names the newest download' "N.chip('downloads').text === 'x.iso' && N.chip('downloads').priority === 20 && N.chip('downloads').icon === 'folder-download-symbolic'"
+head -c 2000000 /dev/zero >>"$dl/x.iso.part"
+run 'N.wait(1500)'
+check 'downloads: sizes are not read while the panel is closed' "$(dl_row x.iso).meta === '0 kB'"
+run 'visor.notch.open()'
+shell_wait_for 'visor.notch.state === "open"'
+wait_check 'downloads: the size is read when the panel opens' "$(dl_row x.iso).meta === '2.0 MB'"
+head -c 3000000 /dev/zero >>"$dl/x.iso.part"
+wait_check 'downloads: the size follows the file while the panel is open' "$(dl_row x.iso).meta === '5.0 MB'"
+mv "$dl/x.iso.part" "$dl/x.iso"
+wait_check 'downloads: renamed to the final name, the row says Done' "$(dl_row x.iso).subtitle === 'Done' && $(dl_row x.iso).status === 'done'"
+check 'downloads: the done row has its size and actions, no spinner' "(() => {
+    const row = $(dl_row x.iso);
+    return row.meta === '5.0 MB' && row.progress === undefined && row.actions.map(a => a.label).join() === 'Show in folder,Open' && typeof row.activate === 'function';
+})()"
+check 'downloads: one timeout while a done row is shown' "N.mod('downloads').source !== 0"
+
+# "Show in folder" asks the file manager; a stand-in on the sandbox bus takes the call.
+run "(() => {
+    const xml = '<node><interface name=\"org.freedesktop.FileManager1\"><method name=\"ShowItems\"><arg type=\"as\" direction=\"in\"/><arg type=\"s\" direction=\"in\"/></method></interface></node>';
+    const shown = (globalThis.shownItems = []);
+    globalThis.fileManager = Gio.DBusExportedObject.wrapJSObject(xml, { ShowItems: uris => shown.push(...uris) });
+    fileManager.export(Gio.DBus.session, '/org/freedesktop/FileManager1');
+    globalThis.fileManagerName = Gio.bus_own_name_on_connection(Gio.DBus.session, 'org.freedesktop.FileManager1', Gio.BusNameOwnerFlags.NONE, null, null);
+    return true;
+})()"
+run "N.action($(dl_row x.iso), 'Show in folder').run()"
+wait_check 'downloads: Show in folder calls the file manager and closes the panel' "shownItems.join() === 'file://' + GLib.get_home_dir() + '/Downloads/x.iso' && visor.notch.state !== 'open'"
+run "(Gio.bus_unown_name(fileManagerName), fileManager.unexport(), true)"
+
+# Firefox keeps an empty file under the final name next to the partial one.
+: >"$dl/y.bin"
+head -c 5000 /dev/zero >"$dl/y.bin.part"
+wait_check 'downloads: the placeholder of Firefox is no row of its own' "$(dl_row y.bin) !== undefined && N.rows('downloads').filter(r => r.title === 'y.bin').length === 1 && $(dl_row y.bin).meta === '5.0 kB'"
+rm "$dl/y.bin.part"
+wait_check 'downloads: cancelled in Firefox, the row goes' "$(dl_row y.bin) === undefined"
+rm "$dl/y.bin"
+: >"$dl/z.bin"
+head -c 5000 /dev/zero >"$dl/z.bin.part"
+shell_wait_for "$(dl_row z.bin) !== undefined && $(dl_row z.bin).meta === '5.0 kB'"
+mv "$dl/z.bin.part" "$dl/z.bin"
+wait_check 'downloads: finished in Firefox' "$(dl_row z.bin).subtitle === 'Done' && $(dl_row z.bin).meta === '5.0 kB'"
+
+head -c 5000 /dev/zero >"$dl/c.zip.part"
+shell_wait_for "$(dl_row c.zip) !== undefined"
+rm "$dl/c.zip.part"
+wait_check 'downloads: a partial file that vanishes is a cancelled download' "$(dl_row c.zip) === undefined"
+
+head -c 5000 /dev/zero >"$dl/d.zip.part"
+shell_wait_for "$(dl_row d.zip) !== undefined"
+cp "$dl/d.zip.part" "$dl/d.zip"
+rm "$dl/d.zip.part"
+wait_check 'downloads: partial file gone and final file there is finished too' "$(dl_row d.zip).subtitle === 'Done'"
+
+head -c 5000 /dev/zero >"$dl/Unconfirmed 123456.crdownload"
+wait_check 'downloads: Chrome has no name yet' "$(dl_row 'Unconfirmed 123456.crdownload') !== undefined && N.chip('downloads').text === 'Unconfirmed 123456.crdo…'"
+mv "$dl/Unconfirmed 123456.crdownload" "$dl/movie.mp4"
+wait_check 'downloads: Chrome renames to the real name at the end' "$(dl_row movie.mp4).subtitle === 'Done' && $(dl_row 'Unconfirmed 123456.crdownload') === undefined"
+check 'downloads: files left behind long ago are no downloads' "$(dl_row abandoned.bin) === undefined"
+rm "$dl/running.zip.part"
+wait_check 'downloads: no chip when nothing runs' "N.chip('downloads') === null && N.rows('downloads').every(r => r.status === 'done')"
+
+run "globalThis.old.downloads = N.mod('downloads')"
+run "Main.extensionManager.disableExtension('$uuid')"
+shell_wait_for "$state !== 1"
+check 'downloads: disable leaves no monitor and no timeout' "old.downloads.monitor === null && old.downloads.source === 0 && old.downloads.cancellable === null && old.downloads.downloads.size === 0"
+head -c 5000 /dev/zero >"$dl/late.zip.part"
+run 'N.wait(300)'
+run "Main.extensionManager.enableExtension('$uuid')"
+shell_wait_for "$state === 1"
+wait_check 'downloads: after enable the running download is found again, done rows are not' "N.rows('downloads').map(r => r.title).join() === 'late.zip'"
+rm "$dl/late.zip.part"
+wait_check 'downloads: nothing left, no timeout' "N.rows('downloads').length === 0 && N.mod('downloads').source === 0"
+
 # --- the end ----------------------------------------------------------------
 
 noise="$(tail -n "+$((log_before + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|has been already disposed' || true)"
