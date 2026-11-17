@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:20+0100\n"
+"POT-Creation-Date: 2026-11-17 17:02+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Japanese\n"
@@ -48,7 +48,7 @@ msgstr "為替レートはオフです"
 msgid "Rates are loading"
 msgstr "レートを読み込み中"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "モジュール"
 
@@ -165,7 +165,7 @@ msgid "Dismiss"
 msgstr "閉じる"
 
 #: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:91
+#: build/prefs/t3.js:95
 msgid "T3 Code"
 msgstr "T3 Code"
 
@@ -504,35 +504,35 @@ msgstr "為替レートを読み込む"
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr "レートは欧州中央銀行から取得し、1 日 1 回までです。"
 
-#: build/prefs/modules.js:77
+#: build/prefs/modules.js:96
 msgid "Discover"
 msgstr "見つける"
 
-#: build/prefs/modules.js:110
+#: build/prefs/modules.js:132
 msgid "Move up"
 msgstr "上へ移動"
 
-#: build/prefs/modules.js:111
+#: build/prefs/modules.js:133
 msgid "Move down"
 msgstr "下へ移動"
 
-#: build/prefs/modules.js:114
+#: build/prefs/modules.js:136
 msgid "Change the order"
 msgstr "順序を変更"
 
-#: build/prefs/modules.js:124
+#: build/prefs/modules.js:146
 msgid "Drag to change the order"
 msgstr "ドラッグして順序を変更"
 
-#: build/prefs/modules.js:151
+#: build/prefs/modules.js:173
 msgid "Built for another version of Visor"
 msgstr "別のバージョンの Visor 用に作られています"
 
-#: build/prefs/modules.js:153
+#: build/prefs/modules.js:175
 msgid "Turned off in the extensions"
 msgstr "拡張機能でオフになっています"
 
-#: build/prefs/modules.js:163
+#: build/prefs/modules.js:185
 msgid "Settings of the module"
 msgstr "モジュールの設定"
 
@@ -563,54 +563,63 @@ msgstr ""
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: build/prefs/t3.js:78
+#: build/prefs/t3.js:80
 msgid "This is not a pairing link"
 msgstr "ペアリングリンクではありません"
 
-#: build/prefs/t3.js:80 build/prefs/t3.js:197
+#: build/prefs/t3.js:82 build/prefs/t3.js:228
 msgid "Use https for a server on another machine"
 msgstr "別のマシンのサーバーには https を使用してください"
 
-#: build/prefs/t3.js:82
+#: build/prefs/t3.js:84
 msgid "The link is wrong or has expired"
 msgstr "リンクが正しくないか、期限が切れています"
 
-#: build/prefs/t3.js:84
+#: build/prefs/t3.js:86
 msgid "This version of T3 Code does not fit Visor"
 msgstr "このバージョンの T3 Code は Visor に対応していません"
 
-#: build/prefs/t3.js:86
+#: build/prefs/t3.js:88
+msgid "The keyring is not available"
+msgstr ""
+
+#: build/prefs/t3.js:90
 msgid "The server cannot be reached"
 msgstr "サーバーに接続できません"
 
 #. --- not paired ---
-#: build/prefs/t3.js:96
+#: build/prefs/t3.js:100
 msgid "Pairing link or code"
 msgstr "ペアリングリンクまたはコード"
 
-#: build/prefs/t3.js:99
+#: build/prefs/t3.js:103
 msgid "Connect"
 msgstr "接続"
 
 #. --- paired ---
-#: build/prefs/t3.js:172
+#: build/prefs/t3.js:198
 msgid "Connected"
 msgstr "接続済み"
 
-#: build/prefs/t3.js:174
+#: build/prefs/t3.js:200
 msgid "Disconnect"
 msgstr "切断"
 
 #. --- the address ---
-#: build/prefs/t3.js:184
+#: build/prefs/t3.js:215
 msgid "Server address"
 msgstr "サーバーのアドレス"
 
-#: build/prefs/t3.js:185
+#: build/prefs/t3.js:216
 msgid "Address, empty for this machine"
 msgstr "アドレス（空欄でこのマシン）"
 
-#: build/prefs/t3.js:217
+#: build/prefs/t3.js:229
+#, fuzzy
+msgid "This is not a server address"
+msgstr "サーバーのアドレス"
+
+#: build/prefs/t3.js:249
 msgid ""
 "Create a pairing link in T3 Code under Settings → Connections and paste it "
 "here."
@@ -618,6 +627,6 @@ msgstr ""
 "T3 Code の Settings → Connections でペアリングリンクを作成し、ここに貼り付け"
 "てください。"
 
-#: build/prefs/t3.js:220 build/prefs/t3.js:221
+#: build/prefs/t3.js:252 build/prefs/t3.js:253
 msgid "This machine"
 msgstr "このマシン"

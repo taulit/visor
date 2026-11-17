@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:20+0100\n"
+"POT-Creation-Date: 2026-11-17 17:02+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: French\n"
@@ -48,7 +48,7 @@ msgstr "Les taux de change sont désactivés"
 msgid "Rates are loading"
 msgstr "Chargement des taux"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "Modules"
 
@@ -165,7 +165,7 @@ msgid "Dismiss"
 msgstr "Ignorer"
 
 #: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:91
+#: build/prefs/t3.js:95
 msgid "T3 Code"
 msgstr "T3 Code"
 
@@ -509,35 +509,35 @@ msgstr ""
 "Les taux proviennent de la Banque centrale européenne, au plus une fois par "
 "jour."
 
-#: build/prefs/modules.js:77
+#: build/prefs/modules.js:96
 msgid "Discover"
 msgstr "Découvrir"
 
-#: build/prefs/modules.js:110
+#: build/prefs/modules.js:132
 msgid "Move up"
 msgstr "Monter"
 
-#: build/prefs/modules.js:111
+#: build/prefs/modules.js:133
 msgid "Move down"
 msgstr "Descendre"
 
-#: build/prefs/modules.js:114
+#: build/prefs/modules.js:136
 msgid "Change the order"
 msgstr "Modifier l’ordre"
 
-#: build/prefs/modules.js:124
+#: build/prefs/modules.js:146
 msgid "Drag to change the order"
 msgstr "Glisser pour modifier l’ordre"
 
-#: build/prefs/modules.js:151
+#: build/prefs/modules.js:173
 msgid "Built for another version of Visor"
 msgstr "Conçu pour une autre version de Visor"
 
-#: build/prefs/modules.js:153
+#: build/prefs/modules.js:175
 msgid "Turned off in the extensions"
 msgstr "Désactivé dans les extensions"
 
-#: build/prefs/modules.js:163
+#: build/prefs/modules.js:185
 msgid "Settings of the module"
 msgstr "Paramètres du module"
 
@@ -568,54 +568,63 @@ msgstr ""
 msgid "Cancel"
 msgstr "Annuler"
 
-#: build/prefs/t3.js:78
+#: build/prefs/t3.js:80
 msgid "This is not a pairing link"
 msgstr "Ce n’est pas un lien d’appairage"
 
-#: build/prefs/t3.js:80 build/prefs/t3.js:197
+#: build/prefs/t3.js:82 build/prefs/t3.js:228
 msgid "Use https for a server on another machine"
 msgstr "Utiliser https pour un serveur sur une autre machine"
 
-#: build/prefs/t3.js:82
+#: build/prefs/t3.js:84
 msgid "The link is wrong or has expired"
 msgstr "Le lien est incorrect ou a expiré"
 
-#: build/prefs/t3.js:84
+#: build/prefs/t3.js:86
 msgid "This version of T3 Code does not fit Visor"
 msgstr "Cette version de T3 Code n’est pas compatible avec Visor"
 
-#: build/prefs/t3.js:86
+#: build/prefs/t3.js:88
+msgid "The keyring is not available"
+msgstr ""
+
+#: build/prefs/t3.js:90
 msgid "The server cannot be reached"
 msgstr "Le serveur est injoignable"
 
 #. --- not paired ---
-#: build/prefs/t3.js:96
+#: build/prefs/t3.js:100
 msgid "Pairing link or code"
 msgstr "Lien ou code d’appairage"
 
-#: build/prefs/t3.js:99
+#: build/prefs/t3.js:103
 msgid "Connect"
 msgstr "Se connecter"
 
 #. --- paired ---
-#: build/prefs/t3.js:172
+#: build/prefs/t3.js:198
 msgid "Connected"
 msgstr "Connecté"
 
-#: build/prefs/t3.js:174
+#: build/prefs/t3.js:200
 msgid "Disconnect"
 msgstr "Se déconnecter"
 
 #. --- the address ---
-#: build/prefs/t3.js:184
+#: build/prefs/t3.js:215
 msgid "Server address"
 msgstr "Adresse du serveur"
 
-#: build/prefs/t3.js:185
+#: build/prefs/t3.js:216
 msgid "Address, empty for this machine"
 msgstr "Adresse, vide pour cette machine"
 
-#: build/prefs/t3.js:217
+#: build/prefs/t3.js:229
+#, fuzzy
+msgid "This is not a server address"
+msgstr "Adresse du serveur"
+
+#: build/prefs/t3.js:249
 msgid ""
 "Create a pairing link in T3 Code under Settings → Connections and paste it "
 "here."
@@ -623,6 +632,6 @@ msgstr ""
 "Créer un lien d’appairage dans T3 Code, sous Settings → Connections, et le "
 "coller ici."
 
-#: build/prefs/t3.js:220 build/prefs/t3.js:221
+#: build/prefs/t3.js:252 build/prefs/t3.js:253
 msgid "This machine"
 msgstr "Cette machine"

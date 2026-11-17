@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:20+0100\n"
+"POT-Creation-Date: 2026-11-17 17:02+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Russian\n"
@@ -49,7 +49,7 @@ msgstr "Курсы валют отключены"
 msgid "Rates are loading"
 msgstr "Загрузка курсов"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "Модули"
 
@@ -166,7 +166,7 @@ msgid "Dismiss"
 msgstr "Скрыть"
 
 #: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:91
+#: build/prefs/t3.js:95
 msgid "T3 Code"
 msgstr "T3 Code"
 
@@ -508,35 +508,35 @@ msgstr "Загружать курсы валют"
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr "Курсы берутся из Европейского центрального банка, не чаще раза в день."
 
-#: build/prefs/modules.js:77
+#: build/prefs/modules.js:96
 msgid "Discover"
 msgstr "Каталог"
 
-#: build/prefs/modules.js:110
+#: build/prefs/modules.js:132
 msgid "Move up"
 msgstr "Вверх"
 
-#: build/prefs/modules.js:111
+#: build/prefs/modules.js:133
 msgid "Move down"
 msgstr "Вниз"
 
-#: build/prefs/modules.js:114
+#: build/prefs/modules.js:136
 msgid "Change the order"
 msgstr "Изменить порядок"
 
-#: build/prefs/modules.js:124
+#: build/prefs/modules.js:146
 msgid "Drag to change the order"
 msgstr "Перетащите, чтобы изменить порядок"
 
-#: build/prefs/modules.js:151
+#: build/prefs/modules.js:173
 msgid "Built for another version of Visor"
 msgstr "Создан для другой версии Visor"
 
-#: build/prefs/modules.js:153
+#: build/prefs/modules.js:175
 msgid "Turned off in the extensions"
 msgstr "Отключено в расширениях"
 
-#: build/prefs/modules.js:163
+#: build/prefs/modules.js:185
 msgid "Settings of the module"
 msgstr "Параметры модуля"
 
@@ -566,54 +566,63 @@ msgstr ""
 msgid "Cancel"
 msgstr "Отмена"
 
-#: build/prefs/t3.js:78
+#: build/prefs/t3.js:80
 msgid "This is not a pairing link"
 msgstr "Это не ссылка для сопряжения"
 
-#: build/prefs/t3.js:80 build/prefs/t3.js:197
+#: build/prefs/t3.js:82 build/prefs/t3.js:228
 msgid "Use https for a server on another machine"
 msgstr "Для сервера на другом компьютере используйте https"
 
-#: build/prefs/t3.js:82
+#: build/prefs/t3.js:84
 msgid "The link is wrong or has expired"
 msgstr "Ссылка неверна или устарела"
 
-#: build/prefs/t3.js:84
+#: build/prefs/t3.js:86
 msgid "This version of T3 Code does not fit Visor"
 msgstr "Эта версия T3 Code не подходит для Visor"
 
-#: build/prefs/t3.js:86
+#: build/prefs/t3.js:88
+msgid "The keyring is not available"
+msgstr ""
+
+#: build/prefs/t3.js:90
 msgid "The server cannot be reached"
 msgstr "Сервер недоступен"
 
 #. --- not paired ---
-#: build/prefs/t3.js:96
+#: build/prefs/t3.js:100
 msgid "Pairing link or code"
 msgstr "Ссылка или код сопряжения"
 
-#: build/prefs/t3.js:99
+#: build/prefs/t3.js:103
 msgid "Connect"
 msgstr "Подключить"
 
 #. --- paired ---
-#: build/prefs/t3.js:172
+#: build/prefs/t3.js:198
 msgid "Connected"
 msgstr "Подключено"
 
-#: build/prefs/t3.js:174
+#: build/prefs/t3.js:200
 msgid "Disconnect"
 msgstr "Отключить"
 
 #. --- the address ---
-#: build/prefs/t3.js:184
+#: build/prefs/t3.js:215
 msgid "Server address"
 msgstr "Адрес сервера"
 
-#: build/prefs/t3.js:185
+#: build/prefs/t3.js:216
 msgid "Address, empty for this machine"
 msgstr "Адрес, пусто для этого компьютера"
 
-#: build/prefs/t3.js:217
+#: build/prefs/t3.js:229
+#, fuzzy
+msgid "This is not a server address"
+msgstr "Адрес сервера"
+
+#: build/prefs/t3.js:249
 msgid ""
 "Create a pairing link in T3 Code under Settings → Connections and paste it "
 "here."
@@ -621,6 +630,6 @@ msgstr ""
 "Создайте ссылку для сопряжения в T3 Code в разделе Settings → Connections и "
 "вставьте её сюда."
 
-#: build/prefs/t3.js:220 build/prefs/t3.js:221
+#: build/prefs/t3.js:252 build/prefs/t3.js:253
 msgid "This machine"
 msgstr "Этот компьютер"
