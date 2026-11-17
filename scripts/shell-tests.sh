@@ -11,6 +11,7 @@ cd "$repo"
 
 # name|command
 tests=(
+    "prefs|tests/shell/prefs.sh"
     "content-shell|tests/shell/content-shell.sh"
     "search|tests/shell/search.sh"
     "modules-now|tests/shell/modules-now.sh"

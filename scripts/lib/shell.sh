@@ -45,3 +45,21 @@ shell_shot() {
         --method io.github.taulit.Visor.Debug.Screenshot "$file" >/dev/null
     [[ -s "$file" ]] || { printf 'shell_shot: no file written: %s\n' "$file" >&2; return 1; }
 }
+
+# shell_shot_window TITLE FILE: writes a PNG of the area of the window with that title.
+shell_shot_window() {
+    local file
+    file="$(realpath -m "$2")"
+    mkdir -p "$(dirname "$file")"
+    shell_eval "(async () => {
+        const meta = global.get_window_actors().map(a => a.meta_window).find(w => w.title === '$1');
+        const stream = Gio.File.new_for_path('$file').replace(null, false, Gio.FileCreateFlags.NONE, null);
+        const { x, y, width, height } = meta.get_frame_rect();
+        await new Promise((resolve, reject) => new Shell.Screenshot().screenshot_area(x, y, width, height, stream, (s, r) => {
+            try { s.screenshot_area_finish(r); resolve(); } catch (e) { reject(e); }
+        }));
+        stream.close(null);
+        return true;
+    })()" >/dev/null
+    [[ -s "$file" ]] || { printf 'shell_shot_window: no file written: %s\n' "$file" >&2; return 1; }
+}

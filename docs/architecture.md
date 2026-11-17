@@ -25,6 +25,8 @@ src/
 │   ├── search/         the search behind the entry of the sheet: parser, calculator and rates (pure),
 │   │                   providers (apps, modules, GNOME), the list of results, the controller
 │   └── kit.ts          UI building blocks handed to modules
+├── prefs.ts            settings window (Adw): General, Modules, About; the pages are in prefs/
+├── prefs/              runs in its own GTK process: never imports St, Clutter, Shell or shell UI modules
 ├── modules/            built-in modules, using only api.ts
 └── lib/                small helpers
 styles/                 joined into one stylesheet.css by the build
@@ -58,12 +60,15 @@ about state changes. The content asks the notch to open, close, flash or re-meas
 - **Sizes.** Stylesheet lengths are scaled by St. Lengths set from code are multiplied by
   `St.ThemeContext.get_for_stage(global.stage).scale_factor`.
 - **Text.** Every user-visible string goes through gettext. English is the source.
+- **The settings window is a separate process.** It cannot load modules, so `prefs/builtin-modules.ts` repeats
+  id, slot and icon of the built-in ones (a test keeps it in sync) and modules of other extensions are found
+  through `org.gnome.Shell.Extensions` and their `metadata.json`.
 - **Modules use only `api.ts`.** Built-in modules get no shortcut into the core.
 
 ## Testing
 
 - Pure logic (no `gi://` imports) is tested with Vitest: `pnpm test`.
 - Everything else runs in a sandboxed headless shell (`scripts/nested.sh`): `pnpm test:shell` runs the tests in
-  `tests/shell/` and the leak test, `scripts/shots.sh` takes the screenshots in `docs/screenshots/`,
+  `tests/shell/` (the settings window opens in the sandbox through `OpenExtensionPrefs`) and the leak test, `scripts/shots.sh` takes the screenshots in `docs/screenshots/`,
   `scripts/shell-shot.sh <scenario>` a single one. The test helper in `tests/shell-helper/` exports
   `io.github.taulit.Visor.Debug` (`Eval`, `Screenshot`); in `Eval`, `visor` is the running extension object.
