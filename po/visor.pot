@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 10:43+0100\n"
+"POT-Creation-Date: 2026-11-17 11:08+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,35 +18,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: build/core/search/controller.js:121
+#: build/core/search/controller.js:123 build/core/search/controller.js:146
 msgid "Commands"
 msgstr ""
 
-#: build/core/search/controller.js:124
+#: build/core/search/controller.js:131
 msgid "Calculate"
 msgstr ""
 
-#: build/core/search/controller.js:125
+#: build/core/search/controller.js:132
 msgid "Apps"
 msgstr ""
 
-#: build/core/search/controller.js:164
+#: build/core/search/controller.js:178
 msgid "No results"
 msgstr ""
 
-#: build/core/search/controller.js:233
+#: build/core/search/controller.js:279
 msgid "Enter completes"
 msgstr ""
 
-#: build/core/search/controller.js:276 build/core/search/controller.js:301
+#: build/core/search/controller.js:295 build/core/search/controller.js:320
 msgid "Enter copies"
 msgstr ""
 
-#: build/core/search/controller.js:286
+#: build/core/search/controller.js:305
 msgid "Currency rates are turned off"
 msgstr ""
 
-#: build/core/search/controller.js:289
+#: build/core/search/controller.js:308
 msgid "Rates are loading"
 msgstr ""
 
@@ -75,7 +75,9 @@ msgstr ""
 msgid "Shows up only while something is running."
 msgstr ""
 
-#: build/core/sheet.js:391
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/core/sheet.js:391 build/modules/upcoming/module.js:27
+#: build/modules/upcoming/module.js:97
 msgid "Up Next"
 msgstr ""
 
@@ -93,6 +95,173 @@ msgstr ""
 
 #: build/core/sheet.js:590
 msgid "No modules"
+msgstr ""
+
+#: build/modules/downloads/module.js:15
+msgid "Downloads"
+msgstr ""
+
+#: build/modules/downloads/module.js:291 build/modules/timers/module.js:228
+msgid "Done"
+msgstr ""
+
+#: build/modules/downloads/module.js:297
+msgid "Show in folder"
+msgstr ""
+
+#: build/modules/downloads/module.js:304
+msgid "Open"
+msgstr ""
+
+#: build/modules/media/module.js:20
+msgid "Media"
+msgstr ""
+
+#: build/modules/media/module.js:147
+msgid "Previous"
+msgstr ""
+
+#: build/modules/media/module.js:153 build/modules/timers/module.js:240
+msgid "Pause"
+msgstr ""
+
+#: build/modules/media/module.js:153
+msgid "Play"
+msgstr ""
+
+#: build/modules/media/module.js:160
+msgid "Next"
+msgstr ""
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/modules/notifications/module.js:19
+#: build/modules/notifications/module.js:91
+msgid "Notifications"
+msgstr ""
+
+#: build/modules/notifications/module.js:93
+msgid "Do Not Disturb"
+msgstr ""
+
+#: build/modules/notifications/module.js:100
+msgid "No new notifications"
+msgstr ""
+
+#: build/modules/notifications/module.js:281
+msgid "Show less"
+msgstr ""
+
+#: build/modules/notifications/module.js:283
+#, javascript-format
+msgid "Show all %d"
+msgstr ""
+
+#: build/modules/notifications/module.js:306
+msgid "Clear all"
+msgstr ""
+
+#: build/modules/notifications/module.js:328
+msgid "Dismiss"
+msgstr ""
+
+#: build/modules/timers/module.js:19
+msgid "Timers"
+msgstr ""
+
+#: build/modules/timers/module.js:25
+msgid "timer 25m Pizza"
+msgstr ""
+
+#: build/modules/timers/module.js:30
+msgid "stopwatch Research"
+msgstr ""
+
+#: build/modules/timers/module.js:92
+#, javascript-format
+msgid "Alarm at %s"
+msgstr ""
+
+#: build/modules/timers/module.js:102
+#, javascript-format
+msgid "Start timer · %s"
+msgstr ""
+
+#: build/modules/timers/module.js:118
+msgid "Start stopwatch"
+msgstr ""
+
+#: build/modules/timers/module.js:204
+msgid "Stopwatch"
+msgstr ""
+
+#: build/modules/timers/module.js:205
+msgid "Alarm"
+msgstr ""
+
+#: build/modules/timers/module.js:205 build/modules/timers/module.js:313
+msgid "Timer"
+msgstr ""
+
+#: build/modules/timers/module.js:229 build/modules/timers/module.js:331
+msgid "Restart"
+msgstr ""
+
+#: build/modules/timers/module.js:235
+msgid "Resume"
+msgstr ""
+
+#: build/modules/timers/module.js:245
+msgid "Stop"
+msgstr ""
+
+#: build/modules/timers/module.js:250
+msgid "+1 min"
+msgstr ""
+
+#: build/modules/timers/module.js:260 build/modules/timers/module.js:265
+msgid "Paused"
+msgstr ""
+
+#: build/modules/timers/module.js:265 build/modules/timers/module.js:294
+#: build/modules/upcoming/plan.js:32
+#, javascript-format
+msgid "until %s"
+msgstr ""
+
+#: build/modules/timers/module.js:300
+#, javascript-format
+msgid "%s done"
+msgstr ""
+
+#: build/modules/timers/module.js:310
+msgid "Timer finished"
+msgstr ""
+
+#: build/modules/upcoming/module.js:98
+msgid "Nothing else today"
+msgstr ""
+
+#: build/modules/upcoming/module.js:180
+msgid "Join"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:21
+#, javascript-format
+msgid "in %d min"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:23
+#, javascript-format
+msgid "in %d h"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:24
+#, javascript-format
+msgid "in %d h %d min"
+msgstr ""
+
+#: build/modules/upcoming/plan.js:29
+msgid "all day"
 msgstr ""
 
 #: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38

@@ -23,6 +23,7 @@ shots=(
     "search=search-results"
     "search-convert=search-convert"
     "ahead=modules-ahead"
+    "open-real=open-real"
 )
 
 fail=0
