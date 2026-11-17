@@ -14,7 +14,7 @@ export default class VisorPreferences extends ExtensionPreferences {
     const settings = this.getSettings();
     window.set_default_size(640, 820);
     window.add(generalPage(settings, window));
-    window.add(modulesPage(settings, await listForeignModules()));
+    window.add(modulesPage(settings, await listForeignModules(), window));
     window.add(aboutPage(this.metadata, window));
   }
 }

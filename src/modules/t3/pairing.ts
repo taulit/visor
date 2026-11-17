@@ -3,6 +3,10 @@
 // settings window and the tests share it; nothing here may import the shell.
 import { cleanOrigin } from './protocol.js';
 
+/** The settings the module reads and the settings window writes. */
+export const SERVER_KEY = 't3-server-url';
+export const TOKEN_KEY = 't3-access-token';
+
 /** Where a server listens when nothing says otherwise. */
 export const DEFAULT_ORIGIN = 'http://127.0.0.1:3773';
 /** Reading the sessions and answering them. */

@@ -81,3 +81,54 @@ prefs_close() {
     shell_eval "global.get_window_actors().map(a => a.meta_window).find(w => w.title === '$PREFS_WINDOW').delete(global.get_current_time())" >/dev/null
     shell_wait_for "!global.get_window_actors().some(a => a.meta_window.title === '$PREFS_WINDOW')"
 }
+
+# prefs_type TEXT: types TEXT into whatever has the keyboard focus, then waits.
+prefs_type() {
+    shell_eval "(async () => {
+        const keyboard = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
+        const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
+        for (const char of '$1') {
+            const symbol = Clutter.unicode_to_keysym(char.codePointAt(0));
+            keyboard.notify_keyval(GLib.get_monotonic_time(), symbol, Clutter.KeyState.PRESSED);
+            keyboard.notify_keyval(GLib.get_monotonic_time(), symbol, Clutter.KeyState.RELEASED);
+            await wait(25);
+        }
+        await wait(300);
+        return true;
+    })()" >/dev/null
+}
+
+# prefs_enter: presses Enter in the window.
+prefs_enter() {
+    shell_eval "(async () => {
+        const keyboard = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
+        keyboard.notify_keyval(GLib.get_monotonic_time(), Clutter.KEY_Return, Clutter.KeyState.PRESSED);
+        keyboard.notify_keyval(GLib.get_monotonic_time(), Clutter.KEY_Return, Clutter.KeyState.RELEASED);
+        await new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => (r(), false)));
+        return true;
+    })()" >/dev/null
+}
+
+# prefs_scroll DY: scrolls the page of the window down by about DY pixels.
+prefs_scroll() {
+    shell_eval "(async () => {
+        const meta = global.get_window_actors().map(a => a.meta_window).find(w => w.title === '$PREFS_WINDOW');
+        const { x, y, width, height } = meta.get_frame_rect();
+        const pointer = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+        const now = () => GLib.get_monotonic_time();
+        const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
+        for (const dx of [-10, 0]) {
+            pointer.notify_absolute_motion(now(), x + width / 2 + dx, y + height / 2);
+            await wait(300);
+        }
+        for (let done = 0; done < $1; done += 20) {
+            pointer.notify_scroll_continuous(now(), 0, 20, Clutter.ScrollSource.FINGER, Clutter.ScrollFinishFlags.NONE);
+            await wait(20);
+        }
+        pointer.notify_scroll_continuous(now(), 0, 0, Clutter.ScrollSource.FINGER, Clutter.ScrollFinishFlags.VERTICAL);
+        await wait(800);
+        pointer.notify_absolute_motion(now(), 5, 5);
+        await wait(300);
+        return true;
+    })()" >/dev/null
+}

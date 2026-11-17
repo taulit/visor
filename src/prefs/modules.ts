@@ -15,6 +15,7 @@ import { BUILTIN_MODULES, SLOTS, type ModuleInfo } from './builtin-modules.js';
 import { buildDiscover } from './discover.js';
 import type { ForeignModule } from './foreign.js';
 import { openExtensionPrefs } from './shell-extensions.js';
+import { t3Group } from './t3.js';
 
 const KNOWN_IDS = BUILTIN_MODULES.map(module => module.id);
 
@@ -28,6 +29,7 @@ interface SlotGroup {
 export function modulesPage(
   settings: Gio.Settings,
   foreign: readonly ForeignModule[],
+  window: Adw.PreferencesWindow,
 ): Adw.PreferencesPage {
   const page = new Adw.PreferencesPage({
     name: 'modules',
@@ -98,6 +100,8 @@ export function modulesPage(
   settings.connect('changed::module-order', () =>
     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => (fill(), GLib.SOURCE_REMOVE)),
   );
+
+  page.add(t3Group(settings, window));
 
   const discover = new Adw.PreferencesGroup({ title: _('Discover') });
   buildDiscover(discover);

@@ -7,6 +7,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Soup from 'gi://Soup?version=3.0';
 
+import { SERVER_KEY, TOKEN_KEY } from './pairing.js';
 import {
   METHODS,
   PONG_FRAME,
@@ -30,8 +31,7 @@ import {
   type ShellState,
 } from './protocol.js';
 
-export const SERVER_KEY = 't3-server-url';
-export const TOKEN_KEY = 't3-access-token';
+export { SERVER_KEY, TOKEN_KEY };
 
 /** A thread projection can be large; anything beyond this is not from a sane server. */
 const MAX_FRAME_BYTES = 64 * 1024 * 1024;

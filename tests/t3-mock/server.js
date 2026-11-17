@@ -18,7 +18,8 @@
 //   GET  /__mock/actions        what clients did: [{type, threadId, …}]
 //   GET  /__mock/state          {clients, acks, tickets, ticketRequests, pairings}
 //                               tickets: issued; ticketRequests: asked for, refused ones too;
-//                               pairings: [{label, scope}] of the exchanges that worked
+//                               pairings: [{label, scope}] of the exchanges that worked;
+//                               exchanges: how often a code was offered
 //   POST /__mock/pairing?code=C a new one-time pairing code
 //   POST /__mock/wait?thread=ID[&request=ID][&prompt=TEXT][&kind=KIND]
 //                               the thread asks for approval
@@ -62,6 +63,7 @@ const clients = new Set();
 let acks = 0;
 let ticketCount = 0;
 let ticketRequests = 0;
+let exchanges = 0;
 let failNext = false;
 let sequence = 1;
 
@@ -279,6 +281,7 @@ const server = createServer(async (request, response) => {
 
   if (url.pathname === '/.well-known/t3/environment') return json(200, descriptor(protocol));
   if (url.pathname === '/oauth/token' && request.method === 'POST') {
+    exchanges++;
     const form = new URLSearchParams(await body());
     const wellFormed =
       request.headers['content-type']?.startsWith('application/x-www-form-urlencoded') &&
@@ -316,6 +319,7 @@ const server = createServer(async (request, response) => {
       tickets: ticketCount,
       ticketRequests,
       pairings,
+      exchanges,
     });
   if (request.method !== 'POST') return json(404, {});
   const id = url.searchParams.get('thread');
