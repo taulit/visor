@@ -1,0 +1,55 @@
+{
+  "name": "@taulit/visor-module",
+  "version": "1.0.0",
+  "description": "Types and connect helper for modules of Visor, the notch for GNOME Shell",
+  "keywords": [
+    "gnome",
+    "gnome-shell-extension",
+    "visor"
+  ],
+  "license": "MIT",
+  "author": "taulit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taulit/visor.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://github.com/taulit/visor/blob/main/docs/api-v1.md",
+  "type": "module",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./connect": {
+      "types": "./connect.d.ts",
+      "default": "./connect.js"
+    },
+    "./connect.js": {
+      "types": "./connect.d.ts",
+      "default": "./connect.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "connect.js",
+    "connect.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "@girs/gjs": "*",
+    "@girs/gnome-shell": "*"
+  },
+  "peerDependenciesMeta": {
+    "@girs/gjs": {
+      "optional": true
+    },
+    "@girs/gnome-shell": {
+      "optional": true
+    }
+  }
+}
