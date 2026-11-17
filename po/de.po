@@ -209,7 +209,7 @@ msgstr "Arbeitet"
 
 #: build/modules/t3/module.js:358
 msgid "Answer this request in T3 Code"
-msgstr "Diese Anfrage in T3 Code beantworten"
+msgstr "Beantworte diese Anfrage in T3 Code"
 
 #: build/modules/t3/module.js:360
 msgid "Wants to run"
@@ -253,7 +253,7 @@ msgstr "Antworten"
 
 #: build/modules/t3/module.js:521
 msgid "Has characters that cannot be shown. Open T3 Code to read it"
-msgstr "Enthält Zeichen, die sich nicht anzeigen lassen. Zum Lesen T3 Code öffnen"
+msgstr "Enthält Zeichen, die sich nicht anzeigen lassen. Öffne T3 Code, um ihn zu lesen"
 
 #: build/modules/t3/module.js:522
 msgid "Open T3 Code to read all of it"
