@@ -24,6 +24,7 @@ shots=(
     "search-convert=search-convert"
     "ahead=modules-ahead"
     "open-real=open-real"
+    "t3=t3"
 )
 
 fail=0

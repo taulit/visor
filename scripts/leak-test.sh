@@ -4,6 +4,8 @@
 # menu does not come back.
 #
 # Usage: scripts/leak-test.sh [cycles]   (default 50)
+# With VISOR_T3_MOCK=1 the T3 Code mock of tests/t3-mock/ runs and the module is
+# connected to it in every cycle.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -23,6 +25,14 @@ count="$SHELL_ACTOR_COUNT"
 settle() { shell_eval 'new Promise(r => GLib.timeout_add(GLib.PRIORITY_LOW, 150, () => (r(true), false)))' >/dev/null; }
 
 shell_wait_for "$state === 1"
+t3="visor.content.registry.get('t3')"
+t3_connected() { [[ -z "${VISOR_T3_MOCK:-}" ]] || shell_wait_for "$t3.module.client.connected && $t3.rows.length > 0"; }
+if [[ -n "${VISOR_T3_MOCK:-}" ]]; then
+    port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
+    node "$repo/tests/t3-mock/server.js" --port "$port" --home "$HOME/.t3" >/dev/null 2>&1 &
+    shell_eval "visor.getSettings().set_string('t3-access-token', 'mock-token')" >/dev/null
+    t3_connected
+fi
 settle
 actors_before="$(shell_eval "$count")"
 children_before="$(shell_eval 'Main.layoutManager.uiGroup.get_n_children()')"
@@ -38,6 +48,7 @@ for ((i = 1; i <= cycles; i++)); do
     fi
     shell_eval "Main.extensionManager.enableExtension('$uuid')" >/dev/null
     shell_wait_for "$state === 1"
+    t3_connected
 done
 
 settle
@@ -51,6 +62,7 @@ date_menu_end="$(shell_eval 'Main.panel.statusArea.dateMenu.container.visible')"
 noise="$(tail -n "+$((log_before + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|has been already disposed' || true)"
 
 echo "cycles:                       $cycles"
+[[ -z "${VISOR_T3_MOCK:-}" ]] || echo "T3 Code mock connections:     $(curl -s "http://127.0.0.1:$port/__mock/state")"
 echo "actors enabled before/after:  $actors_before / $actors_after"
 echo "actors disabled first/last:   $actors_disabled / $actors_end"
 echo "uiGroup children before/after: $children_before / $children_after"

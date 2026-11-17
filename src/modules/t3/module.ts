@@ -248,6 +248,7 @@ class T3Module implements VisorModule {
     const ctx = this.ctx;
     const client = this.client;
     if (!ctx || !client) return;
+    const _ = ctx.t;
     const now = Date.now();
     this.sessions = sessionsOf(client.shell, now)
       .filter(session => !this.stopped.has(session.id) || !session.runId)
@@ -271,7 +272,7 @@ class T3Module implements VisorModule {
         rows.push({
           id: MORE_ID,
           icon: 'view-more-symbolic',
-          title: ctx.t('+ %d more').replace('%d', String(more)),
+          title: _('+ %d more').replace('%d', String(more)),
           status: 'done',
           activate: () => {
             this.showAll = true;
@@ -315,10 +316,11 @@ class T3Module implements VisorModule {
   }
 
   private chip(session: Session): PeekChip {
-    const name = truncate(session.title, 20) || this.ctx!.t('Agent');
+    const _ = this.ctx!.t;
+    const name = truncate(session.title, 20) || _('Agent');
     return {
       icon: ICONS.approval,
-      text: this.ctx!.t('%s is waiting').replace('%s', name),
+      text: _('%s is waiting').replace('%s', name),
       tone: 'waiting',
       priority: 100,
     };
