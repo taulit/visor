@@ -18,31 +18,29 @@ msgstr ""
 
 #: build/core/clock.js:61
 msgid "something waits for you"
-msgstr ""
+msgstr "algo espera por você"
 
 #: build/core/clock.js:63
-#, fuzzy
 msgid "unread notifications"
-msgstr "Nenhuma notificação nova"
+msgstr "notificações não lidas"
 
 #: build/core/kit.js:351
 msgid "waits for you"
-msgstr ""
+msgstr "espera por você"
 
 #: build/core/kit.js:353
-#, fuzzy
 msgid "done"
-msgstr "%s concluído"
+msgstr "concluído"
 
 #: build/core/kit.js:797
 #, javascript-format
 msgid "Hide details of %s"
-msgstr ""
+msgstr "Ocultar detalhes de %s"
 
 #: build/core/kit.js:798
-#, fuzzy, javascript-format
+#, javascript-format
 msgid "Show details of %s"
-msgstr "Mostrar todas (%d)"
+msgstr "Mostrar detalhes de %s"
 
 #: build/core/search/controller.js:124 build/core/search/controller.js:147
 msgid "Commands"
@@ -610,7 +608,7 @@ msgstr "Esta versão do T3 Code não é compatível com o Visor"
 
 #: build/prefs/t3.js:88
 msgid "The keyring is not available"
-msgstr ""
+msgstr "O chaveiro não está disponível"
 
 #: build/prefs/t3.js:90
 msgid "The server cannot be reached"
@@ -644,9 +642,8 @@ msgid "Address, empty for this machine"
 msgstr "Endereço, vazio para esta máquina"
 
 #: build/prefs/t3.js:229
-#, fuzzy
 msgid "This is not a server address"
-msgstr "Endereço do servidor"
+msgstr "Este não é um endereço de servidor"
 
 #: build/prefs/t3.js:249
 msgid ""

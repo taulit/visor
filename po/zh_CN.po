@@ -18,31 +18,29 @@ msgstr ""
 
 #: build/core/clock.js:61
 msgid "something waits for you"
-msgstr ""
+msgstr "有事等你处理"
 
 #: build/core/clock.js:63
-#, fuzzy
 msgid "unread notifications"
-msgstr "没有新通知"
+msgstr "未读通知"
 
 #: build/core/kit.js:351
 msgid "waits for you"
-msgstr ""
+msgstr "等你处理"
 
 #: build/core/kit.js:353
-#, fuzzy
 msgid "done"
-msgstr "%s 已完成"
+msgstr "完成"
 
 #: build/core/kit.js:797
 #, javascript-format
 msgid "Hide details of %s"
-msgstr ""
+msgstr "隐藏 %s 的详情"
 
 #: build/core/kit.js:798
-#, fuzzy, javascript-format
+#, javascript-format
 msgid "Show details of %s"
-msgstr "显示全部 %d 条"
+msgstr "显示 %s 的详情"
 
 #: build/core/search/controller.js:124 build/core/search/controller.js:147
 msgid "Commands"
@@ -607,7 +605,7 @@ msgstr "此版本的 T3 Code 与 Visor 不兼容"
 
 #: build/prefs/t3.js:88
 msgid "The keyring is not available"
-msgstr ""
+msgstr "密钥环不可用"
 
 #: build/prefs/t3.js:90
 msgid "The server cannot be reached"
@@ -641,9 +639,8 @@ msgid "Address, empty for this machine"
 msgstr "地址，留空表示本机"
 
 #: build/prefs/t3.js:229
-#, fuzzy
 msgid "This is not a server address"
-msgstr "服务器地址"
+msgstr "这不是服务器地址"
 
 #: build/prefs/t3.js:249
 msgid ""

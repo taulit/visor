@@ -18,31 +18,29 @@ msgstr ""
 
 #: build/core/clock.js:61
 msgid "something waits for you"
-msgstr ""
+msgstr "対応待ちがあります"
 
 #: build/core/clock.js:63
-#, fuzzy
 msgid "unread notifications"
-msgstr "新しい通知はありません"
+msgstr "未読の通知"
 
 #: build/core/kit.js:351
 msgid "waits for you"
-msgstr ""
+msgstr "対応待ち"
 
 #: build/core/kit.js:353
-#, fuzzy
 msgid "done"
-msgstr "%s が完了"
+msgstr "完了"
 
 #: build/core/kit.js:797
 #, javascript-format
 msgid "Hide details of %s"
-msgstr ""
+msgstr "%s の詳細を非表示"
 
 #: build/core/kit.js:798
-#, fuzzy, javascript-format
+#, javascript-format
 msgid "Show details of %s"
-msgstr "%d 件すべて表示"
+msgstr "%s の詳細を表示"
 
 #: build/core/search/controller.js:124 build/core/search/controller.js:147
 msgid "Commands"
@@ -609,7 +607,7 @@ msgstr "このバージョンの T3 Code は Visor に対応していません"
 
 #: build/prefs/t3.js:88
 msgid "The keyring is not available"
-msgstr ""
+msgstr "キーリングを利用できません"
 
 #: build/prefs/t3.js:90
 msgid "The server cannot be reached"
@@ -643,9 +641,8 @@ msgid "Address, empty for this machine"
 msgstr "アドレス（空欄でこのマシン）"
 
 #: build/prefs/t3.js:229
-#, fuzzy
 msgid "This is not a server address"
-msgstr "サーバーのアドレス"
+msgstr "サーバーのアドレスではありません"
 
 #: build/prefs/t3.js:249
 msgid ""
