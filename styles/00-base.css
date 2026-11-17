@@ -1,1 +1,6 @@
 /* Visor – Dynamic Island & Notch for GNOME. Stylesheet. */
+
+/*
+ * Font sizes are in pt, not px: St scales pt with the text scaling factor of
+ * the desktop ("Large Text"), px it leaves alone. 1 px is 0.75 pt at factor 1.
+ */

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:20+0100\n"
+"POT-Creation-Date: 2026-11-17 17:16+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -15,83 +15,109 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: build/core/search/controller.js:123 build/core/search/controller.js:146
+#: build/core/clock.js:61
+msgid "something waits for you"
+msgstr "etwas wartet auf dich"
+
+#: build/core/clock.js:63
+msgid "unread notifications"
+msgstr "ungelesene Mitteilungen"
+
+#: build/core/kit.js:351
+msgid "waits for you"
+msgstr "wartet auf dich"
+
+#: build/core/kit.js:353
+msgid "done"
+msgstr "fertig"
+
+#: build/core/kit.js:797
+#, javascript-format
+msgid "Hide details of %s"
+msgstr "Details zu %s ausblenden"
+
+#: build/core/kit.js:798
+#, javascript-format
+msgid "Show details of %s"
+msgstr "Details zu %s anzeigen"
+
+#: build/core/search/controller.js:124 build/core/search/controller.js:147
 msgid "Commands"
 msgstr "Befehle"
 
-#: build/core/search/controller.js:131
+#: build/core/search/controller.js:132
 msgid "Calculate"
 msgstr "Rechnen"
 
-#: build/core/search/controller.js:132
+#: build/core/search/controller.js:133
 msgid "Apps"
 msgstr "Apps"
 
-#: build/core/search/controller.js:178
+#: build/core/search/controller.js:179
 msgid "No results"
 msgstr "Keine Ergebnisse"
 
-#: build/core/search/controller.js:279
+#: build/core/search/controller.js:280
 msgid "Enter completes"
 msgstr "Enter ergänzt"
 
-#: build/core/search/controller.js:295 build/core/search/controller.js:320
+#: build/core/search/controller.js:296 build/core/search/controller.js:321
 msgid "Enter copies"
 msgstr "Enter kopiert"
 
-#: build/core/search/controller.js:305
+#: build/core/search/controller.js:306
 msgid "Currency rates are turned off"
 msgstr "Wechselkurse sind ausgeschaltet"
 
-#: build/core/search/controller.js:308
+#: build/core/search/controller.js:309
 msgid "Rates are loading"
 msgstr "Kurse werden geladen"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:201 build/core/sheet.js:570 build/prefs/modules.js:19
 msgid "Modules"
 msgstr "Module"
 
-#: build/core/sheet.js:287
+#: build/core/sheet.js:334
 msgid "Search, calculate or run a command …"
 msgstr "Suchen, rechnen oder Befehl ausführen …"
 
-#: build/core/sheet.js:288 build/prefs/general.js:75
+#: build/core/sheet.js:335 build/prefs/general.js:75
 msgid "Search"
 msgstr "Suchen"
 
-#: build/core/sheet.js:313 build/core/sheet.js:390
+#: build/core/sheet.js:360 build/core/sheet.js:441
 #: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
 msgid "Now"
 msgstr "Jetzt"
 
-#: build/core/sheet.js:327
+#: build/core/sheet.js:374
 msgid "Back"
 msgstr "Zurück"
 
-#: build/core/sheet.js:390
+#: build/core/sheet.js:441
 msgid "Shows up only while something is running."
 msgstr "Zeigt sich nur, solange etwas läuft."
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:391 build/modules/upcoming/module.js:28
+#: build/core/sheet.js:442 build/modules/upcoming/module.js:28
 #: build/modules/upcoming/module.js:99 build/prefs/builtin-modules.js:8
 #: build/prefs/builtin-modules.js:19
 msgid "Up Next"
 msgstr "Als Nächstes"
 
-#: build/core/sheet.js:391
+#: build/core/sheet.js:442
 msgid "A short section next to “Now”."
 msgstr "Kurzer Abschnitt neben „Jetzt“."
 
-#: build/core/sheet.js:392 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:443 build/prefs/builtin-modules.js:20
 msgid "Dock"
 msgstr "Dock"
 
-#: build/core/sheet.js:392
+#: build/core/sheet.js:443
 msgid "A view of its own behind an icon."
 msgstr "Eigene Ansicht hinter einem Symbol."
 
-#: build/core/sheet.js:590
+#: build/core/sheet.js:641
 msgid "No modules"
 msgstr "Keine Module"
 
@@ -253,7 +279,9 @@ msgstr "Antworten"
 
 #: build/modules/t3/module.js:521
 msgid "Has characters that cannot be shown. Open T3 Code to read it"
-msgstr "Enthält Zeichen, die sich nicht anzeigen lassen. Öffne T3 Code, um ihn zu lesen"
+msgstr ""
+"Enthält Zeichen, die sich nicht anzeigen lassen. Öffne T3 Code, um ihn zu "
+"lesen"
 
 #: build/modules/t3/module.js:522
 msgid "Open T3 Code to read all of it"
