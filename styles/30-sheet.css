@@ -1,0 +1,226 @@
+/*
+ * Sheet: the open panel, and the row of chips of the peek state.
+ * The tokens are explained in 20-kit.css.
+ *
+ * Rows reach 8 px out of their column on both sides (their hover area lines
+ * up the text with the section titles). The scroll views clip, so the sheet
+ * keeps 8 px of its 24 px side padding for the parts inside.
+ */
+.visor-sheet {
+  padding: 0 16px 20px;
+}
+
+/*
+ * Hairlines. St paints all sides of a border in the colour of the top side,
+ * so the tokens set border-color and the width picks the side.
+ */
+.visor-search,
+.visor-view-header {
+  border-bottom-width: 1px;
+}
+.visor-dock,
+.visor-column.divided {
+  border-left-width: 1px;
+}
+
+/* --- Search row and dock --- */
+.visor-search {
+  height: 56px;
+  margin: 0 8px;
+  spacing: 12px;
+}
+.visor-search-icon {
+  icon-size: 18px;
+}
+.visor-search-entry,
+.visor-search-entry:hover,
+.visor-search-entry:focus {
+  min-height: 0;
+  padding: 0;
+  border-width: 0;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none !important;
+  font-size: 17px;
+  font-weight: 500;
+  caret-color: -st-accent-color;
+  selection-background-color: st-transparentize(-st-accent-color, 0.6);
+}
+.visor-search-entry StLabel.hint-text {
+  margin-left: 0;
+}
+.visor-dock {
+  spacing: 2px;
+  padding-left: 10px;
+}
+.visor-dock-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  transition-duration: 150ms;
+}
+.visor-dock-button:focus {
+  box-shadow: inset 0 0 0 2px -st-accent-color;
+}
+.visor-dock-icon {
+  icon-size: 17px;
+}
+.visor-dock-badge {
+  min-width: 6px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  font-feature-settings: 'tnum';
+  text-align: center;
+  background-color: -st-accent-color;
+  color: #ffffff;
+}
+
+/* --- Columns --- */
+.visor-columns,
+.visor-view {
+  padding: 0 8px;
+}
+.visor-column {
+  padding-top: 16px;
+  spacing: 20px;
+}
+.visor-column.divided {
+  margin-left: 24px;
+  padding-left: 24px;
+}
+
+/* --- Module view --- */
+.visor-view-header {
+  height: 56px;
+  margin: 0 8px;
+  spacing: 10px;
+}
+.visor-view-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.visor-view {
+  padding-top: 14px;
+}
+.visor-modules {
+  spacing: 24px;
+}
+.visor-modules-hint {
+  font-size: 11.5px;
+  padding-bottom: 6px;
+}
+
+/* --- Results of the search: 6 px below the search row --- */
+.visor-search-overlay {
+  margin: 62px 8px 0;
+  padding: 6px;
+  border-radius: 16px;
+}
+
+/* --- Peek --- */
+.visor-peek {
+  height: 56px;
+  padding: 0 14px;
+  spacing: 8px;
+}
+
+/* --- Colours on a dark panel --- */
+.visor-dark .visor-search,
+.visor-dark .visor-view-header {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.visor-dark .visor-dock,
+.visor-dark .visor-column.divided {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.visor-dark .visor-search-icon,
+.visor-dark .visor-dock-button,
+.visor-dark .visor-modules-hint {
+  color: rgba(245, 245, 247, 0.6);
+}
+.visor-dark .visor-search-entry,
+.visor-dark .visor-search-entry:hover,
+.visor-dark .visor-search-entry:focus,
+.visor-dark .visor-dock-button:hover,
+.visor-dark .visor-dock-button:focus {
+  color: #f5f5f7;
+}
+.visor-dark .visor-search-entry StLabel.hint-text {
+  color: rgba(245, 245, 247, 0.36);
+}
+.visor-dark .visor-dock-button:hover,
+.visor-dark .visor-dock-button:focus {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+.visor-dark .visor-search-overlay {
+  background-color: #232327;
+  color: #f5f5f7;
+}
+
+/* --- Colours on a light panel --- */
+.visor-light .visor-search,
+.visor-light .visor-view-header {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.visor-light .visor-dock,
+.visor-light .visor-column.divided {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.visor-light .visor-search-icon,
+.visor-light .visor-dock-button,
+.visor-light .visor-modules-hint {
+  color: rgba(29, 29, 31, 0.6);
+}
+.visor-light .visor-search-entry,
+.visor-light .visor-search-entry:hover,
+.visor-light .visor-search-entry:focus,
+.visor-light .visor-dock-button:hover,
+.visor-light .visor-dock-button:focus {
+  color: #1d1d1f;
+}
+.visor-light .visor-search-entry StLabel.hint-text {
+  color: rgba(29, 29, 31, 0.38);
+}
+.visor-light .visor-dock-button:hover,
+.visor-light .visor-dock-button:focus {
+  background-color: rgba(0, 0, 0, 0.09);
+}
+.visor-light .visor-search-overlay {
+  background-color: #ffffff;
+  color: #1d1d1f;
+}
+
+/* --- High contrast on a dark panel: hairlines at full opacity, muted text at 80 % --- */
+.visor-dark.visor-hc .visor-search,
+.visor-dark.visor-hc .visor-view-header {
+  border-color: #f5f5f7;
+}
+.visor-dark.visor-hc .visor-dock,
+.visor-dark.visor-hc .visor-column.divided {
+  border-color: #f5f5f7;
+}
+.visor-dark.visor-hc .visor-search-icon,
+.visor-dark.visor-hc .visor-dock-button,
+.visor-dark.visor-hc .visor-modules-hint,
+.visor-dark.visor-hc .visor-search-entry StLabel.hint-text {
+  color: rgba(245, 245, 247, 0.8);
+}
+
+/* --- High contrast on a light panel: hairlines at full opacity, muted text at 80 % --- */
+.visor-light.visor-hc .visor-search,
+.visor-light.visor-hc .visor-view-header {
+  border-color: #1d1d1f;
+}
+.visor-light.visor-hc .visor-dock,
+.visor-light.visor-hc .visor-column.divided {
+  border-color: #1d1d1f;
+}
+.visor-light.visor-hc .visor-search-icon,
+.visor-light.visor-hc .visor-dock-button,
+.visor-light.visor-hc .visor-modules-hint,
+.visor-light.visor-hc .visor-search-entry StLabel.hint-text {
+  color: rgba(29, 29, 31, 0.8);
+}

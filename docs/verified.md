@@ -257,6 +257,9 @@ Main.panel.menuManager.removeMenu(menu); // disable (pops the modal if open)
 ```
 
 - `actor` must be reactive and contain every interactive child; it is the grab root. `sourceActor` is the notch (may be the same actor).
+- Runtime-tested: while the grab is held, a key event goes from the key focus up to the grab root and only through
+  reactive actors; the stage never sees it. `St.FocusManager` handles Tab and the arrow keys in a handler on the
+  stage, so under the grab a reactive actor inside has to call `navigate_from_event()` itself (as `PopupMenu` does).
 - `open`/`close` are called with a `BoxPointer.PopupAnimation` argument; ignore it.
 - Result: Esc and click-outside close Visor; hovering another panel button while Visor is open switches to that menu and vice versa, as with the stock date menu. A click outside is consumed by the grab; it closes Visor but does not reach the window or button underneath (same as stock menus).
 - Self-contained fallback: `const grab = Main.pushModal(actor, {actionMode: Shell.ActionMode.POPUP})`, handle Escape and outside presses in `actor`'s `captured-event` with `!actor.contains(global.stage.get_event_actor(event))`, then `Main.popModal(grab)`.

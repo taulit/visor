@@ -6,10 +6,9 @@ cd "$(dirname "$0")/.."
 rm -rf build
 tsc
 
-cp metadata.json stylesheet.css build/
-for css in stylesheet-dark.css stylesheet-light.css; do
-  [ -f "$css" ] && cp "$css" build/
-done
+cp metadata.json build/
+# The shell loads exactly one stylesheet per extension, so the parts are joined.
+cat styles/*.css >build/stylesheet.css
 
 mkdir -p build/schemas
 cp schemas/*.gschema.xml build/schemas/
