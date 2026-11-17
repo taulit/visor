@@ -6,6 +6,8 @@ import GnomeDesktop from 'gi://GnomeDesktop?version=4.0';
 import Pango from 'gi://Pango';
 import St from 'gi://St';
 
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
 import type { Attention } from './types.js';
 
 export class Clock {
@@ -19,6 +21,7 @@ export class Clock {
   private label: St.Label;
   private dot: St.Widget;
   private wallClock: GnomeDesktop.WallClock;
+  private ownsClock: boolean;
 
   constructor() {
     this.label = new St.Label({
@@ -47,8 +50,12 @@ export class Clock {
       accessible_role: Atk.Role.PUSH_BUTTON,
     });
 
-    // The same source and text as the stock clock, so it follows the clock settings.
-    this.wallClock = new GnomeDesktop.WallClock();
+    // The clock of the date menu Visor stands in for: the same text, the same
+    // settings, and no timer of Visor's own for the tick once a minute.
+    const stock = (Main.panel.statusArea.dateMenu as unknown as { _clock?: unknown } | undefined)
+      ?._clock;
+    this.ownsClock = !(stock instanceof GnomeDesktop.WallClock);
+    this.wallClock = stock instanceof GnomeDesktop.WallClock ? stock : new GnomeDesktop.WallClock();
     this.wallClock.connectObject('notify::clock', () => this.sync(), this);
     this.sync();
   }
@@ -68,7 +75,7 @@ export class Clock {
 
   destroy(): void {
     this.wallClock.disconnectObject(this);
-    this.wallClock.run_dispose();
+    if (this.ownsClock) this.wallClock.run_dispose();
     this.actor.destroy();
   }
 }

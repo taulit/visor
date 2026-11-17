@@ -26,7 +26,7 @@ export interface SearchMount {
   readonly query: string;
   /** Called with the text of the entry, 40 ms after the last key. */
   setQueryHandler(handler: ((query: string) => void) | null): void;
-  /** Shows a widget right below the search row, above the columns. Null takes it away. */
+  /** Shows a widget right below the search row, above the columns. Null hides it. */
   setOverlay(widget: St.Widget | null): void;
   clearQuery(): void;
   /** Replaces the text of the entry and reports it at once; the cursor goes to the end. */
@@ -98,6 +98,7 @@ export class Sheet implements SearchMount {
 
   private overlay: St.Bin | null = null;
   private overlayChild: St.Widget | null = null;
+  private overlayShown = false;
   private queryHandler: ((query: string) => void) | null = null;
   private keyHandler: ((event: Clutter.Event) => boolean) | null = null;
   private reportedQuery = '';
@@ -158,10 +159,14 @@ export class Sheet implements SearchMount {
   }
 
   setOverlay(widget: St.Widget | null): void {
-    this.overlayChild = widget;
+    this.overlayShown = widget !== null;
+    // Taking the widget out would cost it its style: every actor in it would be
+    // styled anew when it comes back, 3 to 6 ms for a list of results. It stays
+    // in the hidden overlay until another one takes its place.
+    if (widget) this.overlayChild = widget;
     if (!this.overlay) return;
-    this.overlay.set_child(widget);
-    this.overlay.visible = widget !== null;
+    if (widget && this.overlay.get_child() !== widget) this.overlay.set_child(widget);
+    this.overlay.visible = this.overlayShown;
   }
 
   clearQuery(): void {
@@ -424,7 +429,7 @@ export class Sheet implements SearchMount {
       visible: false,
     });
     layer.add_child(this.overlay);
-    if (this.overlayChild) this.setOverlay(this.overlayChild);
+    if (this.overlayChild) this.setOverlay(this.overlayShown ? this.overlayChild : null);
 
     // Tab and the arrow keys walk through everything that can take the focus.
     // The focus manager does that by itself only for events that reach the

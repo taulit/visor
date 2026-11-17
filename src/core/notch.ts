@@ -25,6 +25,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { BannerShift } from './banners.js';
 import { Clock } from './clock.js';
 import { Keybindings } from './keybindings.js';
+import { metricsOn, now, reportMetric } from './metrics.js';
 import { Motion } from './motion.js';
 import { mix } from './spring.js';
 import {
@@ -340,6 +341,13 @@ export class Notch implements NotchHost {
   }
 
   private enter(state: NotchState, previous: NotchState, animate: boolean): void {
+    // What a state change costs before its first frame, with debug metrics on.
+    const start = metricsOn(this.settings) ? now() : 0;
+    this.change(state, previous, animate);
+    if (start) reportMetric(`enter ${state} ms=${((now() - start) / 1000).toFixed(2)}`);
+  }
+
+  private change(state: NotchState, previous: NotchState, animate: boolean): void {
     // The new state is measured below, once its content is in the clip.
     this.updatePosition();
 
@@ -529,6 +537,7 @@ export class Notch implements NotchHost {
           });
         },
         done: () => this.settled(),
+        metrics: animate && metricsOn(this.settings) ? state : undefined,
       },
       animate,
     );
