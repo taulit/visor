@@ -37,7 +37,7 @@ export function connectVisor(extension, module) {
       api.register(module, extension);
       registered = true;
     } catch (e) {
-      log(`${extension.uuid}: Visor refused the module '${module.id}': ${e.message ?? e}`);
+      log(`${extension.uuid}: Visor refused the module '${module.id}': ${e?.message ?? e}`);
     }
   };
 
@@ -53,7 +53,14 @@ export function connectVisor(extension, module) {
   return {
     disconnect() {
       manager.disconnectObject(token);
-      if (registered && currentApi() === tried) tried.unregister(module.id);
+      try {
+        if (registered && currentApi() === tried) tried.unregister(module.id);
+      } catch (e) {
+        // disable() of the module's extension must not fail because Visor did.
+        log(
+          `${extension.uuid}: Visor could not remove the module '${module.id}': ${e?.message ?? e}`,
+        );
+      }
       registered = false;
       tried = null;
     },
