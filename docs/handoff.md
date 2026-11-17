@@ -14,30 +14,19 @@ other sessions: `docs/STATUS.md`, API facts: `docs/verified.md`, structure: `doc
 Branch `phase/v3-t3`, pull request https://github.com/taulit/visor/pull/5 against `main` (not stacked), waiting for the user to merge. Bug
 review done, 11 of 12 findings fixed. The private template repo `taulit/visor-module-template` exists.
 
-## Running now: V4 on branch `phase/v4-hardening` (branched from `phase/v3-t3`, pushed)
+## State of V4
 
-Merged and pushed: translations (9 languages), README, `docs/ego-checklist.md`, AUR, release checklist,
-changelog, CI steps, the T3 token in the keyring, the settings checks, `visor.id`, `debug-metrics`,
-`scripts/measure.sh`, `docs/performance.md`, accessibility (`docs/accessibility.md`, `tests/shell/a11y.sh`).
-Gate on the merged branch: 794 unit tests, 18 shell tests (one timing fix in `tests/shell/prefs-t3.sh`).
-
-The three reviews are done (bug: 1 blocking, 5 minor; simplicity: 19 cuts; spec: 9 gaps). The V3 pull
-request (#5) is merged and `main` is merged into this branch, so V4 is not stacked.
-
-Running, each in its own worktree (`git worktree list`), committing after each item:
-
-| Task                                                                                                                                                                      | Model  | Thread                                                                                                                                                                                                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bugs (pairing with a locked keyring, sources after `disable()`), plan gaps (ear radius, signal count in the leak test, scenario 1 as one test), simplifications in `src/` | Fable  | `[V4 fix review findings (source)](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3A5917bfb2-f88f-486c-b562-39a871f94188)`   |
-| Release and nightly workflows, screenshots in two accents, `docs/verified.md`, checklists, `CONTRIBUTING.md`                                                              | Sonnet | `[V4 fix review findings (CI, docs)](t3-thread://v2/5fc2a994-cba4-4d98-859b-e0a5b6af75df/thread:delegated-task:command%3Amcp%3A2f75c7d8-4126-4cd4-94ec-9b8ebd2fd5c5%3Adelegate-task%3Ae14ba543-8296-4190-b87b-64e6eb629abc)` |
+Branch `phase/v4-hardening`, pull request https://github.com/taulit/visor/pull/6 against `main` (not stacked), waiting for the user to merge.
+Three reviews done and their findings applied. Nothing is running.
 
 ## Next
 
-1. Merge both branches into `phase/v4-hardening`; update `docs/ego-checklist.md` rows the source fixes made
-   stale.
-2. Full gate once on a quiet machine (`pnpm run test:shell`, `scripts/measure.sh`, `scripts/shots.sh`); a
-   short re-check by a fresh agent of the blocking finding (pairing with a locked keyring).
-3. Open the V4 pull request against `main` (not stacked). Only the user merges.
+1. After the merge the remaining work is manual and belongs to the maintainer: `docs/release-checklist.md`
+   (real session on GNOME 50, first real pairing with T3 Code, screen reader pass, one-hour memory run,
+   timings on a quiet machine, native-speaker check of the translations, version bump, store upload).
+2. The check "median enable() below 5 ms" in `tests/shell/notch-behaviour.sh` fails when the machine is under
+   load (2 ms on a quiet run, up to 5.7 ms loaded).
+3. The two workflows `release.yml` and `nightly.yml` have never run; expect fixes on their first run.
 
 ## Open items carried forward
 
