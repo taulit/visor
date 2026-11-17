@@ -16,6 +16,7 @@ tests=(
     "modules-now|tests/shell/modules-now.sh"
     "modules-ahead|tests/shell/modules-ahead.sh"
     "disable-restores|tests/shell/disable-restores.sh"
+    "e2e-timer|tests/shell/e2e-timer.sh"
     "notch-behaviour|scripts/nested.sh -- tests/shell/notch-behaviour.sh"
     "notch-motion|scripts/nested.sh --animations -- tests/shell/notch-motion.sh"
     "notch-motion-no-animations|scripts/nested.sh -- tests/shell/notch-motion.sh"
