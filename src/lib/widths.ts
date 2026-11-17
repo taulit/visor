@@ -8,8 +8,6 @@ const WIDTHS: Record<WidthSetting, number> = { compact: 800, normal: 960, wide: 
 export const ONE_COLUMN_WIDTH = 600;
 /** Padding of the sheet on the left and on the right. */
 export const SHEET_PADDING = 24;
-/** Space on each side of the hairline between the two columns. */
-export const COLUMN_GAP = 24;
 
 /**
  * Panel width: the setting when both columns have content or a module view is

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GROUP_ORDER, parseQuery } from '../src/core/search/parser.js';
+import { parseQuery } from '../src/core/search/parser.js';
 
 const commands = [['timer'], ['stoppuhr', 'stopwatch'], ['notiz', 'note']];
 const parse = (input: string, locale = 'en-US') =>
@@ -92,11 +92,5 @@ describe('parseQuery', () => {
 
   it('handles an empty list of commands', () => {
     expect(parseQuery('timer 5', { commands: [], homeCurrency: 'EUR' }).command).toBeNull();
-  });
-});
-
-describe('GROUP_ORDER', () => {
-  it('lists the groups in display order', () => {
-    expect(GROUP_ORDER).toEqual(['command', 'calc', 'apps', 'modules', 'providers']);
   });
 });

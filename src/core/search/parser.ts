@@ -3,9 +3,6 @@
 import { evaluate } from './calc.js';
 import { parseCurrencyQuery } from './rates.js';
 
-/** Order of the result groups in the list. */
-export const GROUP_ORDER = ['command', 'calc', 'apps', 'modules', 'providers'] as const;
-
 export interface Query {
   /** The input, trimmed. */
   text: string;

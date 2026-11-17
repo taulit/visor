@@ -297,14 +297,6 @@ export function calc(input: string, locale?: string): CalcResult {
 }
 
 /**
- * Whether the input is worth showing as a calculation: it must parse and be more than a single
- * value, so `2024`, `pi` or `log` are not, while `pi*2`, `sqrt(4)` and `5%` are.
- */
-export function isCalculation(input: string, locale?: string): boolean {
-  return evaluate(input, locale)?.meaningful === true;
-}
-
-/**
  * Locale number format with at most 10 significant digits (more for integers with more digits,
  * which stay exact), no trailing zeros, and scientific notation only from 1e15 on.
  */
