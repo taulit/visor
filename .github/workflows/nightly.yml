@@ -1,0 +1,91 @@
+name: Nightly shell test
+
+# Runs the tests that need a real GNOME Shell (pnpm run test:shell) and takes the
+# screenshots (scripts/shots.sh) once a night in a Fedora container.
+#
+# ASSUMPTION, checked on the web but never run here: Fedora 44 is the release
+# that ships GNOME 50 (Fedora Workstation 44, April 2026; the package page
+# packages.fedoraproject.org/pkgs/gnome-shell/gnome-shell-common/fedora-44.html
+# lists gnome-shell 50). Visor targets 50 and 51 (metadata.json). When Fedora 45
+# brings GNOME 51, add it to the matrix. The package names below are from
+# memory of the Fedora packaging, not from a run: the first run on GitHub is the
+# first test of this file, and the first things to look at when it fails are the
+# package list, whether gnome-shell starts headless as root in a container, and
+# the path of at-spi2-registryd.
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  shell:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora: ['44']
+    container:
+      image: registry.fedoraproject.org/fedora:${{ matrix.fedora }}
+    steps:
+      # git first, so that checkout makes a real clone; the rest is what
+      # scripts/nested.sh and the tests call (each name below is a binary or
+      # a typelib one of the scripts uses):
+      #   gnome-shell, mutter            the headless shell
+      #   dbus-daemon                    dbus-run-session
+      #   glib2                          gdbus, gsettings, glib-compile-schemas
+      #   gjs                            tests/shell/*.js, the settings window
+      #   gnome-keyring, libsecret       gnome-keyring-daemon, secret-tool
+      #   evolution-data-server          ECal and EDataServer for calendar-events.js
+      #   python3-gobject, at-spi2-core  tests/shell/prefs-a11y.py (Atspi)
+      #   gtk4, libadwaita               the settings window
+      #   ImageMagick                    magick, for the cover of the media scenarios
+      #   gettext                        msgfmt, xgettext, msgmerge
+      #   fuse3                          fusermount3 (cleanup of the sandbox)
+      #   glibc-langpack-en/-de          en_US.UTF-8 for every run, de_DE.UTF-8 for the German shots
+      #   zip, unzip, curl, gawk, procps-ng, findutils, tar, gzip
+      - name: Install git
+        run: dnf install -y git
+      - name: Install what the shell tests need
+        run: |
+          dnf install -y \
+            gnome-shell mutter dbus-daemon glib2 gjs gnome-keyring libsecret \
+            evolution-data-server python3 python3-gobject at-spi2-core gtk4 libadwaita \
+            ImageMagick gettext fuse3 glibc-langpack-en glibc-langpack-de \
+            mesa-dri-drivers zip unzip curl gawk procps-ng findutils tar gzip
+          gnome-shell --version
+          # scripts/lib/prefs.sh starts /usr/lib/at-spi2-registryd; Fedora has it in libexec.
+          ln -sf /usr/libexec/at-spi2-registryd /usr/lib/at-spi2-registryd
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Shell tests and leak test
+        run: pnpm run test:shell
+      - name: Screenshots
+        if: ${{ !cancelled() }}
+        run: bash scripts/shots.sh
+      - name: Upload the screenshots
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-fedora-${{ matrix.fedora }}
+          path: docs/screenshots/*.png
+          if-no-files-found: warn
+      - name: Upload the logs of the shell tests
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: shell-test-logs-fedora-${{ matrix.fedora }}
+          path: .shell-test/
+          # upload-artifact skips directories that start with a dot unless told otherwise
+          include-hidden-files: true
+          if-no-files-found: warn
