@@ -22,6 +22,39 @@ export function orderIds(registered: readonly string[], order: readonly string[]
 }
 
 /**
+ * The setting `order` after the module at place `from` of `group` moved to
+ * place `to`. `group` are the ids of one slot in display order, `known` all
+ * ids the caller knows. Ids of other slots keep their places; ids the caller
+ * does not know stay where `order` has them.
+ */
+export function moveWithin(
+  known: readonly string[],
+  order: readonly string[],
+  group: readonly string[],
+  from: number,
+  to: number,
+): string[] {
+  const display = orderIds(known, order);
+  const moved = [...group];
+  moved.splice(to, 0, ...moved.splice(from, 1));
+  const next = [...display];
+  group.forEach((id, i) => (next[display.indexOf(id)] = moved[i]!));
+
+  // Put the known ids back into the places the known ids had in `order`.
+  const isKnown = new Set(known);
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const id of order) {
+    if (!isKnown.has(id)) result.push(id);
+    else if (!seen.has(id)) {
+      seen.add(id);
+      result.push(next.shift()!);
+    }
+  }
+  return [...result, ...next];
+}
+
+/**
  * The API version an extension says its modules were built for, from
  * `"visor": {"api": N}` in its metadata.json. Null when it says nothing.
  */
