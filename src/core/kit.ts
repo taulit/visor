@@ -18,6 +18,7 @@ import type {
   KitToggle,
   PeekChip,
   RowProps,
+  ToggleProps,
 } from '../api.js';
 
 /** Runs code of a module so that an exception cannot leave it. */
@@ -804,13 +805,14 @@ export class Row implements KitRow {
 class Section implements KitSection {
   readonly actor: St.Widget;
   readonly body: St.Widget;
+  readonly toggle: KitToggle | null = null;
   private title: St.Label;
   private linksBox: St.BoxLayout;
   private links: ActionList;
   /** The link that has the keyboard focus. */
   private focused: Clutter.Actor | null = null;
 
-  constructor(props: { title: string; links?: Action[] }, guard: Guard) {
+  constructor(props: { title: string; links?: Action[]; toggle?: ToggleProps }, guard: Guard) {
     this.actor = new St.BoxLayout({
       style_class: 'visor-section',
       vertical: true,
@@ -834,6 +836,24 @@ class Section implements KitSection {
       opacity: 0,
     });
     header.add_child(this.linksBox);
+    if (props.toggle) {
+      // Always visible, with its name next to it: a bare switch says nothing.
+      const box = new St.BoxLayout({
+        style_class: 'visor-section-toggle',
+        y_align: Clutter.ActorAlign.CENTER,
+      });
+      const label = new St.Label({
+        style_class: 'visor-section-toggle-label',
+        text: str(props.toggle.label),
+        y_align: Clutter.ActorAlign.CENTER,
+      });
+      const toggle = new Toggle(props.toggle, guard);
+      toggle.actor.label_actor = label;
+      box.add_child(label);
+      box.add_child(toggle.actor);
+      header.add_child(box);
+      this.toggle = toggle;
+    }
     this.actor.add_child(header);
     this.body = new St.BoxLayout({
       style_class: 'visor-section-body',
@@ -875,10 +895,7 @@ class Toggle implements KitToggle {
   readonly actor: St.Button;
   private knob: St.Widget;
 
-  constructor(
-    props: { label: string; active: boolean; onChange(active: boolean): void },
-    guard: Guard,
-  ) {
+  constructor(props: ToggleProps, guard: Guard) {
     this.knob = new St.Widget({ style_class: 'visor-toggle-knob' });
     // The track has the size of the inside of the switch and a fixed layout,
     // so the knob starts at its edge whatever the button does with its child.
