@@ -135,6 +135,11 @@ class Line {
   }
 
   select(selected: boolean): void {
+    if (selected !== this.selected) {
+      // The keyboard focus stays in the entry; the state is what a screen reader can follow.
+      if (selected) this.actor.add_accessible_state(Atk.StateType.SELECTED);
+      else this.actor.remove_accessible_state(Atk.StateType.SELECTED);
+    }
     this.selected = selected;
     setClass(this.actor, 'selected', selected);
     // The selected line says what Enter does, or at least that Enter does something.
@@ -231,6 +236,7 @@ export class Results {
     });
     this.actor = new St.ScrollView({
       style_class: 'visor-results-scroll',
+      accessible_role: Atk.Role.SCROLL_PANE,
       hscrollbar_policy: St.PolicyType.NEVER,
       vscrollbar_policy: St.PolicyType.AUTOMATIC,
       overlay_scrollbars: true,

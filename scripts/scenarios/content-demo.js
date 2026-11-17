@@ -220,6 +220,7 @@ globalThis.visorDemoRegister = only => {
     icon: 'text-x-generic-symbolic',
     slot: 'dock',
     enable(ctx) {
+      demo.ctx.notes = ctx;
       notesKit = ctx.kit;
       ctx.badge(2);
     },

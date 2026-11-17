@@ -6,6 +6,7 @@ import GnomeDesktop from 'gi://GnomeDesktop?version=4.0';
 import Pango from 'gi://Pango';
 import St from 'gi://St';
 
+import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import type { Attention } from './types.js';
@@ -22,6 +23,7 @@ export class Clock {
   private dot: St.Widget;
   private wallClock: GnomeDesktop.WallClock;
   private ownsClock: boolean;
+  private attention: Attention = null;
 
   constructor() {
     this.label = new St.Label({
@@ -62,8 +64,12 @@ export class Clock {
 
   private sync(): void {
     const text = this.wallClock.clock;
-    this.label.text = text;
-    this.actor.accessible_name = text;
+    if (this.label.text !== text) this.label.text = text;
+    // The dot is colour only; a screen reader gets the words.
+    let name = text;
+    if (this.attention === 'waiting') name = `${text}, ${_('something waits for you')}`;
+    else if (this.attention === 'unread') name = `${text}, ${_('unread notifications')}`;
+    if (this.actor.accessible_name !== name) this.actor.accessible_name = name;
   }
 
   setAttention(attention: Attention): void {
@@ -71,6 +77,8 @@ export class Clock {
     this.dot.remove_style_class_name('waiting');
     if (attention) this.dot.add_style_class_name(attention);
     this.dot.visible = attention !== null;
+    this.attention = attention;
+    this.sync();
   }
 
   destroy(): void {

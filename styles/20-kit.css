@@ -449,3 +449,19 @@
   background-color: rgba(128, 128, 128, 0.02);
   box-shadow: inset 0 0 0 2px -st-accent-color;
 }
+
+/* --- What a clicked chip is about, highlighted for a moment --- */
+.visor-marked {
+  border-radius: 12px;
+  transition-duration: 250ms;
+}
+.visor-dark .visor-marked {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+.visor-light .visor-marked {
+  background-color: rgba(0, 0, 0, 0.09);
+}
+/* High contrast: a tint alone is too faint. */
+.visor-hc .visor-marked {
+  box-shadow: inset 0 0 0 2px -st-accent-color;
+}

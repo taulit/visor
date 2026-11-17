@@ -19,6 +19,9 @@ import type { ModuleEntry, Registry } from './registry.js';
 /** Name of the built-in view that lists the modules. No module can have this id. */
 const MODULES_VIEW = ':modules';
 const SEARCH_DEBOUNCE_MS = 40;
+/** How long the section of a clicked chip stays highlighted. */
+const MARK_MS = 1400;
+const MARK_CLASS = 'visor-marked';
 
 /** What the search needs from the sheet. The search itself is not part of the sheet. */
 export interface SearchMount {
@@ -103,6 +106,10 @@ export class Sheet implements SearchMount {
   private keyHandler: ((event: Clutter.Event) => boolean) | null = null;
   private reportedQuery = '';
   private debounce = 0;
+
+  /** What mark() highlights, until the timeout takes the highlight away. */
+  private marked: St.Widget | null = null;
+  private markTimeout = 0;
 
   private isOpen = false;
   private building = false;
@@ -200,9 +207,39 @@ export class Sheet implements SearchMount {
     this.isOpen = false;
     global.stage.disconnectObject(this);
     this.cancelMeasure();
+    this.unmark();
     if (!this.root) return;
     this.clearQuery();
     if (this.view !== null) this.showView(null);
+  }
+
+  /**
+   * Draws the eye to what a module shows in the main view, for a moment: the
+   * rows of a 'now' module or the section of an 'ahead' module.
+   */
+  mark(id: string): void {
+    const target = this.nowGroups.get(id)?.box ?? this.sections.get(id)?.widget;
+    if (!target || !this.isOpen) return;
+    this.unmark();
+    target.add_style_class_name(MARK_CLASS);
+    this.marked = target;
+    target.connectObject('destroy', () => this.unmark(), this);
+    if (this.scroll) ensureActorVisibleInScrollView(this.scroll, target);
+    this.markTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, MARK_MS, () => {
+      this.markTimeout = 0;
+      this.unmark();
+      return GLib.SOURCE_REMOVE;
+    });
+  }
+
+  private unmark(): void {
+    if (this.markTimeout) GLib.source_remove(this.markTimeout);
+    this.markTimeout = 0;
+    const marked = this.marked;
+    this.marked = null;
+    if (!marked) return;
+    marked.disconnectObject(this);
+    marked.remove_style_class_name(MARK_CLASS);
   }
 
   /** Escape: first clears the search, then leaves a view. False when there was nothing to do. */
@@ -302,6 +339,7 @@ export class Sheet implements SearchMount {
     this.settings.disconnectObject(this);
     global.stage.disconnectObject(this);
     this.cancelMeasure();
+    this.unmark();
     if (this.debounce) GLib.source_remove(this.debounce);
     this.debounce = 0;
     this.queryHandler = this.keyHandler = null;
@@ -331,6 +369,7 @@ export class Sheet implements SearchMount {
       style_class: 'visor-sheet',
       layout_manager: new Clutter.BinLayout(),
       accessible_role: Atk.Role.PANEL,
+      accessible_name: 'Visor',
       // Key events bubble only through reactive actors, see the handler below.
       reactive: true,
     }));
@@ -407,6 +446,7 @@ export class Sheet implements SearchMount {
     );
     this.viewTitle = new St.Label({
       style_class: 'visor-view-title',
+      accessible_role: Atk.Role.HEADING,
       x_expand: true,
       y_align: Clutter.ActorAlign.CENTER,
     });
@@ -437,7 +477,9 @@ export class Sheet implements SearchMount {
     const focusManager = St.FocusManager.get_for_stage(global.stage);
     focusManager.add_group(root);
     root.connect('key-press-event', (_actor, event) =>
-      focusManager.navigate_from_event(event) ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE,
+      this.tab(event) || focusManager.navigate_from_event(event)
+        ? Clutter.EVENT_STOP
+        : Clutter.EVENT_PROPAGATE,
     );
     // Whatever changes the height inside ends up here, also what modules do in their own widgets.
     layer.connect('queue-relayout', () => this.scheduleMeasure());
@@ -452,6 +494,7 @@ export class Sheet implements SearchMount {
     child.add_child(content);
     return new St.ScrollView({
       style_class: 'visor-scroll',
+      accessible_role: Atk.Role.SCROLL_PANE,
       hscrollbar_policy: St.PolicyType.NEVER,
       vscrollbar_policy: St.PolicyType.AUTOMATIC,
       overlay_scrollbars: true,
@@ -754,6 +797,36 @@ export class Sheet implements SearchMount {
   }
 
   // --- focus and size ---
+
+  /**
+   * Tab and Shift+Tab in the main view: search, then the rows on the left,
+   * the sections on the right, and the dock last, although the dock sits next
+   * to the search entry. After the last stop it starts over; Escape is the way out.
+   */
+  private tab(event: Clutter.Event): boolean {
+    const symbol = event.get_key_symbol();
+    const back = symbol === Clutter.KEY_ISO_Left_Tab;
+    if (symbol !== Clutter.KEY_Tab && !back) return false;
+    if (this.view !== null || !this.entry || !this.scroll || !this.dock) return false;
+    // The list of results covers the rows; the keyboard stays with the search.
+    if (this.overlay?.visible) return true;
+    const direction = back ? St.DirectionType.TAB_BACKWARD : St.DirectionType.TAB_FORWARD;
+    const stops: St.Widget[] = [this.entry, this.scroll, this.dock];
+    const focus = global.stage.get_key_focus();
+    const at = focus ? stops.findIndex(stop => stop.contains(focus)) : -1;
+    if (at < 0) return false;
+    // Further inside the same stop, as long as there is something.
+    if (at > 0 && stops[at]!.navigate_focus(focus, direction, false)) return true;
+    for (let step = 1; step <= stops.length; step++) {
+      const next = stops[(at + (back ? -step : step) + stops.length * step) % stops.length]!;
+      if (next === this.entry) {
+        this.entry.grab_key_focus();
+        return true;
+      }
+      if (next.visible && next.navigate_focus(null, direction, false)) return true;
+    }
+    return true;
+  }
 
   /** Scrolls so that whatever got the keyboard focus is visible. */
   private followFocus(): void {

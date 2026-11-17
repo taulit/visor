@@ -180,7 +180,7 @@ export class Notch implements NotchHost {
       'leave-event',
       (_actor: Clutter.Actor, event: Clutter.Event) => this.onCrossing(this.root, event),
       'button-press-event',
-      () => this.onPress('activate'),
+      (_actor: Clutter.Actor, event: Clutter.Event) => this.onPress('activate', event),
       'touch-event',
       (_actor: Clutter.Actor, event: Clutter.Event) => this.onTouch(event, 'activate'),
       'notify::visible',
@@ -734,16 +734,22 @@ export class Notch implements NotchHost {
   }
 
   /** A press on the neck toggles; a press on the hint or peek area opens. */
-  private onPress(type: 'toggle' | 'activate'): boolean {
+  private onPress(type: 'toggle' | 'activate', event?: Clutter.Event): boolean {
     if (type === 'activate' && this.model.state === 'open') return Clutter.EVENT_PROPAGATE;
-    if (type === 'toggle') this.toggle();
-    else this.dispatch({ type });
+    if (type === 'toggle') {
+      this.toggle();
+    } else {
+      // The press opens the panel before a chip could report a click.
+      if (event && this.model.state === 'peek')
+        this.content.pressed(global.stage.get_event_actor(event));
+      this.dispatch({ type });
+    }
     return Clutter.EVENT_STOP;
   }
 
   private onTouch(event: Clutter.Event, type: 'toggle' | 'activate'): boolean {
     if (event.type() !== Clutter.EventType.TOUCH_BEGIN) return Clutter.EVENT_PROPAGATE;
-    return this.onPress(type);
+    return this.onPress(type, event);
   }
 
   private onNeckKey(event: Clutter.Event): boolean {
