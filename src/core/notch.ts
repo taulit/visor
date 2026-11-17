@@ -25,6 +25,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { BannerShift } from './banners.js';
 import { Clock } from './clock.js';
 import { Keybindings } from './keybindings.js';
+import { scaleFactor } from './kit.js';
 import { metricsOn, now, reportMetric } from './metrics.js';
 import { Motion } from './motion.js';
 import { mix } from './spring.js';
@@ -110,7 +111,6 @@ export class Notch implements NotchHost {
   private banners = new BannerShift();
   private notifications: Gio.Settings | null = null;
 
-  private scale = 1;
   private neckWidth = 0;
   private earRadius = 0;
   private current: Shape = { halfWidth: 0, height: 0, ear: 0, reveal: 1 };
@@ -143,7 +143,10 @@ export class Notch implements NotchHost {
 
     this.clock = new Clock();
     this.neck = this.clock.actor;
-    this.centerBox.insert_child_at_index(this.neck, 0);
+    (Main.panel as unknown as { _centerBox: Clutter.Actor })._centerBox.insert_child_at_index(
+      this.neck,
+      0,
+    );
 
     this.root = new St.Widget({
       style_class: 'visor-notch',
@@ -235,14 +238,10 @@ export class Notch implements NotchHost {
     St.Settings.get().connectObject('notify::high-contrast', () => this.syncTheme(), this);
     St.ThemeContext.get_for_stage(global.stage).connectObject(
       'notify::scale-factor',
-      () => {
-        this.syncScale();
-        this.retarget(false);
-      },
+      () => this.retarget(false),
       this,
     );
 
-    this.syncScale();
     this.syncTheme();
   }
 
@@ -431,7 +430,7 @@ export class Notch implements NotchHost {
    * out the content, once, at that size.
    */
   private measure(): Shape {
-    const s = this.scale;
+    const s = scaleFactor();
     const neck = this.neckWidth || this.measureNeck();
     // Even widths keep the body and the ears on whole pixels around the centre.
     const half = (width: number): number => Math.ceil(width / 2);
@@ -584,7 +583,7 @@ export class Notch implements NotchHost {
 
     if (this.shown) {
       const scale = mix(REVEAL_SCALE, 1, shape.reveal);
-      this.shown.translation_y = mix(-REVEAL_LIFT * this.scale, 0, shape.reveal);
+      this.shown.translation_y = mix(-REVEAL_LIFT * scaleFactor(), 0, shape.reveal);
       this.shown.set_scale(scale, scale);
     }
   }
@@ -605,7 +604,7 @@ export class Notch implements NotchHost {
     this.shadow.set_position(-halfWidth, 0);
     this.shadow.set_size(halfWidth * 2, Math.round(this.target.height));
     // It falls on what is below the panel, never on the panel itself.
-    const spread = 200 * this.scale;
+    const spread = 200 * scaleFactor();
     this.shadow.set_clip(-spread, 0, halfWidth * 2 + spread * 2, this.target.height + spread);
     this.shadow.opacity = 0;
     this.shadow.show();
@@ -637,14 +636,10 @@ export class Notch implements NotchHost {
     if (this.syncLater || this.destroyed) return;
     this.syncLater = global.compositor.get_laters().add(Meta.LaterType.BEFORE_REDRAW, () => {
       this.syncLater = 0;
-      this.syncPosition();
+      // The clock or the dot changed the width the body is derived from.
+      if (this.updatePosition() && this.model.state !== 'open') this.retarget();
       return GLib.SOURCE_REMOVE;
     });
-  }
-
-  private syncPosition(): void {
-    // The clock or the dot changed the width the body is derived from.
-    if (this.updatePosition() && this.model.state !== 'open') this.retarget();
   }
 
   /** Puts the root below the panel, centred on the neck. True when the width of the neck changed. */
@@ -659,10 +654,6 @@ export class Notch implements NotchHost {
     if (width === this.neckWidth) return false;
     this.neckWidth = width;
     return true;
-  }
-
-  private syncScale(): void {
-    this.scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
   }
 
   /**
@@ -849,9 +840,5 @@ export class Notch implements NotchHost {
     const dateMenu = Main.panel.statusArea.dateMenu;
     dateMenu?.container.disconnectObject(this);
     dateMenu?.container.show();
-  }
-
-  private get centerBox(): Clutter.Actor {
-    return (Main.panel as unknown as { _centerBox: Clutter.Actor })._centerBox;
   }
 }
