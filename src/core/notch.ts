@@ -22,6 +22,7 @@ import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
+import { BannerShift } from './banners.js';
 import { Clock } from './clock.js';
 import { Keybindings } from './keybindings.js';
 import { Motion } from './motion.js';
@@ -105,6 +106,7 @@ export class Notch implements NotchHost {
   private motion: Motion;
   private menu: PanelMenuProxy;
   private keybindings: Keybindings;
+  private banners = new BannerShift();
   private notifications: Gio.Settings | null = null;
 
   private scale = 1;
@@ -356,6 +358,8 @@ export class Notch implements NotchHost {
     }
 
     this.retarget(animate);
+    // Hint and peek take the place of the shell's banners; open blocks them.
+    this.banners.set(state === 'hint' || state === 'peek' ? Math.round(this.target.height) : 0);
 
     if (state === 'open') this.menu.open();
     else this.menu.close();
@@ -797,6 +801,7 @@ export class Notch implements NotchHost {
   destroy(): void {
     this.abandon();
     this.keybindings.destroy();
+    this.banners.destroy();
 
     // Releases the grab and gives the banners back if the notch is open.
     this.menu.close();
