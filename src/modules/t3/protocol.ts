@@ -347,7 +347,7 @@ function decodeThread(value: unknown): Thread | null {
     updatedAt,
     stopRequested: value.latestRunStopRequested === true,
     settled: value.settledOverride === 'settled',
-    gone: value.archivedAt != null || value.deletedAt != null,
+    gone: Boolean(value.archivedAt) || Boolean(value.deletedAt),
     runId: id(value.activeRunId),
     lastMessage: message?.role === 'assistant' ? clean(message.text, MAX_MESSAGE) : '',
     lastError: clean(value.lastError, MAX_ERROR),

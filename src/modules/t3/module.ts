@@ -342,7 +342,7 @@ class T3Module implements VisorModule {
         return _('Has a question');
       case 'done':
         return _('Done');
-      case 'error':
+      default:
         return session.error ? `${_('Failed')} · ${session.error}` : _('Failed');
     }
   }
