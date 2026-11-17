@@ -30,6 +30,8 @@ import { Results, type Group, type Item } from './results.js';
 /** A command can offer more than one thing to do; more than this is not a command any more. */
 const MAX_PER_COMMAND = 5;
 const CALC_ICON = 'accessories-calculator-symbolic';
+/** How often, 10 ms apart, the search waits for the D-Bus proxies of freshly loaded providers. */
+const PROXY_WAITS = 50;
 
 export interface SearchHost {
   /** Closes the panel. */
@@ -79,7 +81,7 @@ export class Search {
   private command: Command | null = null;
   private none: Group | null = null;
   private shown = false;
-  /** Loads the GNOME search providers after the first results are on screen. */
+  /** The source that loads the GNOME search providers, or waits for their proxies. */
   private idle = 0;
 
   constructor(
@@ -394,8 +396,19 @@ export class Search {
     terms: string[],
     generation: number,
     cancellable: Gio.Cancellable,
+    waits = PROXY_WAITS,
   ): void {
-    for (const provider of providers) {
+    // A proxy without a connection cannot be called yet; the shell creates them long before it searches.
+    const ready = providers.filter(provider => provider.proxy.get_connection() !== null);
+    if (ready.length < providers.length && waits > 0) {
+      this.idle = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10, () => {
+        this.idle = 0;
+        this.askProviders(providers, terms, generation, cancellable, waits - 1);
+        return GLib.SOURCE_REMOVE;
+      });
+      return;
+    }
+    for (const provider of ready) {
       searchProvider(provider, terms, cancellable).then(
         items => {
           if (items) this.update(`provider:${provider.id}`, items, generation);

@@ -31,7 +31,8 @@ globalThis.visorSearchDemoRegister = () => {
         keyword: ['timer', 'wecker'],
         hint: 'timer 25m Pizza',
         resolve(args) {
-          const match = /^(\d+)m(?:\s+(.*))?$/.exec(args.trim());
+          // No backslashes: gdbus eats them on the way into the shell.
+          const match = /^([0-9]+)m(?: +(.*))?$/.exec(args.trim());
           if (!match) return [];
           const label = match[2] ? ` · ${match[2]}` : '';
           return [

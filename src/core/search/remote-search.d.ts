@@ -15,6 +15,8 @@ declare module 'resource:///org/gnome/shell/ui/remoteSearch.js' {
   export interface RemoteSearchProvider {
     readonly id: string;
     readonly appInfo: Gio.AppInfo;
+    /** Created with init_async(): it has no connection until that finished. */
+    readonly proxy: Gio.DBusProxy;
     getInitialResultSet(terms: string[], cancellable: Gio.Cancellable): Promise<string[]>;
     getResultMetas(ids: string[], cancellable: Gio.Cancellable): Promise<RemoteResultMeta[]>;
     filterResults(ids: string[], max: number): string[];

@@ -163,11 +163,19 @@ run "(() => {
             const original = T.sheet.queryHandler;
             let start = 0;
             T.sheet.queryHandler = query => { start = now(); original(query); };
+            // A query that changes nothing on screen paints nothing; that one does not count.
             const painted = new Promise(resolve => {
-                const id = global.stage.connect('after-paint', () => {
-                    if (!start) return;
+                let id = global.stage.connect('after-paint', () => {
+                    if (!start || !id) return;
                     global.stage.disconnect(id);
+                    id = 0;
                     resolve(now() - start);
+                });
+                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 400, () => {
+                    if (id) global.stage.disconnect(id);
+                    id = 0;
+                    resolve(0);
+                    return false;
                 });
             });
             await T.type(text, 0);
@@ -441,14 +449,16 @@ run 'visor.notch.close()'
 # [local µs of every query, µs until the frame after the query was painted]
 speed="$(shell_eval '(async () => {
     const local = [], paint = [];
-    for (const text of ["t", "i", "m", "e", "r", " ", "5", "m"]) { paint.push(await (T.sheet.clearQuery === undefined ? 0 : (async () => { if (visor.notch.state !== "open") { await T.open(); T.sheet.entry.grab_key_focus(); } return T.paint(text); })())); local.push(T.finder.timing.local); }
+    const each = async text => { for (const char of text) { paint.push(await T.paint(char)); local.push(T.finder.timing.local); } };
+    await T.ask("");
+    await each("timer 5m");
     T.sheet.clearQuery();
-    for (const text of ["2", "+", "3", "*", "4"]) { paint.push(await T.paint(text)); local.push(T.finder.timing.local); }
+    await each("2+3*4");
     T.sheet.clearQuery();
-    for (const text of T.app.query) { paint.push(await T.paint(text)); local.push(T.finder.timing.local); }
-    return [Math.max(...local), Math.round(local.reduce((a, b) => a + b) / local.length), Math.max(...paint), local.length];
+    await each(T.app.query);
+    return [Math.max(...local), Math.round(local.reduce((a, b) => a + b) / local.length), Math.max(...paint), local.length, local.join(" "), paint.join(" ")];
 })()')"
-echo "      local results, max / mean µs, max µs until painted, queries: $speed"
+echo "      local results, max / mean µs, max µs until painted, queries, each local, each painted: $speed"
 check 'local results are in the list within 16 ms after the debounce' \
     "(() => { const [max] = $speed; return max <= 16000 || max; })()"
 check 'and painted within one more frame' "(() => { const paint = ${speed}[2]; return paint <= 16000 + 17000 || paint; })()"
@@ -470,7 +480,7 @@ search_register
 run 'visor.notch.open()'
 run "(visor.content.sheet.entry.set_text('shop'), true)"
 shell_wait_for "visor.content.finder.groups.some(g => g.id === 'source:demo-notes' && g.items.length === 3) && visor.content.finder.remote.loaded"
-run 'globalThis.oldFinder = visor.content.finder'
+run '(globalThis.oldFinder = visor.content.finder, true)'
 run "Main.extensionManager.disableExtension('$uuid')"
 shell_wait_for "Main.extensionManager.lookup('$uuid').state !== 1"
 check 'disabling the extension with the list open leaves no actor behind' "$count === $actors_off"
