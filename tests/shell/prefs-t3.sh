@@ -6,7 +6,10 @@
 # sessions, Disconnect removes it, a token the server refuses is asked for
 # once and not again, and a bare code pairs anew. Then once more in a sandbox
 # without a keyring: the window says so and keeps the code, the module logs
-# one line. The window is driven with the pointer and the keyboard, as
+# one line. And once with the keyring locked: the shell asks for its password
+# before the code is spent, for as long as the user needs, a dismissed prompt
+# keeps the code, and a window closed while the server answers still leaves
+# the token in the keyring. The window is driven with the pointer and the keyboard, as
 # tests/shell/prefs.sh does.
 #
 # Usage: tests/shell/prefs-t3.sh
@@ -25,6 +28,8 @@ if [[ "${1:-}" != --inside ]]; then
         "$repo/tests/shell/prefs-t3.sh" --inside >"$window" 2>&1 || status=$?
     "$repo/scripts/nested.sh" --no-keyring --log "$repo/.shell-test/prefs-t3-no-keyring.log" -- \
         "$repo/tests/shell/prefs-t3.sh" --inside no-keyring >>"$window" 2>&1 || status=$?
+    "$repo/scripts/nested.sh" --log "$repo/.shell-test/prefs-t3-locked.log" -- \
+        "$repo/tests/shell/prefs-t3.sh" --inside locked >>"$window" 2>&1 || status=$?
     grep -v '^dbus-daemon\|^$' "$window" || true
     noise="$(grep -E '^\(org\.gnome\.Shell\.Extensions:|JS ERROR|Visor' "$window" |
         grep -v '^ok\|^FAIL\|atspi\|visible-page' || true)"
@@ -159,6 +164,64 @@ if [[ "${2:-}" == no-keyring ]]; then
     if [[ "$lines" == 1 ]]; then echo 'ok    one line in the log says so, also after the module was turned off and on'; else echo "FAIL  $lines lines in the log about the keyring"; failures=$((failures + 1)); fi
     expect_mock 'the server was not asked for anything' "s['ticketRequests'] == 0"
     check 'Visor is still enabled' "Main.extensionManager.lookup('$uuid').state === 1"
+    noise="$(tail -n "+$((log_start + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|visor' | grep -v 'Tried to ping window' || true)"
+    if [[ -z "$noise" ]]; then echo 'ok    the shell logged nothing else'; else echo 'FAIL  the shell logged:'; head -n 20 <<<"$noise"; failures=$((failures + 1)); fi
+    ((failures == 0)) && echo PASS
+    exit "$((failures > 0))"
+fi
+
+if [[ "${2:-}" == locked ]]; then
+    # --- the keyring is locked --------------------------------------------------------
+    # The prompt of the keyring is a dialog of the shell; the test answers it there.
+    dialog="Main.layoutManager.modalDialogGroup.get_children().find(d => d.constructor.name === 'KeyringDialog' && d.state === 0)"
+    keyring_lock
+    prefs_a11y
+    prefs_open
+    prefs_page modules
+    prefs_click_on 'Pairing link or code' 'password text'
+    prefs_type "$origin/pair#token=first-code-123"
+    prefs_click_on Connect button
+    wait_check 'a locked keyring: the shell asks for its password' "$dialog != null"
+    sleep 11
+    check 'and still does after more than ten seconds' "$dialog != null"
+    expect_mock 'the pairing code is not used meanwhile' "s['exchanges'] == 0"
+    shell_eval "(() => { const d = $dialog; d._passwordEntry.text = 'sandbox'; d._onContinueButton(); return true; })()" >/dev/null
+    expect_keyring 'with the password the token is stored' "$origin" mock-token
+    expect_setting 'and its origin' t3-token-origin "'$origin'"
+    expect_mock 'after one exchange' "s['exchanges'] == 1 and len(s['pairings']) == 1"
+    expect_keyring 'the probe item is gone' visor:probe ''
+    wait_check 'the module connects' "$t3.module.client.connected && $t3.rows.length === 4"
+    expect_shows 'the window says Connected' 'Connected'
+
+    # The prompt dismissed: the code is kept.
+    prefs_click_on Disconnect button
+    expect_keyring 'Disconnect removes the token' "$origin" ''
+    curl -s -X POST "http://127.0.0.1:$port/__mock/pairing?code=second-code-456" >/dev/null
+    keyring_lock
+    prefs_click_on 'Pairing link or code' 'password text'
+    prefs_type 'second-code-456'
+    prefs_click_on Connect button
+    wait_check 'locked again: the shell asks again' "$dialog != null"
+    shell_eval "(() => { $dialog._onCancelButton(); return true; })()" >/dev/null
+    sleep 1
+    expect_shows 'the prompt dismissed: the row says so' 'The keyring is not available'
+    expect_mock 'and the pairing code was not used up' "s['exchanges'] == 1"
+    expect_setting 'nothing is paired' t3-token-origin "''"
+
+    # The window closes while the server answers: the token is kept all the same.
+    curl -s -X POST "http://127.0.0.1:$port/__mock/slow-token?ms=1000" >/dev/null
+    prefs_click_on 'The keyring is not available' 'password text'
+    prefs_type 'second-code-456'
+    prefs_click_on Connect button
+    wait_check 'the shell asks once more' "$dialog != null"
+    shell_eval "(() => { const d = $dialog; d._passwordEntry.text = 'sandbox'; d._onContinueButton(); return true; })()" >/dev/null
+    wait_mock "s['exchanges'] == 2"
+    prefs_close
+    expect_mock 'the window closed while the server was answering' "s['exchanges'] == 2 and len(s['pairings']) == 2"
+    expect_keyring 'the token is in the keyring all the same' "$origin" mock-token
+    expect_setting 'with its origin' t3-token-origin "'$origin'"
+    wait_check 'and the module connects' "$t3.module.client.connected && $t3.rows.length === 4"
+    expect_no_secret_in_dconf 'no pairing code and no token in dconf'
     noise="$(tail -n "+$((log_start + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|visor' | grep -v 'Tried to ping window' || true)"
     if [[ -z "$noise" ]]; then echo 'ok    the shell logged nothing else'; else echo 'FAIL  the shell logged:'; head -n 20 <<<"$noise"; failures=$((failures + 1)); fi
     ((failures == 0)) && echo PASS

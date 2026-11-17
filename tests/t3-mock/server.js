@@ -28,6 +28,7 @@
 //                               (a frame of 5 MB); `projections` in the state counts them
 //   POST /__mock/thread         body: a thread shell (at least {id}); merged and announced
 //   POST /__mock/remove?thread=ID
+//   POST /__mock/slow-token?ms=N the next token exchange answers N ms late
 //   POST /__mock/fail-next      the next command fails
 //   POST /__mock/reset          forgets the recorded actions
 import { createHash, randomUUID } from 'node:crypto';
@@ -70,6 +71,7 @@ let acks = 0;
 let ticketCount = 0;
 let ticketRequests = 0;
 let exchanges = 0;
+let slowToken = 0;
 let failNext = false;
 let sequence = 1;
 
@@ -313,6 +315,8 @@ const server = createServer(async (request, response) => {
       return json(401, { _tag: 'EnvironmentAuthInvalidError', reason: 'invalid_credential' });
     const scope = form.get('scope') ?? 'orchestration:read orchestration:operate';
     pairings.push({ label: form.get('client_label'), scope });
+    if (slowToken) await new Promise(resolve => setTimeout(resolve, slowToken));
+    slowToken = 0;
     return json(200, {
       access_token: token,
       issued_token_type: 'urn:ietf:params:oauth:token-type:access_token',
@@ -379,6 +383,9 @@ const server = createServer(async (request, response) => {
       return json(200, {});
     case '/__mock/pairing':
       pairingCodes.add(url.searchParams.get('code') ?? 'mock-pairing');
+      return json(200, {});
+    case '/__mock/slow-token':
+      slowToken = Number(url.searchParams.get('ms') ?? 1000);
       return json(200, {});
     case '/__mock/fail-next':
       failNext = true;

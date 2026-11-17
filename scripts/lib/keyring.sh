@@ -29,6 +29,15 @@ keyring_lookup() {
     secret-tool lookup xdg:schema io.github.taulit.Visor.T3 origin "$1" 2>/dev/null || true
 }
 
+# keyring_lock: locks the login keyring of the sandbox (its password is "sandbox");
+# the next call that needs it makes the shell ask for the password.
+keyring_lock() {
+    keyring_guard
+    gdbus call --session --dest org.freedesktop.secrets --object-path /org/freedesktop/secrets \
+        --method org.freedesktop.Secret.Service.Lock \
+        "['/org/freedesktop/secrets/collection/login']" >/dev/null
+}
+
 # t3_pair ORIGIN TOKEN: what pairing in the settings window leaves behind.
 # Needs scripts/lib/shell.sh and Visor running.
 t3_pair() {
