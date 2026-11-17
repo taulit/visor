@@ -4,12 +4,17 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['build/', 'dist/', 'node_modules/', '.shell-src/', 'docs/'],
+    ignores: ['build/', 'dist/', 'node_modules/', '.shell-src/', 'docs/', 'sdk/index.js'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['src/**/*.ts', 'tests/shell-helper/**/*.js'],
+    files: [
+      'src/**/*.ts',
+      'tests/shell-helper/**/*.js',
+      'sdk/**/*.js',
+      'examples/**/src/**/*.{ts,js}',
+    ],
     languageOptions: {
       globals: {
         ...globals.es2021,
@@ -38,7 +43,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.js', '*.js', '*.ts', 'tests/**/*.ts'],
+    files: ['scripts/**/*.js', '*.js', '*.ts', 'tests/**/*.ts', 'tests/t3-mock/**/*.js'],
     languageOptions: { globals: { ...globals.node } },
   },
 );

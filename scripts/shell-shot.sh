@@ -3,7 +3,8 @@
 #
 # Usage: scripts/shell-shot.sh <scenario> [--scheme dark|light] [--accent NAME] [--out FILE]
 # Scenarios live in scripts/scenarios/<name>.sh; each one drives the shell into
-# a state with shell_eval. The default output is docs/screenshots/<scenario>-<scheme>.png.
+# a state with shell_eval; it can set SHOT_WINDOW to a window title to shoot only that
+# window. The default output is docs/screenshots/<scenario>-<scheme>.png.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -13,7 +14,8 @@ if [[ "${1:-}" == --inside ]]; then
     scenario="$2" out="$3"
     source "$repo/scripts/scenarios/$scenario.sh"
     sleep "${SETTLE_SECONDS:-0.3}"
-    shell_shot "$out"
+    # A scenario that sets SHOT_WINDOW wants the window with that title, not the monitor.
+    if [[ -n "${SHOT_WINDOW:-}" ]]; then shell_shot_window "$SHOT_WINDOW" "$out"; else shell_shot "$out"; fi
     echo "$out"
     exit 0
 fi

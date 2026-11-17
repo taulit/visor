@@ -4,6 +4,7 @@ import {
   badgeText,
   declaredApi,
   isValidModuleId,
+  moveWithin,
   orderIds,
 } from '../src/lib/modules.js';
 
@@ -93,5 +94,55 @@ describe('badgeText', () => {
   it('shows nothing for null, zero, negative and invalid values', () => {
     for (const count of [null, undefined, 0, -3, 0.4, NaN, Infinity])
       expect(badgeText(count)).toBeNull();
+  });
+});
+
+describe('moveWithin', () => {
+  const known = ['media', 'timers', 'downloads', 'upcoming', 'notifications'];
+  const now = ['media', 'timers', 'downloads'];
+
+  it('moves a module inside its group', () => {
+    expect(moveWithin(known, [], now, 0, 2)).toEqual([
+      'timers',
+      'downloads',
+      'media',
+      'upcoming',
+      'notifications',
+    ]);
+    expect(moveWithin(known, [], now, 2, 1)).toEqual([
+      'media',
+      'downloads',
+      'timers',
+      'upcoming',
+      'notifications',
+    ]);
+  });
+
+  it('leaves the places of the other groups alone', () => {
+    const order = ['notifications', 'media', 'upcoming', 'timers', 'downloads'];
+    expect(moveWithin(known, order, now, 0, 1)).toEqual([
+      'notifications',
+      'timers',
+      'upcoming',
+      'media',
+      'downloads',
+    ]);
+  });
+
+  it('keeps ids it does not know where they are', () => {
+    const order = ['notes', 'media', 'tasks', 'timers'];
+    expect(moveWithin(known, order, now, 0, 1)).toEqual([
+      'notes',
+      'timers',
+      'tasks',
+      'media',
+      'downloads',
+      'upcoming',
+      'notifications',
+    ]);
+  });
+
+  it('does nothing when the module stays', () => {
+    expect(moveWithin(known, [], now, 1, 1)).toEqual(known);
   });
 });

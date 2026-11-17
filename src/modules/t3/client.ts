@@ -1,0 +1,461 @@
+// The connection to the local T3 Code server, see docs/t3-protocol.md:
+// descriptor, WebSocket ticket, socket, the shell stream. It reconnects with
+// a growing wait and at once when the network or the server's runtime file
+// changes. Without a token it does nothing at all, and a token the server
+// refuses is not tried again until the setting changes.
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Soup from 'gi://Soup?version=3.0';
+
+import { SERVER_KEY, TOKEN_KEY, TOKEN_ORIGIN_KEY, tokenFits } from './pairing.js';
+import {
+  METHODS,
+  PONG_FRAME,
+  ackFrame,
+  applyShellItem,
+  backoffSeconds,
+  cleanOrigin,
+  decodeDescriptor,
+  decodeFrames,
+  decodeRuntimeState,
+  decodeTicket,
+  descriptorUrl,
+  emptyShell,
+  isCompatible,
+  isSnapshot,
+  requestFrame,
+  socketUrl,
+  subscribeShellPayload,
+  threadLink,
+  ticketUrl,
+  type Descriptor,
+  type ShellState,
+} from './protocol.js';
+
+export { SERVER_KEY, TOKEN_KEY, TOKEN_ORIGIN_KEY };
+
+/**
+ * A larger frame closes the socket. A thread projection that large is not
+ * read: its command stays unknown and is answered in T3 Code.
+ */
+const MAX_FRAME_BYTES = 4 * 1024 * 1024;
+const MAX_HTTP_BYTES = 256 * 1024;
+/** The shared session drops a socket that is silent for its timeout; a ping keeps it. */
+const KEEPALIVE_SECONDS = 10;
+const REQUEST_TIMEOUT_SECONDS = 20;
+
+interface Pending {
+  resolve(value: unknown): void;
+  reject(error: Error): void;
+  timeout: number;
+}
+
+/** Where a running server says it listens: `$T3CODE_HOME` or `~/.t3`. */
+function runtimeFile(): Gio.File {
+  const base = GLib.getenv('T3CODE_HOME') || GLib.build_filenamev([GLib.get_home_dir(), '.t3']);
+  return Gio.File.new_for_path(GLib.build_filenamev([base, 'userdata', 'server-runtime.json']));
+}
+
+export class T3Client {
+  /** The threads of the server; empty while there is no connection. */
+  shell: ShellState = emptyShell();
+  descriptor: Descriptor | null = null;
+  connected = false;
+  /** The first snapshot of this connection has arrived: `shell` is what the server has. */
+  synced = false;
+
+  private origin: string | null = null;
+  private cancellable: Gio.Cancellable | null = null;
+  private socket: Soup.WebsocketConnection | null = null;
+  private pending = new Map<string, Pending>();
+  private shellRequest: string | null = null;
+  private nextId = 1;
+  private attempt = 0;
+  private retrySource = 0;
+  private connecting = false;
+  private running = false;
+  private monitor: Gio.FileMonitor | null = null;
+  private network: Gio.NetworkMonitor | null = null;
+  private incompatibleLogged = false;
+  /** The server refused the token; nothing is tried until the token or the address changes. */
+  private rejected = false;
+
+  /** `changed` is called when the threads or the connection changed. */
+  constructor(
+    private http: Soup.Session,
+    private settings: Gio.Settings | null,
+    private changed: () => void,
+  ) {}
+
+  start(): void {
+    if (this.running) return;
+    this.running = true;
+    this.settings?.connectObject(
+      `changed::${SERVER_KEY}`,
+      () => this.restart(),
+      `changed::${TOKEN_KEY}`,
+      () => this.restart(),
+      `changed::${TOKEN_ORIGIN_KEY}`,
+      () => this.restart(),
+      this,
+    );
+    this.network = Gio.NetworkMonitor.get_default();
+    this.network.connectObject('network-changed', () => this.retryNow(), this);
+    try {
+      // The server writes this file when it starts and removes it when it stops.
+      this.monitor = runtimeFile().monitor_file(Gio.FileMonitorFlags.NONE, null);
+      this.monitor.connectObject('changed', () => this.retryNow(), this);
+    } catch {
+      this.monitor = null;
+    }
+    this.connect();
+  }
+
+  stop(): void {
+    if (!this.running) return;
+    this.running = false;
+    this.settings?.disconnectObject(this);
+    this.network?.disconnectObject(this);
+    this.network = null;
+    this.monitor?.disconnectObject(this);
+    this.monitor?.cancel();
+    this.monitor = null;
+    this.drop();
+    this.attempt = 0;
+    this.incompatibleLogged = false;
+    this.rejected = false;
+  }
+
+  /** The address that opens a thread in T3 Code. */
+  link(threadId: string): string | null {
+    return this.origin && this.descriptor
+      ? threadLink(this.origin, this.descriptor.environmentId, threadId)
+      : null;
+  }
+
+  /** Sends a request; the promise rejects with a short reason. */
+  request(method: string, payload: unknown): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      const socket = this.socket;
+      // A socket that is closing takes no request; waiting for the timeout helps nobody.
+      if (!socket || !this.connected || socket.get_state() !== Soup.WebsocketState.OPEN) {
+        reject(new Error('not connected'));
+        return;
+      }
+      const requestId = String(this.nextId++);
+      const timeout = GLib.timeout_add_seconds(
+        GLib.PRIORITY_DEFAULT,
+        REQUEST_TIMEOUT_SECONDS,
+        () => {
+          this.pending.delete(requestId);
+          reject(new Error('timed out'));
+          return GLib.SOURCE_REMOVE;
+        },
+      );
+      this.pending.set(requestId, { resolve, reject, timeout });
+      this.sendText(socket, requestFrame(requestId, method, payload));
+    });
+  }
+
+  command(command: unknown): Promise<unknown> {
+    return this.request(METHODS.dispatchCommand, command);
+  }
+
+  // --- connecting ---
+
+  private restart(): void {
+    if (!this.running) return;
+    this.drop();
+    this.attempt = 0;
+    this.rejected = false;
+    this.changed();
+    this.connect();
+  }
+
+  /** The network or the server's runtime file changed: do not sit out the wait. */
+  private retryNow(): void {
+    if (!this.running || this.connected || this.connecting || this.rejected) return;
+    this.attempt = 0;
+    this.connect();
+  }
+
+  private connect(): void {
+    if (this.retrySource) GLib.source_remove(this.retrySource);
+    this.retrySource = 0;
+    const token = this.settings?.get_string(TOKEN_KEY) ?? '';
+    // Not paired: nothing to do until the setting changes.
+    if (!this.running || this.connecting || this.connected || !token || this.rejected) return;
+    this.connecting = true;
+    const cancellable = (this.cancellable = new Gio.Cancellable());
+    this.open(token, cancellable)
+      .catch(() => false)
+      .then(opened => {
+        if (cancellable.is_cancelled()) return;
+        this.connecting = false;
+        if (!opened) this.retryLater();
+      });
+  }
+
+  private retryLater(): void {
+    if (!this.running || this.retrySource || this.rejected) return;
+    this.retrySource = GLib.timeout_add_seconds(
+      GLib.PRIORITY_DEFAULT,
+      backoffSeconds(this.attempt++),
+      () => {
+        this.retrySource = 0;
+        this.connect();
+        return GLib.SOURCE_REMOVE;
+      },
+    );
+  }
+
+  /** True when the socket is open. A server that is not there is no error. */
+  private async open(token: string, cancellable: Gio.Cancellable): Promise<boolean> {
+    const configured = this.settings?.get_string(SERVER_KEY) ?? '';
+    const origin = configured
+      ? cleanOrigin(configured)
+      : decodeRuntimeState((await this.readFile(runtimeFile(), cancellable)) ?? '');
+    if (!origin || cancellable.is_cancelled()) return false;
+    // The token goes to the server it was issued by and to no other.
+    if (!tokenFits(this.settings?.get_string(TOKEN_ORIGIN_KEY) ?? '', origin)) return false;
+
+    const about = (await this.fetch('GET', descriptorUrl(origin), null, cancellable)).body;
+    const descriptor = about ? decodeDescriptor(about) : null;
+    if (!descriptor || cancellable.is_cancelled()) return false;
+    if (!isCompatible(descriptor)) {
+      if (!this.incompatibleLogged) {
+        this.incompatibleLogged = true;
+        log(
+          `T3 Code speaks orchestration protocol ${descriptor.version ?? 'unknown'}, ` +
+            'this module another one; its sessions are not shown.',
+        );
+      }
+      return false;
+    }
+
+    const answer = await this.fetch('POST', ticketUrl(origin), token, cancellable);
+    if (cancellable.is_cancelled()) return false;
+    if (answer.status === 401 || answer.status === 403) {
+      // Asking again gets the same answer; the token itself is never logged.
+      this.rejected = true;
+      log(
+        `T3 Code refused the access token (HTTP ${answer.status}); ` +
+          'pair again in the settings of Visor. Not trying again until then.',
+      );
+      return false;
+    }
+    const ticket = decodeTicket(answer.body ?? '');
+    if (!ticket) return false;
+
+    const socket = await this.openSocket(socketUrl(origin, ticket), cancellable);
+    if (!socket) return false;
+    if (cancellable.is_cancelled()) {
+      socket.close(Soup.WebsocketCloseCode.NORMAL, null);
+      return false;
+    }
+
+    this.origin = origin;
+    this.descriptor = descriptor;
+    this.socket = socket;
+    this.connected = true;
+    // The wait before the next attempt starts over once the first snapshot is
+    // here, not now: a server that accepts and then ends the stream would be
+    // asked every second.
+    socket.max_incoming_payload_size = MAX_FRAME_BYTES;
+    socket.keepalive_interval = KEEPALIVE_SECONDS;
+    socket.connectObject(
+      'message',
+      (_socket: Soup.WebsocketConnection, type: Soup.WebsocketDataType, bytes: GLib.Bytes) =>
+        this.receive(type, bytes),
+      'closed',
+      () => this.lost(socket),
+      // An error is followed by `closed`; nothing to say about it.
+      'error',
+      () => {},
+      this,
+    );
+    this.shellRequest = String(this.nextId++);
+    this.sendText(
+      socket,
+      requestFrame(this.shellRequest, METHODS.subscribeShell, subscribeShellPayload(descriptor)),
+    );
+    return true;
+  }
+
+  private readFile(file: Gio.File, cancellable: Gio.Cancellable): Promise<string | null> {
+    return new Promise(resolve => {
+      file.load_contents_async(cancellable, (_source, result) => {
+        try {
+          const [, bytes] = file.load_contents_finish(result);
+          resolve(bytes.length <= MAX_HTTP_BYTES ? new TextDecoder().decode(bytes) : null);
+        } catch {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  /** The status (0 when there was no answer) and, for a 200 answer, the body. */
+  private fetch(
+    method: string,
+    url: string,
+    token: string | null,
+    cancellable: Gio.Cancellable,
+  ): Promise<{ status: number; body: string | null }> {
+    return new Promise(resolve => {
+      let message: Soup.Message;
+      try {
+        message = Soup.Message.new(method, url);
+      } catch {
+        resolve({ status: 0, body: null });
+        return;
+      }
+      // A redirect would carry the token or the ticket to another place.
+      message.add_flags(Soup.MessageFlags.NO_REDIRECT);
+      if (token) message.get_request_headers().append('Authorization', `Bearer ${token}`);
+      this.http.send_and_read_async(
+        message,
+        GLib.PRIORITY_DEFAULT,
+        cancellable,
+        (_source, result) => {
+          try {
+            const data = this.http.send_and_read_finish(result).get_data();
+            const status = message.get_status();
+            const ok = status === Soup.Status.OK && data !== null && data.length <= MAX_HTTP_BYTES;
+            resolve({ status, body: ok ? new TextDecoder().decode(data) : null });
+          } catch {
+            resolve({ status: 0, body: null });
+          }
+        },
+      );
+    });
+  }
+
+  private openSocket(
+    url: string,
+    cancellable: Gio.Cancellable,
+  ): Promise<Soup.WebsocketConnection | null> {
+    return new Promise(resolve => {
+      let message: Soup.Message;
+      try {
+        message = Soup.Message.new('GET', url);
+      } catch {
+        resolve(null);
+        return;
+      }
+      // The ticket is in the address.
+      message.add_flags(Soup.MessageFlags.NO_REDIRECT);
+      this.http.websocket_connect_async(
+        message,
+        null,
+        null,
+        GLib.PRIORITY_DEFAULT,
+        cancellable,
+        (_source, result) => {
+          try {
+            resolve(this.http.websocket_connect_finish(result));
+          } catch {
+            resolve(null);
+          }
+        },
+      );
+    });
+  }
+
+  // --- the socket ---
+
+  /** Sends on a socket that is open; one that is closing would warn and send nothing. */
+  private sendText(socket: Soup.WebsocketConnection, text: string): boolean {
+    if (socket.get_state() !== Soup.WebsocketState.OPEN) return false;
+    socket.send_text(text);
+    return true;
+  }
+
+  private close(socket: Soup.WebsocketConnection): void {
+    if (socket.get_state() === Soup.WebsocketState.OPEN)
+      socket.close(Soup.WebsocketCloseCode.NORMAL, null);
+  }
+
+  private receive(type: Soup.WebsocketDataType, bytes: GLib.Bytes): void {
+    const socket = this.socket;
+    const data = bytes.get_data();
+    if (!socket || !data) return;
+    // The server may send JSON as text or as bytes.
+    void type;
+    let shellChanged = false;
+    for (const frame of decodeFrames(new TextDecoder().decode(data))) {
+      switch (frame.tag) {
+        case 'chunk':
+          // Without the ack the server sends nothing more on this stream.
+          this.sendText(socket, ackFrame(frame.requestId));
+          if (frame.requestId !== this.shellRequest) break;
+          for (const item of frame.values) {
+            if (!applyShellItem(this.shell, item)) continue;
+            shellChanged = true;
+            if (!this.synced && isSnapshot(item)) {
+              this.synced = true;
+              this.attempt = 0;
+            }
+          }
+          break;
+        case 'exit': {
+          if (frame.requestId === this.shellRequest) {
+            // The stream ended; a new connection starts a new one.
+            this.close(socket);
+            break;
+          }
+          const pending = this.pending.get(frame.requestId);
+          if (!pending) break;
+          this.pending.delete(frame.requestId);
+          GLib.source_remove(pending.timeout);
+          if (frame.ok) pending.resolve(frame.value);
+          else pending.reject(new Error(frame.error));
+          break;
+        }
+        case 'ping':
+          this.sendText(socket, PONG_FRAME);
+          break;
+        case 'defect':
+          this.close(socket);
+          break;
+        case 'pong':
+          break;
+      }
+    }
+    if (shellChanged) this.changed();
+  }
+
+  private lost(socket: Soup.WebsocketConnection): void {
+    if (socket !== this.socket) return;
+    this.drop();
+    this.changed();
+    this.retryLater();
+  }
+
+  /** Forgets the connection and everything that came over it. */
+  private drop(): void {
+    this.cancellable?.cancel();
+    this.cancellable = null;
+    this.connecting = false;
+    if (this.retrySource) GLib.source_remove(this.retrySource);
+    this.retrySource = 0;
+    const socket = this.socket;
+    this.socket = null;
+    if (socket) {
+      socket.disconnectObject(this);
+      if (socket.get_state() === Soup.WebsocketState.OPEN)
+        socket.close(Soup.WebsocketCloseCode.NORMAL, null);
+    }
+    for (const pending of this.pending.values()) {
+      GLib.source_remove(pending.timeout);
+      pending.reject(new Error('not connected'));
+    }
+    this.pending.clear();
+    this.shellRequest = null;
+    this.connected = false;
+    this.synced = false;
+    this.descriptor = null;
+    this.origin = null;
+    this.shell = emptyShell();
+  }
+}

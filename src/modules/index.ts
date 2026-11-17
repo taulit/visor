@@ -1,6 +1,7 @@
 import type { VisorModule } from '../api.js';
 import { downloadsModule } from './downloads/module.js';
 import { mediaModule } from './media/module.js';
+import { t3Module } from './t3/module.js';
 import { timersModule } from './timers/module.js';
 import { notificationsModule } from './notifications/module.js';
 import { upcomingModule } from './upcoming/module.js';
@@ -12,6 +13,7 @@ import { upcomingModule } from './upcoming/module.js';
 export function builtinModules(): VisorModule[] {
   return [
     mediaModule(),
+    t3Module(),
     timersModule(),
     downloadsModule(),
     upcomingModule(),
