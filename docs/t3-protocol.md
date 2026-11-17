@@ -47,13 +47,13 @@ Visor does step 1, 3 and 4. Step 2 belongs to the settings; the module reads the
 The socket speaks Effect RPC with JSON serialization (`effect/rpc/RpcMessage.ts`, effect 4.1.2): one JSON
 value per frame, an object or an array of objects.
 
-| Direction | Frame |
-| --- | --- |
-| client → server | `{"_tag":"Request","id":"<n>","tag":"<method>","payload":{…},"headers":[]}` |
-| server → client | `{"_tag":"Chunk","requestId":"<n>","values":[…]}` for streams |
-| client → server | `{"_tag":"Ack","requestId":"<n>"}` after every chunk, or the stream stalls |
+| Direction       | Frame                                                                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| client → server | `{"_tag":"Request","id":"<n>","tag":"<method>","payload":{…},"headers":[]}`                                                         |
+| server → client | `{"_tag":"Chunk","requestId":"<n>","values":[…]}` for streams                                                                       |
+| client → server | `{"_tag":"Ack","requestId":"<n>"}` after every chunk, or the stream stalls                                                          |
 | server → client | `{"_tag":"Exit","requestId":"<n>","exit":{"_tag":"Success","value":…}}` or `{"_tag":"Failure","cause":[{"_tag":"Fail","error":…}]}` |
-| both | `{"_tag":"Ping"}` / `{"_tag":"Pong"}`; `{"_tag":"Defect","defect":…}` ends everything |
+| both            | `{"_tag":"Ping"}` / `{"_tag":"Pong"}`; `{"_tag":"Defect","defect":…}` ends everything                                               |
 
 Methods and schemas are in `packages/contracts/src/orchestrationV2.ts` (`ORCHESTRATION_V2_WS_METHODS`,
 `OrchestrationV2RpcSchemas`).
@@ -95,11 +95,11 @@ UUIDs (`packages/client-runtime/src/operations/commands.ts`).
 
 - Approve / deny: `{type:"runtime-request.respond", commandId, threadId, requestId, decision:"accept"|"decline"}`
 - Reply: `{type:"message.dispatch", commandId, createdBy:"user", creationSource:"web", threadId, messageId,
-  text, attachments:[], dispatchMode:{type:"start_immediately"}, deliveryIntent:"auto"}`
+text, attachments:[], dispatchMode:{type:"start_immediately"}, deliveryIntent:"auto"}`
 - Stop: `{type:"thread.stop", commandId, threadId}`
 - New thread: `orchestration.launchThread` with `{commandId, creationSource:"web", threadId, projectId,
-  title, generateTitle:true, modelSelection, runtimeMode, interactionMode, workspaceStrategy:{type:"root"},
-  initialMessage:{messageId, text, attachments:[]}}`
+title, generateTitle:true, modelSelection, runtimeMode, interactionMode, workspaceStrategy:{type:"root"},
+initialMessage:{messageId, text, attachments:[]}}`
 
 ### Last agent message
 

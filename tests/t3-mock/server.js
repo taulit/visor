@@ -26,7 +26,14 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 
-import { FIXTURES, approvalItem, descriptor, pendingRequest, snapshotItem, thread } from './fixtures.js';
+import {
+  FIXTURES,
+  approvalItem,
+  descriptor,
+  pendingRequest,
+  snapshotItem,
+  thread,
+} from './fixtures.js';
 
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
@@ -73,7 +80,11 @@ function apply(command) {
   const { type, threadId } = command;
   if (type === 'runtime-request.respond') {
     prompts.delete(command.requestId);
-    patch(threadId, { pendingRuntimeRequest: null, status: 'running', activityRunStatus: 'running' });
+    patch(threadId, {
+      pendingRuntimeRequest: null,
+      status: 'running',
+      activityRunStatus: 'running',
+    });
   } else if (type === 'thread.stop' || type === 'run.interrupt') {
     for (const t of [...threads.values()]) {
       if (t.id !== threadId && t.lineage?.parentThreadId !== threadId) continue;
@@ -297,7 +308,12 @@ const server = createServer((request, response) => {
     case '/__mock/remove':
       threads.delete(id);
       for (const client of clients)
-        client.chunk({ kind: 'thread.removed', sequence: ++sequence, location: 'active', threadId: id });
+        client.chunk({
+          kind: 'thread.removed',
+          sequence: ++sequence,
+          location: 'active',
+          threadId: id,
+        });
       return json(200, {});
     case '/__mock/fail-next':
       failNext = true;

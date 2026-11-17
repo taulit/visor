@@ -53,7 +53,9 @@ function time(value: unknown): number | null {
 /** The origin without a trailing slash, or null when it is not a plain http(s) address. */
 export function cleanOrigin(value: unknown): string | null {
   if (typeof value !== 'string' || value.length > 300) return null;
-  const match = /^(https?):\/\/([A-Za-z0-9.-]+|\[[0-9A-Fa-f:.]+\])(:\d{1,5})?\/?$/.exec(value.trim());
+  const match = /^(https?):\/\/([A-Za-z0-9.-]+|\[[0-9A-Fa-f:.]+\])(:\d{1,5})?\/?$/.exec(
+    value.trim(),
+  );
   return match ? `${match[1]}://${match[2]}${match[3] ?? ''}` : null;
 }
 
@@ -262,7 +264,8 @@ export function launchPayload(
 
 /** The command or file an approval asks about, from the answer of getThreadProjection. */
 export function approvalPrompt(projection: unknown, requestId: string): string {
-  const items = isObject(projection) && Array.isArray(projection.turnItems) ? projection.turnItems : [];
+  const items =
+    isObject(projection) && Array.isArray(projection.turnItems) ? projection.turnItems : [];
   for (let i = items.length - 1; i >= 0; i--) {
     const item: unknown = items[i];
     if (isObject(item) && item.type === 'approval_request' && item.requestId === requestId)
@@ -321,8 +324,10 @@ function decodeThread(value: unknown): Thread | null {
   const lineage = isObject(value.lineage) ? value.lineage : {};
   const pending = isObject(value.pendingRuntimeRequest) ? value.pendingRuntimeRequest : null;
   const requestId = pending ? id(pending.id) : null;
-  const kind = pending && typeof pending.kind === 'string' ? REQUEST_KINDS[pending.kind] : undefined;
-  const status = typeof value.activityRunStatus === 'string' ? value.activityRunStatus : value.status;
+  const kind =
+    pending && typeof pending.kind === 'string' ? REQUEST_KINDS[pending.kind] : undefined;
+  const status =
+    typeof value.activityRunStatus === 'string' ? value.activityRunStatus : value.status;
   const message = isObject(value.latestVisibleMessage) ? value.latestVisibleMessage : null;
   const { modelSelection, runtimeMode, interactionMode } = value;
   const updatedAt = time(value.updatedAt) ?? 0;
@@ -347,7 +352,9 @@ function decodeThread(value: unknown): Thread | null {
     lastMessage: message?.role === 'assistant' ? clean(message.text, MAX_MESSAGE) : '',
     lastError: clean(value.lastError, MAX_ERROR),
     launch:
-      isObject(modelSelection) && typeof runtimeMode === 'string' && typeof interactionMode === 'string'
+      isObject(modelSelection) &&
+      typeof runtimeMode === 'string' &&
+      typeof interactionMode === 'string'
         ? { modelSelection, runtimeMode, interactionMode }
         : null,
   };
@@ -499,7 +506,9 @@ export function sessionsOf(state: ShellState, now: number): Session[] {
       order: request ? request.createdAt : -(until ?? thread.startedAt ?? thread.updatedAt),
     });
   }
-  sessions.sort((a, b) => RANK[a.phase] - RANK[b.phase] || a.order - b.order || (a.id < b.id ? -1 : 1));
+  sessions.sort(
+    (a, b) => RANK[a.phase] - RANK[b.phase] || a.order - b.order || (a.id < b.id ? -1 : 1),
+  );
   return sessions.map(({ order: _order, ...session }) => session);
 }
 

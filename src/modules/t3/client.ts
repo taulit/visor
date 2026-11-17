@@ -283,16 +283,23 @@ export class T3Client {
         return;
       }
       if (token) message.get_request_headers().append('Authorization', `Bearer ${token}`);
-      this.http.send_and_read_async(message, GLib.PRIORITY_DEFAULT, cancellable, (_source, result) => {
-        try {
-          const data = this.http.send_and_read_finish(result).get_data();
-          const ok =
-            message.get_status() === Soup.Status.OK && data !== null && data.length <= MAX_HTTP_BYTES;
-          resolve(ok ? new TextDecoder().decode(data) : null);
-        } catch {
-          resolve(null);
-        }
-      });
+      this.http.send_and_read_async(
+        message,
+        GLib.PRIORITY_DEFAULT,
+        cancellable,
+        (_source, result) => {
+          try {
+            const data = this.http.send_and_read_finish(result).get_data();
+            const ok =
+              message.get_status() === Soup.Status.OK &&
+              data !== null &&
+              data.length <= MAX_HTTP_BYTES;
+            resolve(ok ? new TextDecoder().decode(data) : null);
+          } catch {
+            resolve(null);
+          }
+        },
+      );
     });
   }
 
