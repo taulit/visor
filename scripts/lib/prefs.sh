@@ -82,16 +82,22 @@ prefs_close() {
     shell_wait_for "!global.get_window_actors().some(a => a.meta_window.title === '$PREFS_WINDOW')"
 }
 
+# The keyboard all typing goes through; a new device loses its first keys.
+PREFS_KEYBOARD="(globalThis.visorPrefsKeyboard ??= Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE))"
+
 # prefs_type TEXT: types TEXT into whatever has the keyboard focus, then waits.
 prefs_type() {
     shell_eval "(async () => {
-        const keyboard = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
+        const fresh = !globalThis.visorPrefsKeyboard;
+        const keyboard = $PREFS_KEYBOARD;
         const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
+        if (fresh) await wait(500);
         for (const char of '$1') {
             const symbol = Clutter.unicode_to_keysym(char.codePointAt(0));
             keyboard.notify_keyval(GLib.get_monotonic_time(), symbol, Clutter.KeyState.PRESSED);
+            await wait(20);
             keyboard.notify_keyval(GLib.get_monotonic_time(), symbol, Clutter.KeyState.RELEASED);
-            await wait(25);
+            await wait(30);
         }
         await wait(300);
         return true;
@@ -101,10 +107,12 @@ prefs_type() {
 # prefs_enter: presses Enter in the window.
 prefs_enter() {
     shell_eval "(async () => {
-        const keyboard = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
+        const keyboard = $PREFS_KEYBOARD;
+        const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
         keyboard.notify_keyval(GLib.get_monotonic_time(), Clutter.KEY_Return, Clutter.KeyState.PRESSED);
+        await wait(20);
         keyboard.notify_keyval(GLib.get_monotonic_time(), Clutter.KEY_Return, Clutter.KeyState.RELEASED);
-        await new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => (r(), false)));
+        await wait(300);
         return true;
     })()" >/dev/null
 }

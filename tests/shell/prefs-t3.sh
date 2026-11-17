@@ -71,6 +71,15 @@ mock_pid=$!
 trap 'kill "$mock_pid" 2>/dev/null || true' EXIT
 # mock_state PYTHON: an expression over the state `s` of the mock, printed as true or false.
 mock_state() { curl -s "http://127.0.0.1:$port/__mock/state" | python3 -c "import json,sys; s=json.load(sys.stdin); print(str($1).lower())"; }
+# wait_mock PYTHON [seconds]: gives the expression time to become true.
+wait_mock() {
+    local i
+    for ((i = 0; i < ${2:-5} * 5; i++)); do
+        [[ "$(mock_state "$1")" == true ]] && return 0
+        sleep 0.2
+    done
+    return 0
+}
 expect_mock() {
     local got
     got="$(mock_state "$2")"
@@ -94,9 +103,9 @@ paired_y=594
 prefs_click 200 "$row_y"
 prefs_type "http://127.0.0.1:$port/pair#token=wrong-code-789"
 prefs_enter
-sleep 1
-expect_setting 'a wrong pairing link stores no token' t3-access-token "''"
-expect_mock 'and the server was asked once, in vain' "s['exchanges'] == 1 and s['pairings'] == [] and s['ticketRequests'] == 0"
+wait_mock "s['exchanges'] == 1"
+expect_mock 'the server refuses a wrong pairing link' "s['exchanges'] == 1 and s['pairings'] == [] and s['ticketRequests'] == 0"
+expect_setting 'and no token is stored' t3-access-token "''"
 
 # --- pairing -------------------------------------------------------------------
 prefs_click 200 "$row_y"
