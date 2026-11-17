@@ -29,12 +29,15 @@ review done, 11 of 12 findings fixed. The private template repo `taulit/visor-mo
 - "Open in T3 Code" opens the thread in the browser; the desktop app has no deep link for threads.
 - API v1 has no kit element for body text or a text field; the T3 module builds both itself.
 
-- Peek chip click should mark and, if needed, expand the matching section (plan 01 §8); today it only opens.
-- Search: the frame showing local results came up to 30 ms after the debounce (list itself ≤ 14.6 ms); measure
-  again in V4.
+- Done in V4 (branch `t3/visor-performance-accessibility`): budgets measured (`docs/performance.md`,
+  `scripts/measure.sh`, GSettings `debug-metrics`), accessibility (`docs/accessibility.md`,
+  `tests/shell/a11y.sh`), a press on a peek chip marks the section of its module or opens the view of a dock
+  module. Still open from that work: no screen reader was run; the first open after enable costs about 25 ms
+  once (the sheet is built and styled then); a paired T3 Code server is pinged every 10 s also with the panel
+  closed.
 - Not looked at frame by frame: hint shape while growing, rounded corners during the peek animation.
 - Not exercised: scale factor ≠ 1, several monitors, real fullscreen window, touch, right-to-left, screen
-  readers, the timer sound, real GNOME search providers, Join links of recurring events.
+  readers (Orca), the timer sound, real GNOME search providers, Join links of recurring events.
 - `kit.ts`, `notch.ts`, `sheet.ts` are large; the simplicity review of V4 should start there.
 - Refused (incompatible) modules are remembered by the registry but shown nowhere yet (settings, V3).
 - UUID of the notes module (`sheaf-visor@…` vs. `visor-<name>@…`): the user decides.
