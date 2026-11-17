@@ -69,12 +69,28 @@ describe('findMeetingLink', () => {
     ['jitsi.org with a long path', 'https://jitsi.org/downloads/ubuntu-debian-installations/'],
     ['8x8.vc with a long path', 'https://8x8.vc/a/b/c'],
     ['jitsi.org with two segments', 'https://jitsi.org/user/room'],
+    ['port as user info', 'https://meet.google.com:443@evil.example/abc-defg-hij'],
+    ['host as user info', 'https://meet.google.com@evil.example/abc-defg-hij'],
+    ['user info before the real host', 'https://user@meet.google.com/abc-defg-hij'],
+    ['user and password', 'https://user:pass@meet.google.com/abc-defg-hij'],
+    ['jitsi as user info', 'https://meet.jit.si:443@evil.example/Room'],
+    ['8x8 as user info', 'https://8x8.vc@evil.example/tenant/room'],
+    ['teams as user info', 'https://teams.microsoft.com:443@evil.example/l/meetup-join/abc'],
+    ['teams live as user info', 'https://teams.live.com@evil.example/meet/9876543210'],
+    ['zoom as user info', 'https://zoom.us:443@evil.example/j/123456789'],
+    ['zoom subdomain as user info', 'https://us02web.zoom.us@evil.example/j/123456789'],
+    ['port that is no number', 'https://meet.google.com:abc/abc-defg-hij'],
     ['null', null],
     ['undefined', undefined],
   ];
 
   it.each(missing)('finds nothing: %s', (_name, text) => {
     expect(findMeetingLink(text)).toBeNull();
+  });
+
+  it('keeps a port and takes a link that ends at its query', () => {
+    expect(findMeetingLink('https://meet.google.com:443/abc-defg-hij')?.service).toBe('meet');
+    expect(findMeetingLink('https://zoom.us/j/123?pwd=a@b')?.service).toBe('zoom');
   });
 
   it('searches the texts in order and takes the first link', () => {

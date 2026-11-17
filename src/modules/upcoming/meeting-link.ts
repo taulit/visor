@@ -51,9 +51,11 @@ export function findMeetingLink(...texts: (string | null | undefined)[]): Meetin
   for (const text of texts) {
     for (const [candidate] of (text ?? '').matchAll(URL_PATTERN)) {
       const url = cleanUrl(candidate);
-      const parts = /^https:\/\/([^/?#:]+)(?::\d+)?([^?#]*)/i.exec(url);
+      // The authority is everything up to the path. With user info in it (`host@evil.example`)
+      // the part that looks like the host is not where the link goes, so `@` is never accepted.
+      const parts = /^https:\/\/([^/?#@:]+)(?::\d+)?(\/[^?#]*)?(?:[?#]|$)/i.exec(url);
       if (!parts) continue;
-      const service = classify((parts[1] as string).toLowerCase(), (parts[2] as string) || '/');
+      const service = classify((parts[1] as string).toLowerCase(), parts[2] ?? '/');
       if (service) return { url, service };
     }
   }
