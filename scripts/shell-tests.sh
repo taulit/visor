@@ -15,6 +15,7 @@ tests=(
     "search|tests/shell/search.sh"
     "modules-now|tests/shell/modules-now.sh"
     "modules-ahead|tests/shell/modules-ahead.sh"
+    "template|tests/shell/template.sh"
     "disable-restores|tests/shell/disable-restores.sh"
     "e2e-timer|tests/shell/e2e-timer.sh"
     "notch-behaviour|scripts/nested.sh -- tests/shell/notch-behaviour.sh"
