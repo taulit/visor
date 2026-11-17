@@ -8,6 +8,7 @@ describe('foreignModule', () => {
     const metadata = { visor: { api: 1, slot: 'now' } };
     expect(foreignModule('notes@x', info, metadata)).toEqual({
       uuid: 'notes@x',
+      id: null,
       name: 'Notes',
       description: 'Quick notes',
       slot: 'now',
@@ -15,6 +16,14 @@ describe('foreignModule', () => {
       hasPrefs: true,
       incompatible: false,
     });
+  });
+
+  it('reads the id of the module when the metadata names a valid one', () => {
+    expect(foreignModule('a@x', info, { visor: { api: 1, id: 'world-clock' } })?.id).toBe(
+      'world-clock',
+    );
+    for (const id of ['', 'World Clock', 7, null, ['x'], 'a/b'])
+      expect(foreignModule('a@x', info, { visor: { api: 1, id } })?.id).toBeNull();
   });
 
   it('ignores extensions without a visor object', () => {

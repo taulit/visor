@@ -15,7 +15,7 @@ Click **Use this template** on GitHub to start your own module.
 ## Start
 
 1. Pick the slot and keep one example: `src/examples/now.ts`, `ahead.ts` or `dock.ts`. Delete the other two and import the one you keep in `src/extension.ts`.
-2. Rename the module: UUID, name, description (start it with "Requires Visor."), `visor.slot` in `metadata.json`, the settings schema and the gettext domain (`visor-example`) in `metadata.json`, `schemas/` and `scripts/`.
+2. Rename the module: UUID, name, description (start it with "Requires Visor."), `visor.slot` and `visor.id` (the `id` of the module you keep) in `metadata.json`, the settings schema and the gettext domain (`visor-example`) in `metadata.json`, `schemas/` and `scripts/`.
 3. Change the example setting and its text in `src/prefs.ts`, or remove it.
 4. Replace the text of this README and add a screenshot.
 

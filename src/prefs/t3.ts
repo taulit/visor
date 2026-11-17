@@ -149,10 +149,20 @@ export function t3Group(
   const connect = new Gtk.Button({
     label: _('Connect'),
     valign: Gtk.Align.CENTER,
-    css_classes: ['suggested-action'],
+    css_classes: ['suggested-action', 'visor-t3-connect'],
   });
   entry.add_suffix(connect);
   group.add(entry);
+  // The class `error` of the row turns the accent of everything in it red,
+  // the button included. The error is about what was typed, so the button
+  // keeps the accent of the window. Removed again when the window closes.
+  const css = new Gtk.CssProvider();
+  css.load_from_string(
+    'row.entry.error button.visor-t3-connect {' +
+      ' --accent-bg-color: @accent_bg_color; --accent-fg-color: @accent_fg_color; }',
+  );
+  const display = window.get_display();
+  Gtk.StyleContext.add_provider_for_display(display, css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
   const showError = (error: PairingError | null): void => {
     entry.title = error ? errorText(error) : title;
@@ -257,8 +267,9 @@ export function t3Group(
     const origin = text ? cleanOrigin(text) : '';
     if (origin === null) {
       addressEntry.add_css_class('error');
-      if (isInsecureOrigin(text))
-        addressEntry.title = _('Use https for a server on another machine');
+      addressEntry.title = isInsecureOrigin(text)
+        ? _('Use https for a server on another machine')
+        : _('This is not a server address');
       return;
     }
     // Another server: the token was not issued by it and must not reach it.
@@ -298,6 +309,7 @@ export function t3Group(
     timeout = 0;
     for (const handler of handlers) settings.disconnect(handler);
     http.abort();
+    Gtk.StyleContext.remove_provider_for_display(display, css);
     return false;
   });
   return group;

@@ -1,11 +1,17 @@
 // Modules of other extensions, as the settings window sees them: an extension
 // whose metadata.json has a "visor" object. No gi:// imports, so Vitest can load it.
 import { API_VERSION, type Slot } from '../api.js';
-import { declaredApi } from '../lib/modules.js';
+import { declaredApi, isValidModuleId } from '../lib/modules.js';
 import { SLOTS } from './builtin-modules.js';
 
 export interface ForeignModule {
   uuid: string;
+  /**
+   * The id its module registers with, from the optional `visor.id` of the
+   * metadata. With it the window can switch the module off and put it in
+   * order, as it does with the built-in ones; null when the metadata does not say.
+   */
+  id: string | null;
   name: string;
   description: string;
   slot: Slot;
@@ -27,10 +33,11 @@ export function foreignModule(
   const visor = (metadata as { visor?: unknown } | null)?.visor;
   if (typeof visor !== 'object' || visor === null) return null;
 
-  const slot = (visor as { slot?: unknown }).slot;
+  const { slot, id } = visor as { slot?: unknown; id?: unknown };
   const api = declaredApi(metadata);
   return {
     uuid,
+    id: isValidModuleId(id) ? id : null,
     name: typeof info['name'] === 'string' ? info['name'] : uuid,
     description: typeof info['description'] === 'string' ? info['description'] : '',
     slot: SLOTS.find(entry => entry.slot === slot)?.slot ?? 'dock',
