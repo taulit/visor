@@ -32,15 +32,15 @@
       <summary>T3 Code server</summary>
       <description>Address of the T3 Code server, such as http://127.0.0.1:3773. Empty: the server running on this machine, found through its runtime file below ~/.t3.</description>
     </key>
-    <key name="t3-access-token" type="s">
-      <default>''</default>
-      <summary>T3 Code access token</summary>
-      <description>Bearer token of the T3 Code session Visor was paired with. Empty: T3 Code sessions are not shown.</description>
-    </key>
     <key name="t3-token-origin" type="s">
       <default>''</default>
       <summary>Origin of the T3 Code access token</summary>
-      <description>Address of the server the access token was issued by, such as http://127.0.0.1:3773. The token is sent to this server only.</description>
+      <description>Address of the server Visor is paired with, such as http://127.0.0.1:3773. Empty: not paired, T3 Code sessions are not shown. The access token itself is in the keyring and is sent to this server only.</description>
+    </key>
+    <key name="t3-token-serial" type="i">
+      <default>0</default>
+      <summary>Changes of the T3 Code access token</summary>
+      <description>Counted up by the settings window whenever it stored or removed the access token in the keyring, so that Visor reads it again.</description>
     </key>
     <key name="width" type="s">
       <choices>

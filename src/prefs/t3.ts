@@ -1,7 +1,8 @@
 // Pairing with T3 Code, see docs/t3-protocol.md §2: the user pastes a pairing
 // link, the window exchanges it for an access token and stores that in the
-// settings, where the module finds it. Neither the link nor the token is
-// ever logged.
+// keyring (modules/t3/keyring.ts), where the module finds it; the settings
+// only say which origin is paired. Neither the link nor the token is ever
+// logged.
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -10,10 +11,11 @@ import Soup from 'gi://Soup?version=3.0';
 
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+import { clearToken, lookupToken, storeToken } from '../modules/t3/keyring.js';
 import {
   SERVER_KEY,
-  TOKEN_KEY,
   TOKEN_ORIGIN_KEY,
+  TOKEN_SERIAL_KEY,
   decodeAccessToken,
   exchangeError,
   isInsecurePairing,
@@ -124,6 +126,8 @@ function errorText(error: PairingError): string {
       return _('The link is wrong or has expired');
     case 'incompatible':
       return _('This version of T3 Code does not fit Visor');
+    case 'keyring':
+      return _('The keyring is not available');
     default:
       return _('The server cannot be reached');
   }
@@ -161,6 +165,10 @@ export function t3Group(
     cancellable = null;
     connect.sensitive = true;
   };
+  /** Tells the module in the shell that the token in the keyring changed. */
+  const tokenChanged = (): void => {
+    settings.set_int(TOKEN_SERIAL_KEY, (settings.get_int(TOKEN_SERIAL_KEY) + 1) % 1_000_000);
+  };
   const pair = async (): Promise<void> => {
     if (cancellable) return;
     const pasted = entry.text;
@@ -186,18 +194,26 @@ export function t3Group(
       mine.cancel();
       return GLib.SOURCE_REMOVE;
     });
-    const result = await exchangePairingCode(http, origin, pairing.code, mine);
+    // The keyring first: without one the token could not be kept, and the
+    // code, which is good once, stays unused.
+    const usable = (await lookupToken(origin, mine)) !== null;
     // The window closed meanwhile: its widgets are gone.
     if (cancellable !== mine) return;
+    const result = usable
+      ? await exchangePairingCode(http, origin, pairing.code, mine)
+      : { error: 'keyring' as const };
+    if (cancellable !== mine) return;
+    const stored = 'token' in result && (await storeToken(origin, result.token, mine));
+    if (cancellable !== mine) return;
     finish();
-    if ('error' in result) {
-      showError(result.error);
+    if ('error' in result || !stored) {
+      showError('error' in result ? result.error : 'keyring');
       return;
     }
     if (pairing.origin) settings.set_string(SERVER_KEY, originToStore(pairing.origin, local));
     // The token is for this origin; the module sends it nowhere else.
     settings.set_string(TOKEN_ORIGIN_KEY, origin);
-    settings.set_string(TOKEN_KEY, result.token);
+    tokenChanged();
   };
   const start = (): void => {
     pair().catch(() => {
@@ -217,8 +233,12 @@ export function t3Group(
   const disconnect = new Gtk.Button({ label: _('Disconnect'), valign: Gtk.Align.CENTER });
   // The protocol lets no session revoke itself, so the token is only forgotten here.
   const forget = (): void => {
-    settings.set_string(TOKEN_KEY, '');
+    const origin = settings.get_string(TOKEN_ORIGIN_KEY);
     settings.set_string(TOKEN_ORIGIN_KEY, '');
+    tokenChanged();
+    // Not tied to the window: it may close before the keyring has answered.
+    // Without a keyring there is nothing to remove.
+    if (origin) void clearToken(origin, new Gio.Cancellable());
   };
   disconnect.connect('clicked', forget);
   paired.add_suffix(disconnect);
@@ -242,9 +262,8 @@ export function t3Group(
       return;
     }
     // Another server: the token was not issued by it and must not reach it.
-    const hasToken = settings.get_string(TOKEN_KEY) !== '';
-    if (hasToken && !tokenFits(settings.get_string(TOKEN_ORIGIN_KEY), origin || localOrigin()))
-      forget();
+    const paired = settings.get_string(TOKEN_ORIGIN_KEY);
+    if (paired && !tokenFits(paired, origin || localOrigin())) forget();
     settings.set_string(SERVER_KEY, origin);
   });
   addressEntry.connect('changed', () => {
@@ -255,7 +274,7 @@ export function t3Group(
   group.add(address);
 
   const sync = (): void => {
-    const isPaired = settings.get_string(TOKEN_KEY) !== '';
+    const isPaired = settings.get_string(TOKEN_ORIGIN_KEY) !== '';
     const server = settings.get_string(SERVER_KEY);
     group.description = isPaired
       ? ''
@@ -267,7 +286,7 @@ export function t3Group(
     if (addressEntry.text !== server) addressEntry.text = server;
   };
   const handlers = [
-    settings.connect(`changed::${TOKEN_KEY}`, sync),
+    settings.connect(`changed::${TOKEN_ORIGIN_KEY}`, sync),
     settings.connect(`changed::${SERVER_KEY}`, sync),
   ];
   sync();

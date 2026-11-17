@@ -23,6 +23,7 @@ fi
 
 source "$repo/scripts/lib/shell.sh"
 source "$repo/scripts/scenarios/content-lib.sh"
+source "$repo/scripts/lib/keyring.sh"
 
 fail=0
 # check NAME JS: passes when JS evaluates to true.
@@ -114,8 +115,7 @@ wait_title='Spawn a subagent for the fixture'
 
 check 'without a token the module is empty and waits for nothing' \
     "A.rows().length === 0 && A.chip() === null && A.mod().client.retrySource === 0 && !A.mod().client.connecting"
-run "visor.getSettings().set_string('t3-token-origin', 'http://127.0.0.1:$port')"
-run "visor.getSettings().set_string('t3-access-token', 'mock-token')"
+t3_pair "http://127.0.0.1:$port" mock-token
 run 'A.wait(1500)'
 check 'without a server the module is empty' "A.rows().length === 0 && !A.mod().client.connected"
 check 'and it tries again later' "A.mod().client.retrySource !== 0"

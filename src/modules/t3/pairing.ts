@@ -5,9 +5,13 @@ import { cleanOrigin, isInsecureOrigin } from './protocol.js';
 
 /** The settings the module reads and the settings window writes. */
 export const SERVER_KEY = 't3-server-url';
-export const TOKEN_KEY = 't3-access-token';
-/** The origin the token was issued for; the token is sent nowhere else. */
+/**
+ * The origin the token was issued for, empty when not paired. The token
+ * itself is in the keyring (keyring.ts) and is sent nowhere else.
+ */
 export const TOKEN_ORIGIN_KEY = 't3-token-origin';
+/** Counts up whenever the token in the keyring changed, so the module reads it again. */
+export const TOKEN_SERIAL_KEY = 't3-token-serial';
 
 /** Where a server listens when nothing says otherwise. */
 export const DEFAULT_ORIGIN = 'http://127.0.0.1:3773';
@@ -112,7 +116,14 @@ export function decodeAccessToken(text: string): string | null {
   return PAIRING_SCOPES.every(needed => granted.includes(needed)) ? token.trim() : null;
 }
 
-export type PairingError = 'invalid' | 'insecure' | 'rejected' | 'unreachable' | 'incompatible';
+export type PairingError =
+  | 'invalid'
+  | 'insecure'
+  | 'rejected'
+  | 'unreachable'
+  | 'incompatible'
+  /** The token cannot be stored: there is no keyring or it stays locked. */
+  | 'keyring';
 
 /** What an answer of the token endpoint that is not a token means. */
 export const exchangeError = (status: number): PairingError =>

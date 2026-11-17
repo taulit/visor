@@ -3,7 +3,11 @@
 #
 # The sandbox has its own HOME, XDG directories, runtime directory and D-Bus
 # session, so nothing here can reach the settings or the shell of the session
-# you are logged in to.
+# you are logged in to. That goes for the keyring as well: the Secret Service
+# is reached over the session bus, and on the bus of the sandbox the only one
+# is a gnome-keyring-daemon started here, with a login keyring of its own
+# below the sandbox HOME that is thrown away with it. Activation of the
+# service by the bus is masked, so nothing starts one behind the test's back.
 #
 # Usage: scripts/nested.sh [options] -- command [args...]
 #   --size WxH          virtual monitor size (default 1920x1080)
@@ -14,13 +18,14 @@
 #   --no-visor          do not load Visor, only the test helper
 #   --extension DIR     also install and enable the extension in DIR (a built
 #                       extension directory with a metadata.json); repeatable
+#   --no-keyring        run no Secret Service at all (calls to it fail at once)
 #   --log FILE          copy the shell log to FILE when done
 #
 # Inside the command, scripts/lib/shell.sh offers shell_eval and shell_shot.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-size=1920x1080 scheme=dark accent=blue animations=false with_visor=true log=
+size=1920x1080 scheme=dark accent=blue animations=false with_visor=true keyring=true log=
 extra_extensions=()
 
 while [[ $# -gt 0 ]]; do
@@ -30,6 +35,7 @@ while [[ $# -gt 0 ]]; do
         --accent) accent="$2"; shift 2 ;;
         --animations) animations=true; shift ;;
         --no-visor) with_visor=false; shift ;;
+        --no-keyring) keyring=false; shift ;;
         --extension) [[ -f "$2/metadata.json" ]] || { echo "nested.sh: no metadata.json in $2" >&2; exit 2; }; extra_extensions+=("$(cd "$2" && pwd)"); shift 2 ;;
         --log) log="$2"; shift 2 ;;
         --) shift; break ;;
@@ -60,6 +66,14 @@ trap cleanup EXIT
 mkdir -p "$sandbox/home" "$sandbox/run"
 chmod 700 "$sandbox/run"
 
+# The bus looks here before /usr/share: asking for the Secret Service starts
+# nothing (see scripts/lib/nested-session.sh for the one the sandbox runs).
+mkdir -p "$sandbox/home/.local/share/dbus-1/services"
+for name in org.freedesktop.secrets org.gnome.keyring org.freedesktop.impl.portal.Secret; do
+    printf '[D-BUS Service]\nName=%s\nExec=/bin/false\n' "$name" \
+        >"$sandbox/home/.local/share/dbus-1/services/$name.service"
+done
+
 extensions="$sandbox/home/.local/share/gnome-shell/extensions"
 mkdir -p "$extensions"
 cp -r "$repo/tests/shell-helper" "$extensions/visor-test-helper@taulit.github.io"
@@ -87,7 +101,7 @@ env -i \
     GIO_USE_VOLUME_MONITOR=unix GVFS_DISABLE_FUSE=1 \
     VISOR_REPO="$repo" VISOR_SANDBOX="$sandbox" \
     VISOR_SIZE="$size" VISOR_SCHEME="$scheme" VISOR_ACCENT="$accent" \
-    VISOR_ANIMATIONS="$animations" VISOR_ENABLED="$enabled" \
+    VISOR_ANIMATIONS="$animations" VISOR_ENABLED="$enabled" VISOR_KEYRING="$keyring" \
     dbus-run-session -- bash "$repo/scripts/lib/nested-session.sh" "$@" || status=$?
 
 if [[ -n "$log" ]]; then

@@ -1,13 +1,15 @@
 // The connection to the local T3 Code server, see docs/t3-protocol.md:
 // descriptor, WebSocket ticket, socket, the shell stream. It reconnects with
 // a growing wait and at once when the network or the server's runtime file
-// changes. Without a token it does nothing at all, and a token the server
-// refuses is not tried again until the setting changes.
+// changes. The access token is in the keyring (keyring.ts) and is read when
+// the settings say that there is one. Without a token it does nothing at all,
+// and a token the server refuses is not tried again until the pairing changes.
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Soup from 'gi://Soup?version=3.0';
 
-import { SERVER_KEY, TOKEN_KEY, TOKEN_ORIGIN_KEY, tokenFits } from './pairing.js';
+import { lookupToken } from './keyring.js';
+import { SERVER_KEY, TOKEN_ORIGIN_KEY, TOKEN_SERIAL_KEY, tokenFits } from './pairing.js';
 import {
   METHODS,
   PONG_FRAME,
@@ -32,7 +34,15 @@ import {
   type ShellState,
 } from './protocol.js';
 
-export { SERVER_KEY, TOKEN_KEY, TOKEN_ORIGIN_KEY };
+export { SERVER_KEY, TOKEN_ORIGIN_KEY, TOKEN_SERIAL_KEY };
+
+/**
+ * The pairing the keyring had no answer for. A locked keyring asks for its
+ * password; this keeps an extension that is disabled and enabled again (every
+ * time the screen is unlocked) from asking over and over. It lasts as long as
+ * the shell and ends when the pairing changes.
+ */
+let keyringFailedFor: string | null = null;
 
 /**
  * A larger frame closes the socket. A thread projection that large is not
@@ -79,6 +89,9 @@ export class T3Client {
   private incompatibleLogged = false;
   /** The server refused the token; nothing is tried until the token or the address changes. */
   private rejected = false;
+  /** The access token, read from the keyring; empty until then and when not paired. */
+  private token = '';
+  private lookup: Gio.Cancellable | null = null;
 
   /** `changed` is called when the threads or the connection changed. */
   constructor(
@@ -93,7 +106,7 @@ export class T3Client {
     this.settings?.connectObject(
       `changed::${SERVER_KEY}`,
       () => this.restart(),
-      `changed::${TOKEN_KEY}`,
+      `changed::${TOKEN_SERIAL_KEY}`,
       () => this.restart(),
       `changed::${TOKEN_ORIGIN_KEY}`,
       () => this.restart(),
@@ -108,7 +121,7 @@ export class T3Client {
     } catch {
       this.monitor = null;
     }
-    this.connect();
+    this.load();
   }
 
   stop(): void {
@@ -120,6 +133,7 @@ export class T3Client {
     this.monitor?.disconnectObject(this);
     this.monitor?.cancel();
     this.monitor = null;
+    this.forget();
     this.drop();
     this.attempt = 0;
     this.incompatibleLogged = false;
@@ -169,7 +183,42 @@ export class T3Client {
     this.attempt = 0;
     this.rejected = false;
     this.changed();
-    this.connect();
+    this.load();
+  }
+
+  private forget(): void {
+    this.lookup?.cancel();
+    this.lookup = null;
+    this.token = '';
+  }
+
+  /** Reads the token of the paired origin from the keyring, then connects. */
+  private load(): void {
+    this.forget();
+    const origin = this.settings?.get_string(TOKEN_ORIGIN_KEY) ?? '';
+    // Not paired: the keyring is not asked at all.
+    if (!this.running || !origin) return;
+    const pairing = `${this.settings?.get_int(TOKEN_SERIAL_KEY) ?? 0} ${origin}`;
+    if (keyringFailedFor === pairing) return;
+    const cancellable = (this.lookup = new Gio.Cancellable());
+    lookupToken(origin, cancellable)
+      .catch(() => null)
+      .then(token => {
+        // Cancelled by a change or by stop(): that is no answer of the keyring.
+        if (this.lookup !== cancellable) return;
+        this.lookup = null;
+        if (token === null) {
+          keyringFailedFor = pairing;
+          log(
+            'The keyring is not available, so the access token of T3 Code cannot be read; ' +
+              'its sessions are not shown. Not asking again until Visor is paired anew.',
+          );
+          return;
+        }
+        keyringFailedFor = null;
+        this.token = token;
+        this.connect();
+      });
   }
 
   /** The network or the server's runtime file changed: do not sit out the wait. */
@@ -182,8 +231,8 @@ export class T3Client {
   private connect(): void {
     if (this.retrySource) GLib.source_remove(this.retrySource);
     this.retrySource = 0;
-    const token = this.settings?.get_string(TOKEN_KEY) ?? '';
-    // Not paired: nothing to do until the setting changes.
+    const token = this.token;
+    // Not paired: nothing to do until the settings change.
     if (!this.running || this.connecting || this.connected || !token || this.rejected) return;
     this.connecting = true;
     const cancellable = (this.cancellable = new Gio.Cancellable());
