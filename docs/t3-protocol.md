@@ -40,20 +40,35 @@ The environment issues its own sessions (`docs/internals/environment-auth.md`,
 4. **Socket**: `ws://<host>/ws?orchestrationProtocol=2&wsTicket=<ticket>` (`apps/server/src/ws.ts`).
 
 The module does step 1, 3 and 4. Step 2 is done by the settings window (Modules → T3 Code,
-`src/prefs/t3.ts`; what both sides share is in `src/modules/t3/pairing.ts`): it takes the pairing link or
-the bare code, checks the descriptor, exchanges the code and writes the token to the setting
-`t3-access-token`, and the origin to `t3-server-url` when it is not the local server. The token endpoint
-answers a wrong, used or expired code with 401 (`EnvironmentAuthInvalidError`) and a malformed request
-with 400. The module reads the token from the setting, follows its changes without a restart and stays
-empty and silent without one. A 401 or 403 on the ticket request means the token is no good: the module
-logs one line and asks again only when the token or the address changes.
+`src/prefs/t3.ts`; what both sides share is in `src/modules/t3/pairing.ts` and `keyring.ts`): it takes the
+pairing link or the bare code, checks the descriptor, exchanges the code, stores the token in the keyring
+and writes the origin to `t3-server-url` when it is not the local server. The token endpoint answers a
+wrong, used or expired code with 401 (`EnvironmentAuthInvalidError`) and a malformed request with 400. A
+401 or 403 on the ticket request means the token is no good: the module logs one line and asks again only
+when the pairing or the address changes.
 
-**Where the token goes.** The settings window stores the origin the token was issued by in
-`t3-token-origin`, and the module sends the token to that origin only: with another address in
-`t3-server-url` (or another local server in the runtime file) it stays disconnected until it is paired
-again, and changing the address in the settings to another origin forgets the token. Plain http is taken
-for this machine only (`localhost`, `127.0.0.0/8`, `[::1]`); any other server needs https. None of the
-requests that carry the pairing code, the token or the ticket follows a redirect.
+**Where the token is kept.** In the keyring of the user, through libsecret (`gi://Secret`, async calls
+only): one item of the schema `io.github.taulit.Visor.T3` with the attribute `origin`, in the default
+collection. It is not in GSettings, so not in dconf, its dumps and backups. GSettings has only what is no
+secret: `t3-token-origin`, the origin Visor is paired with (empty: not paired, the keyring is not asked at
+all), and `t3-token-serial`, a counter the settings window raises whenever it stored or removed the token;
+the module in the shell, another process, watches both and reads the token again without a restart.
+Disconnect removes the item; disabling the extension does not. Nothing was released with the earlier
+setting `t3-access-token`, so it was removed without a migration; a value left in the dconf of a
+development machine is no longer read by anything (`dconf reset
+/org/gnome/shell/extensions/visor/t3-access-token` removes it).
+
+Without a usable keyring (no Secret Service on the session bus, an unlock that was dismissed, no answer
+within 60 seconds) the module shows nothing and logs one line; it does not ask again for the same pairing
+as long as the shell runs, so a locked keyring prompts once and not at every unlock of the screen. The
+settings window asks the keyring before it sends the pairing code and shows "The keyring is not available"
+instead, so the code, which is good once, is not used up.
+
+**Where the token goes.** The module sends the token to the origin in `t3-token-origin` only: with
+another address in `t3-server-url` (or another local server in the runtime file) it stays disconnected
+until it is paired again, and changing the address in the settings to another origin forgets the token.
+Plain http is taken for this machine only (`localhost`, `127.0.0.0/8`, `[::1]`); any other server needs
+https. None of the requests that carry the pairing code, the token or the ticket follows a redirect.
 
 **Revoking.** `POST /api/auth/clients/revoke` (`{sessionId}`) needs the scope `access:write`, which Visor
 does not ask for, and refuses the session that calls it (`current_session_revoke_not_allowed`, 403). A

@@ -262,8 +262,8 @@ export function t3Group(
       return;
     }
     // Another server: the token was not issued by it and must not reach it.
-    const paired = settings.get_string(TOKEN_ORIGIN_KEY);
-    if (paired && !tokenFits(paired, origin || localOrigin())) forget();
+    const pairedOrigin = settings.get_string(TOKEN_ORIGIN_KEY);
+    if (pairedOrigin && !tokenFits(pairedOrigin, origin || localOrigin())) forget();
     settings.set_string(SERVER_KEY, origin);
   });
   addressEntry.connect('changed', () => {

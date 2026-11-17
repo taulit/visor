@@ -11,7 +11,11 @@ declare module 'gi://Secret' {
       STRING,
     }
     class Schema {
-      constructor(name: string, flags: SchemaFlags, attributes: Record<string, SchemaAttributeType>);
+      constructor(
+        name: string,
+        flags: SchemaFlags,
+        attributes: Record<string, SchemaAttributeType>,
+      );
     }
     const COLLECTION_DEFAULT: string;
     type Attributes = Record<string, string>;
