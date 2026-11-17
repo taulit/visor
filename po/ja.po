@@ -1,0 +1,623 @@
+# Japanese translation for Visor.
+# This file is distributed under the same license as the Visor package.
+# Machine translated, improvements welcome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: visor\n"
+"Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
+"POT-Creation-Date: 2026-11-17 16:20+0100\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: Visor contributors\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: build/core/search/controller.js:123 build/core/search/controller.js:146
+msgid "Commands"
+msgstr "コマンド"
+
+#: build/core/search/controller.js:131
+msgid "Calculate"
+msgstr "計算"
+
+#: build/core/search/controller.js:132
+msgid "Apps"
+msgstr "アプリ"
+
+#: build/core/search/controller.js:178
+msgid "No results"
+msgstr "結果なし"
+
+#: build/core/search/controller.js:279
+msgid "Enter completes"
+msgstr "Enter で補完"
+
+#: build/core/search/controller.js:295 build/core/search/controller.js:320
+msgid "Enter copies"
+msgstr "Enter でコピー"
+
+#: build/core/search/controller.js:305
+msgid "Currency rates are turned off"
+msgstr "為替レートはオフです"
+
+#: build/core/search/controller.js:308
+msgid "Rates are loading"
+msgstr "レートを読み込み中"
+
+#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+msgid "Modules"
+msgstr "モジュール"
+
+#: build/core/sheet.js:287
+msgid "Search, calculate or run a command …"
+msgstr "検索、計算、コマンドの実行 …"
+
+#: build/core/sheet.js:288 build/prefs/general.js:75
+msgid "Search"
+msgstr "検索"
+
+#: build/core/sheet.js:313 build/core/sheet.js:390
+#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
+msgid "Now"
+msgstr "現在"
+
+#: build/core/sheet.js:327
+msgid "Back"
+msgstr "戻る"
+
+#: build/core/sheet.js:390
+msgid "Shows up only while something is running."
+msgstr "実行中のときだけ表示されます。"
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/core/sheet.js:391 build/modules/upcoming/module.js:28
+#: build/modules/upcoming/module.js:99 build/prefs/builtin-modules.js:8
+#: build/prefs/builtin-modules.js:19
+msgid "Up Next"
+msgstr "この後"
+
+#: build/core/sheet.js:391
+msgid "A short section next to “Now”."
+msgstr "「現在」の隣にある短いセクションです。"
+
+#: build/core/sheet.js:392 build/prefs/builtin-modules.js:20
+msgid "Dock"
+msgstr "Dock"
+
+#: build/core/sheet.js:392
+msgid "A view of its own behind an icon."
+msgstr "アイコンの先にある専用ビューです。"
+
+#: build/core/sheet.js:590
+msgid "No modules"
+msgstr "モジュールなし"
+
+#: build/modules/downloads/module.js:15 build/prefs/builtin-modules.js:6
+msgid "Downloads"
+msgstr "ダウンロード"
+
+#: build/modules/downloads/module.js:336 build/modules/t3/module.js:367
+#: build/modules/timers/module.js:229
+msgid "Done"
+msgstr "完了"
+
+#: build/modules/downloads/module.js:342
+msgid "Show in folder"
+msgstr "フォルダーで表示"
+
+#: build/modules/downloads/module.js:349
+msgid "Open"
+msgstr "開く"
+
+#: build/modules/media/module.js:20 build/prefs/builtin-modules.js:4
+msgid "Media"
+msgstr "メディア"
+
+#: build/modules/media/module.js:147
+msgid "Previous"
+msgstr "前へ"
+
+#: build/modules/media/module.js:153 build/modules/timers/module.js:241
+msgid "Pause"
+msgstr "一時停止"
+
+#: build/modules/media/module.js:153
+msgid "Play"
+msgstr "再生"
+
+#: build/modules/media/module.js:160
+msgid "Next"
+msgstr "次へ"
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/modules/notifications/module.js:19
+#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:13
+msgid "Notifications"
+msgstr "通知"
+
+#: build/modules/notifications/module.js:94
+msgid "Do Not Disturb"
+msgstr "サイレントモード"
+
+#: build/modules/notifications/module.js:101
+msgid "No new notifications"
+msgstr "新しい通知はありません"
+
+#: build/modules/notifications/module.js:298
+msgid "Show less"
+msgstr "表示を減らす"
+
+#: build/modules/notifications/module.js:300
+#, javascript-format
+msgid "Show all %d"
+msgstr "%d 件すべて表示"
+
+#: build/modules/notifications/module.js:323
+msgid "Clear all"
+msgstr "すべてクリア"
+
+#: build/modules/notifications/module.js:345
+msgid "Dismiss"
+msgstr "閉じる"
+
+#: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
+#: build/prefs/t3.js:91
+msgid "T3 Code"
+msgstr "T3 Code"
+
+#: build/modules/t3/module.js:33
+msgid "t3 Fix the failing test"
+msgstr "t3 失敗しているテストを直して"
+
+#: build/modules/t3/module.js:105 build/modules/t3/module.js:384
+msgid "Untitled thread"
+msgstr "無題のスレッド"
+
+#: build/modules/t3/module.js:110
+#, javascript-format
+msgid "Send to %s"
+msgstr "%s に送信"
+
+#: build/modules/t3/module.js:119
+msgid "Start a new thread"
+msgstr "新しいスレッドを開始"
+
+#: build/modules/t3/module.js:280
+#, javascript-format
+msgid "+ %d more"
+msgstr "ほか %d 件"
+
+#: build/modules/t3/module.js:339
+msgid "Agent"
+msgstr "エージェント"
+
+#: build/modules/t3/module.js:342
+#, javascript-format
+msgid "%s is waiting"
+msgstr "%s が待機中です"
+
+#: build/modules/t3/module.js:351
+msgid "Starting"
+msgstr "開始中"
+
+#: build/modules/t3/module.js:354 build/modules/t3/module.js:355
+msgid "Working"
+msgstr "作業中"
+
+#: build/modules/t3/module.js:358
+msgid "Answer this request in T3 Code"
+msgstr "この要求には T3 Code で回答してください"
+
+#: build/modules/t3/module.js:360
+msgid "Wants to run"
+msgstr "実行を求めています"
+
+#: build/modules/t3/module.js:362
+msgid "Wants to use a file"
+msgstr "ファイルの使用を求めています"
+
+#: build/modules/t3/module.js:363
+msgid "Asks for permission"
+msgstr "許可を求めています"
+
+#: build/modules/t3/module.js:365
+msgid "Has a question"
+msgstr "質問があります"
+
+#: build/modules/t3/module.js:369
+msgid "Failed"
+msgstr "失敗"
+
+#: build/modules/t3/module.js:380
+msgid "Could not send"
+msgstr "送信できませんでした"
+
+#: build/modules/t3/module.js:406 build/modules/t3/module.js:587
+msgid "Open in T3 Code"
+msgstr "T3 Code で開く"
+
+#: build/modules/t3/module.js:418 build/modules/t3/module.js:510
+msgid "Deny"
+msgstr "拒否"
+
+#: build/modules/t3/module.js:424 build/modules/t3/module.js:511
+msgid "Allow"
+msgstr "許可"
+
+#: build/modules/t3/module.js:434
+msgid "Answer"
+msgstr "回答"
+
+#: build/modules/t3/module.js:521
+msgid "Has characters that cannot be shown. Open T3 Code to read it"
+msgstr "表示できない文字が含まれています。T3 Code で確認してください"
+
+#: build/modules/t3/module.js:522
+msgid "Open T3 Code to read all of it"
+msgstr "T3 Code で全文を確認してください"
+
+#: build/modules/t3/module.js:560
+#, javascript-format
+msgid "Reply to %s"
+msgstr "%s への返信"
+
+#: build/modules/t3/module.js:560 build/modules/t3/module.js:561
+msgid "Reply"
+msgstr "返信"
+
+#: build/modules/t3/module.js:576 build/modules/timers/module.js:246
+msgid "Stop"
+msgstr "停止"
+
+#: build/modules/timers/module.js:19 build/prefs/builtin-modules.js:5
+msgid "Timers"
+msgstr "タイマー"
+
+#: build/modules/timers/module.js:25
+msgid "timer 25m Pizza"
+msgstr "timer 25m Pizza"
+
+#: build/modules/timers/module.js:30
+msgid "stopwatch Research"
+msgstr "stopwatch 調査"
+
+#: build/modules/timers/module.js:92
+#, javascript-format
+msgid "Alarm at %s"
+msgstr "%s のアラーム"
+
+#: build/modules/timers/module.js:102
+#, javascript-format
+msgid "Start timer · %s"
+msgstr "タイマーを開始 · %s"
+
+#: build/modules/timers/module.js:118
+msgid "Start stopwatch"
+msgstr "ストップウォッチを開始"
+
+#: build/modules/timers/module.js:205
+msgid "Stopwatch"
+msgstr "ストップウォッチ"
+
+#: build/modules/timers/module.js:206
+msgid "Alarm"
+msgstr "アラーム"
+
+#: build/modules/timers/module.js:206 build/modules/timers/module.js:321
+msgid "Timer"
+msgstr "タイマー"
+
+#: build/modules/timers/module.js:230 build/modules/timers/module.js:341
+msgid "Restart"
+msgstr "再スタート"
+
+#: build/modules/timers/module.js:236
+msgid "Resume"
+msgstr "再開"
+
+#: build/modules/timers/module.js:251
+msgid "+1 min"
+msgstr "+1 分"
+
+#: build/modules/timers/module.js:261 build/modules/timers/module.js:266
+msgid "Paused"
+msgstr "一時停止中"
+
+#: build/modules/timers/module.js:266 build/modules/timers/module.js:295
+#: build/modules/upcoming/plan.js:32
+#, javascript-format
+msgid "until %s"
+msgstr "%s まで"
+
+#: build/modules/timers/module.js:301
+#, javascript-format
+msgid "%s done"
+msgstr "%s が完了"
+
+#: build/modules/timers/module.js:317
+msgid "Timer finished"
+msgstr "タイマーが終了しました"
+
+#: build/modules/timers/module.js:334
+#, javascript-format
+msgid "Ended at %s"
+msgstr "%s に終了"
+
+#: build/modules/upcoming/module.js:100
+msgid "Nothing else today"
+msgstr "今日はこれ以上ありません"
+
+#: build/modules/upcoming/module.js:182
+msgid "Join"
+msgstr "参加"
+
+#: build/modules/upcoming/plan.js:21
+#, javascript-format
+msgid "in %d min"
+msgstr "%d 分後"
+
+#: build/modules/upcoming/plan.js:23
+#, javascript-format
+msgid "in %d h"
+msgstr "%d 時間後"
+
+#: build/modules/upcoming/plan.js:24
+#, javascript-format
+msgid "in %d h %d min"
+msgstr "%d 時間 %d 分後"
+
+#: build/modules/upcoming/plan.js:29
+msgid "all day"
+msgstr "終日"
+
+#: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
+msgid "Today"
+msgstr "今日"
+
+#: build/modules/upcoming/when.js:40
+msgid "Tomorrow"
+msgstr "明日"
+
+#: build/modules/upcoming/when.js:59
+msgid "now"
+msgstr "今"
+
+#: build/modules/upcoming/when.js:61
+#, javascript-format
+msgid "%d min ago"
+msgid_plural "%d min ago"
+msgstr[0] "%d 分前"
+
+#: build/modules/upcoming/when.js:66
+msgid "Yesterday"
+msgstr "昨日"
+
+#: build/prefs/about.js:18
+msgid "About"
+msgstr "このアプリについて"
+
+#: build/prefs/about.js:26
+msgid "Version"
+msgstr "バージョン"
+
+#: build/prefs/about.js:27
+msgid "License"
+msgstr "ライセンス"
+
+#: build/prefs/about.js:29
+msgid "Links"
+msgstr "リンク"
+
+#: build/prefs/about.js:30 build/prefs/discover.js:13
+msgid "Website"
+msgstr "ウェブサイト"
+
+#: build/prefs/about.js:31
+msgid "Source code"
+msgstr "ソースコード"
+
+#: build/prefs/about.js:32
+msgid "Report an issue"
+msgstr "問題を報告"
+
+#: build/prefs/discover.js:8
+msgid "The catalog of modules arrives with a later version."
+msgstr "モジュールのカタログは今後のバージョンで追加されます。"
+
+#: build/prefs/general.js:10
+msgid "Compact"
+msgstr "コンパクト"
+
+#: build/prefs/general.js:11
+msgid "Normal"
+msgstr "標準"
+
+#: build/prefs/general.js:12
+msgid "Wide"
+msgstr "ワイド"
+
+#: build/prefs/general.js:21
+msgid "Delay before the preview"
+msgstr "プレビューまでの遅延"
+
+#: build/prefs/general.js:22
+msgid "In milliseconds"
+msgstr "ミリ秒単位"
+
+#: build/prefs/general.js:36
+msgid "Width"
+msgstr "幅"
+
+#: build/prefs/general.js:37
+msgid "Of the open panel"
+msgstr "開いたパネルの幅です"
+
+#: build/prefs/general.js:56
+msgid "General"
+msgstr "一般"
+
+#: build/prefs/general.js:59
+msgid "Shortcut"
+msgstr "ショートカット"
+
+#: build/prefs/general.js:61
+msgid "Notification list"
+msgstr "通知リスト"
+
+#: build/prefs/general.js:62
+msgid ""
+"The shortcut of the shell for the notification list, Super+V by default, "
+"always opens Visor. Change it in the keyboard settings."
+msgstr ""
+"通知リストを開くシェルのショートカット（初期設定は Super+V）でも、常に Visor "
+"が開きます。変更はキーボードの設定で行えます。"
+
+#: build/prefs/general.js:66
+msgid "Behavior"
+msgstr "動作"
+
+#: build/prefs/general.js:67
+msgid "Preview on hover"
+msgstr "ホバーでプレビュー"
+
+#: build/prefs/general.js:69
+msgid "Show briefly on events"
+msgstr "イベント時に短く表示"
+
+#: build/prefs/general.js:70
+msgid "Show briefly when an agent is waiting"
+msgstr "エージェントの待機時に短く表示"
+
+#: build/prefs/general.js:72
+msgid "Appearance"
+msgstr "外観"
+
+#: build/prefs/general.js:76
+msgid "Load currency rates"
+msgstr "為替レートを読み込む"
+
+#: build/prefs/general.js:76
+msgid "The rates come from the European Central Bank, at most once a day."
+msgstr "レートは欧州中央銀行から取得し、1 日 1 回までです。"
+
+#: build/prefs/modules.js:77
+msgid "Discover"
+msgstr "見つける"
+
+#: build/prefs/modules.js:110
+msgid "Move up"
+msgstr "上へ移動"
+
+#: build/prefs/modules.js:111
+msgid "Move down"
+msgstr "下へ移動"
+
+#: build/prefs/modules.js:114
+msgid "Change the order"
+msgstr "順序を変更"
+
+#: build/prefs/modules.js:124
+msgid "Drag to change the order"
+msgstr "ドラッグして順序を変更"
+
+#: build/prefs/modules.js:151
+msgid "Built for another version of Visor"
+msgstr "別のバージョンの Visor 用に作られています"
+
+#: build/prefs/modules.js:153
+msgid "Turned off in the extensions"
+msgstr "拡張機能でオフになっています"
+
+#: build/prefs/modules.js:163
+msgid "Settings of the module"
+msgstr "モジュールの設定"
+
+#: build/prefs/shortcut.js:14 build/prefs/shortcut.js:45
+msgid "Additional shortcut"
+msgstr "追加のショートカット"
+
+#: build/prefs/shortcut.js:15
+msgid "Opens Visor as well."
+msgstr "こちらでも Visor が開きます。"
+
+#: build/prefs/shortcut.js:20
+msgid "None"
+msgstr "なし"
+
+#: build/prefs/shortcut.js:25
+msgid "Remove the shortcut"
+msgstr "ショートカットを削除"
+
+#: build/prefs/shortcut.js:46
+msgid ""
+"Press the keys you want to use. Esc cancels, Backspace removes the shortcut."
+msgstr ""
+"使用するキーを押してください。Esc で取り消し、Backspace でショートカットを削"
+"除します。"
+
+#: build/prefs/shortcut.js:48
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: build/prefs/t3.js:78
+msgid "This is not a pairing link"
+msgstr "ペアリングリンクではありません"
+
+#: build/prefs/t3.js:80 build/prefs/t3.js:197
+msgid "Use https for a server on another machine"
+msgstr "別のマシンのサーバーには https を使用してください"
+
+#: build/prefs/t3.js:82
+msgid "The link is wrong or has expired"
+msgstr "リンクが正しくないか、期限が切れています"
+
+#: build/prefs/t3.js:84
+msgid "This version of T3 Code does not fit Visor"
+msgstr "このバージョンの T3 Code は Visor に対応していません"
+
+#: build/prefs/t3.js:86
+msgid "The server cannot be reached"
+msgstr "サーバーに接続できません"
+
+#. --- not paired ---
+#: build/prefs/t3.js:96
+msgid "Pairing link or code"
+msgstr "ペアリングリンクまたはコード"
+
+#: build/prefs/t3.js:99
+msgid "Connect"
+msgstr "接続"
+
+#. --- paired ---
+#: build/prefs/t3.js:172
+msgid "Connected"
+msgstr "接続済み"
+
+#: build/prefs/t3.js:174
+msgid "Disconnect"
+msgstr "切断"
+
+#. --- the address ---
+#: build/prefs/t3.js:184
+msgid "Server address"
+msgstr "サーバーのアドレス"
+
+#: build/prefs/t3.js:185
+msgid "Address, empty for this machine"
+msgstr "アドレス（空欄でこのマシン）"
+
+#: build/prefs/t3.js:217
+msgid ""
+"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"here."
+msgstr ""
+"T3 Code の Settings → Connections でペアリングリンクを作成し、ここに貼り付け"
+"てください。"
+
+#: build/prefs/t3.js:220 build/prefs/t3.js:221
+msgid "This machine"
+msgstr "このマシン"

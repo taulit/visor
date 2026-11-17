@@ -1,0 +1,73 @@
+# Simplified Chinese translation for the Visor example module.
+# This file is distributed under the same license as the visor-example package.
+# Machine translated, improvements welcome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: visor-example\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-17 11:42+0100\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: Visor contributors\n"
+"Language-Team: Simplified Chinese\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: build/examples/ahead.js:5 build/examples/ahead.js:26
+#: build/examples/dock.js:21 build/examples/now.js:23 build/prefs.js:42
+msgid "Example"
+msgstr "示例"
+
+#: build/examples/ahead.js:16 build/examples/dock.js:37 build/examples/now.js:9
+msgid "Hello from Visor"
+msgstr "来自 Visor 的问候"
+
+#: build/examples/ahead.js:21 build/examples/now.js:15
+msgid "Example module"
+msgstr "示例模块"
+
+#: build/examples/ahead.js:27
+msgid "Refresh"
+msgstr "刷新"
+
+#: build/examples/dock.js:25
+msgid "Reset"
+msgstr "重置"
+
+#: build/examples/dock.js:41
+msgid "Clicks"
+msgstr "点击次数"
+
+#: build/examples/dock.js:43
+msgid "Add"
+msgstr "添加"
+
+#: build/examples/dock.js:52
+msgid "This view belongs to the example module."
+msgstr "此视图属于示例模块。"
+
+#: build/examples/now.js:17
+msgid "Dismiss"
+msgstr "忽略"
+
+#: build/prefs.js:28
+msgid "General"
+msgstr "常规"
+
+#: build/prefs.js:35
+msgid "Visor is not installed"
+msgstr "未安装 Visor"
+
+#: build/prefs.js:36
+msgid "This module needs Visor and does nothing without it."
+msgstr "此模块需要 Visor，没有它什么也做不了。"
+
+#: build/prefs.js:38
+msgid "Get Visor"
+msgstr "获取 Visor"
+
+#: build/prefs.js:43
+msgid "Greeting"
+msgstr "问候语"
