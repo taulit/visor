@@ -5,7 +5,7 @@
 //
 // The connection to Evolution lives only as long as a lookup runs. A source
 // registry that is still alive when the shell exits crashes it there (seen
-// with libedataserver 3.58 under gjs 1.88), and one that is disposed while
+// with libedataserver 3.60 under gjs 1.88), and one that is disposed while
 // the shell runs does not.
 import type Gio from 'gi://Gio';
 import GLib from 'gi://GLib';

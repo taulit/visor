@@ -17,6 +17,7 @@ src/
 │   ├── theme.ts        light or dark from the panel colour, high contrast
 │   ├── clock.ts        clock and attention dot in the neck
 │   ├── keybindings.ts  takes over the shell's notification-list shortcut, optional own one
+│   ├── banners.ts      moves the shell's notification banners below the body while hint or peek show
 │   ├── content.ts      implements NotchContent: owns registry, sheet and peek chips
 │   ├── registry.ts     modules, slots, order, lazy building
 │   ├── sheet.ts        the open panel: search row, dock, columns, module views
