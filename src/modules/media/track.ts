@@ -102,3 +102,16 @@ export function hashName(text: string): string {
   const hex = (n: number): string => (n >>> 0).toString(16).padStart(8, '0');
   return hex(a) + hex(b);
 }
+
+/** The pieces of a downloaded cover as one; null when there is nothing, or more than `max` bytes. */
+export function coverBody(chunks: readonly Uint8Array[], max: number): Uint8Array | null {
+  const size = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  if (size === 0 || size > max) return null;
+  const whole = new Uint8Array(size);
+  let at = 0;
+  for (const chunk of chunks) {
+    whole.set(chunk, at);
+    at += chunk.length;
+  }
+  return whole;
+}

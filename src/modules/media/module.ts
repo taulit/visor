@@ -10,7 +10,14 @@ import { gettext } from 'resource:///org/gnome/shell/extensions/extension.js';
 import type { Action, ModuleContext, NowRow, VisorModule } from '../../api.js';
 import { truncate } from '../../lib/format.js';
 import { MPRIS_PREFIX, Player } from './player.js';
-import { describeTrack, hashName, nextPauseEnd, trackProgress, visiblePlayers } from './track.js';
+import {
+  coverBody,
+  describeTrack,
+  hashName,
+  nextPauseEnd,
+  trackProgress,
+  visiblePlayers,
+} from './track.js';
 
 const BUS = 'org.freedesktop.DBus';
 const BUS_PATH = '/org/freedesktop/DBus';
@@ -281,27 +288,59 @@ class MediaModule implements VisorModule {
       }
       if (!message) return;
       const session = ctx.http;
-      session.send_and_read_async(message, GLib.PRIORITY_DEFAULT, cancellable, (_session, result) =>
+      const save = (bytes: GLib.Bytes) =>
+        dir.make_directory_async(GLib.PRIORITY_DEFAULT, cancellable, (_dir, made) =>
+          this.safely(() => {
+            try {
+              dir.make_directory_finish(made);
+            } catch (e) {
+              if (!(e as GLib.Error).matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS)) return;
+            }
+            store(bytes);
+          }),
+        );
+      // The body is read in pieces and never further than one byte past the limit.
+      const chunks: Uint8Array[] = [];
+      let size = 0;
+      const read = (stream: Gio.InputStream) => {
+        const wanted = MAX_COVER_BYTES + 1 - size;
+        stream.read_bytes_async(wanted, GLib.PRIORITY_DEFAULT, cancellable, (_stream, result) =>
+          this.safely(() => {
+            let chunk: Uint8Array | null = null;
+            try {
+              chunk = stream.read_bytes_finish(result).toArray();
+            } catch {
+              // Cancelled, or the connection broke.
+            }
+            if (chunk && chunk.length > 0) {
+              chunks.push(chunk);
+              size += chunk.length;
+              if (size <= MAX_COVER_BYTES) {
+                read(stream);
+                return;
+              }
+            }
+            stream.close_async(GLib.PRIORITY_DEFAULT, null, null);
+            const whole = coverBody(chunks, MAX_COVER_BYTES);
+            if (chunk && whole) save(new GLib.Bytes(whole));
+          }),
+        );
+      };
+      session.send_async(message, GLib.PRIORITY_DEFAULT, cancellable, (_session, result) =>
         this.safely(() => {
-          let bytes;
+          let stream;
           try {
-            bytes = session.send_and_read_finish(result);
+            stream = session.send_finish(result);
           } catch {
             return;
           }
-          const size = bytes.get_size();
-          if (message.get_status() !== Soup.Status.OK || size === 0 || size > MAX_COVER_BYTES)
+          const announced = message.get_response_headers().get_content_length();
+          if (message.get_status() !== Soup.Status.OK || announced > MAX_COVER_BYTES) {
+            // Closing the stream unread ends the transfer.
+            stream.close_async(GLib.PRIORITY_DEFAULT, null, null);
             return;
-          dir.make_directory_async(GLib.PRIORITY_DEFAULT, cancellable, (_dir, made) =>
-            this.safely(() => {
-              try {
-                dir.make_directory_finish(made);
-              } catch (e) {
-                if (!(e as GLib.Error).matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS)) return;
-              }
-              store(bytes);
-            }),
-          );
+          }
+          read(stream);
         }),
       );
     };

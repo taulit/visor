@@ -3,6 +3,7 @@ import {
   MAX_ROWS,
   NO_TRACK,
   PAUSED_MS,
+  coverBody,
   describeTrack,
   hashName,
   nextPauseEnd,
@@ -149,6 +150,20 @@ describe('nextPauseEnd', () => {
     expect(nextPauseEnd([], now)).toBeNull();
     expect(nextPauseEnd([{ status: 'Playing', activeAt: now }], now)).toBeNull();
     expect(nextPauseEnd([{ status: 'Paused', activeAt: now - PAUSED_MS }], now)).toBeNull();
+  });
+});
+
+describe('coverBody', () => {
+  const bytes = (...values: number[]): Uint8Array => Uint8Array.from(values);
+
+  it('joins the pieces', () => {
+    expect(coverBody([bytes(1, 2), bytes(), bytes(3)], 3)).toEqual(bytes(1, 2, 3));
+  });
+
+  it('is nothing for an empty body and for one past the limit', () => {
+    expect(coverBody([], 3)).toBeNull();
+    expect(coverBody([bytes()], 3)).toBeNull();
+    expect(coverBody([bytes(1, 2), bytes(3, 4)], 3)).toBeNull();
   });
 });
 
