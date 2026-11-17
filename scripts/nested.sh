@@ -12,6 +12,8 @@
 #                       pink, purple, slate (default blue)
 #   --animations        keep animations on (default: off, for stable screenshots)
 #   --no-visor          do not load Visor, only the test helper
+#   --extension DIR     also install and enable the extension in DIR (a built
+#                       extension directory with a metadata.json); repeatable
 #   --log FILE          copy the shell log to FILE when done
 #
 # Inside the command, scripts/lib/shell.sh offers shell_eval and shell_shot.
@@ -19,6 +21,7 @@ set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 size=1920x1080 scheme=dark accent=blue animations=false with_visor=true log=
+extra_extensions=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -27,6 +30,7 @@ while [[ $# -gt 0 ]]; do
         --accent) accent="$2"; shift 2 ;;
         --animations) animations=true; shift ;;
         --no-visor) with_visor=false; shift ;;
+        --extension) [[ -f "$2/metadata.json" ]] || { echo "nested.sh: no metadata.json in $2" >&2; exit 2; }; extra_extensions+=("$(cd "$2" && pwd)"); shift 2 ;;
         --log) log="$2"; shift 2 ;;
         --) shift; break ;;
         *) echo "nested.sh: unknown option $1" >&2; exit 2 ;;
@@ -65,6 +69,12 @@ if $with_visor; then
     cp -r "$repo/build" "$extensions/visor@taulit.github.io"
     enabled="['visor-test-helper@taulit.github.io', 'visor@taulit.github.io']"
 fi
+
+for dir in "${extra_extensions[@]}"; do
+    uuid="$(node -p "require('$dir/metadata.json').uuid")"
+    cp -r "$dir" "$extensions/$uuid"
+    enabled="${enabled%]}, '$uuid']"
+done
 
 status=0
 env -i \

@@ -17,7 +17,10 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:shell": "bash scripts/shell-tests.sh",
-    "pot": "bash scripts/update-pot.sh"
+    "pot": "bash scripts/update-pot.sh",
+    "sdk:gen": "bash scripts/gen-sdk.sh",
+    "sdk:check": "bash scripts/gen-sdk.sh --check",
+    "template:check": "bash scripts/template-check.sh"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

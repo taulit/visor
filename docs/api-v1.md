@@ -130,14 +130,30 @@ Main.extensionManager.lookup('visor@taulit.github.io')?.stateObj?.api;
 
 The `api` property of the Visor extension object is a `VisorApi`. It is `null` (or `stateObj` is missing) while Visor is not enabled.
 Check `state === ExtensionState.ACTIVE` and listen to `extension-state-changed` of `Main.extensionManager` to know when Visor comes and goes, as the example does.
-Until the SDK helper exists (see section 10) a module has to do these steps itself:
+The helper `connectVisor(extension, module)` from the SDK does all of this for you (see below). What it does, step by step:
 
 1. Look up Visor. If it is `ACTIVE`, call `api.register(module, this)`.
 2. Otherwise wait for `extension-state-changed` of the Visor UUID and register then.
 3. When Visor is disabled it calls `disable()` on every module and forgets them all. The module must register again when Visor is `ACTIVE` again.
 4. In the module extension's own `disable()`, call `api.unregister(id)` and disconnect the signal.
 
-An SDK helper `@taulit/visor-module` with a `connectVisor()` function that does this is planned for a later phase. It does not exist yet.
+### The helper `connectVisor()`
+
+`sdk/connect.js` in the Visor repository (npm package `@taulit/visor-module`, file `connect.js`) is about 60 lines of plain, dependency-free GJS ESM. A GNOME extension has no `node_modules` at run time and no bundler, so **copy it into your extension**, together with `connect.d.ts` and `index.d.ts` (the types of this API, generated from `src/api.ts`), for example to `src/visor/`.
+The template [`examples/module-template/`](../examples/module-template/) (also published as `taulit/visor-module-template`) has them in place; `pnpm run sync:sdk` there updates the copies.
+
+```js
+import { connectVisor } from './visor/connect.js';
+
+// in enable():
+this._visor = connectVisor(this, module);
+// in disable():
+this._visor.disconnect();
+```
+
+- It registers `module` as soon as Visor is active (`register(module, extension)`), now or later, and again when Visor comes back after it was disabled.
+- It never throws when Visor is missing, and logs one line when Visor refuses the module (for example another API version).
+- `disconnect()` unregisters the module if Visor is still there and removes the signal.
 
 ### `register(module, owner?)`
 
@@ -661,7 +677,6 @@ If every group is empty, "No results" is shown. Each new input starts a new gene
 
 ### Not in v1
 
-- The SDK helper `@taulit/visor-module` with `connectVisor()`. A later phase adds it; until then a module connects itself as in section 3.
 - A way to learn when the peek row is on screen (the Timers module's chip does not count down for that reason).
 - A click handler for peek chips: a click always opens the panel.
 - Extra row options: `RowOptions.trailing` (a widget at the end of a row) exists only for Visor's own Modules view and is not part of the API.
