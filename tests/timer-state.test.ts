@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   DONE_MS,
+  LATE_MS,
+  MAX_SPAN_MS,
+  MAX_WAIT_MS,
   addTime,
   chipTimer,
   createAlarm,
@@ -11,6 +14,9 @@ import {
   isRunning,
   nextDeadline,
   parseTimers,
+  endedLate,
+  ringsAloud,
+  waitFor,
   pause,
   progressOf,
   restart,
@@ -119,10 +125,23 @@ describe('step', () => {
     expect(step(timers, T0 + 60_000 + DONE_MS).timers).toEqual([]);
   });
 
-  it('drops a timer that ended long ago without a word', () => {
-    const result = step([timer, watch], T0 + 60_000 + DONE_MS);
-    expect(result.finished).toEqual([]);
+  it('announces a timer that ended long ago, once, and gives it no row', () => {
+    const alarm = createAlarm('x', T0 + 90_000, '', T0);
+    const now = T0 + 8 * 3_600_000;
+    const result = step([timer, watch, alarm], now);
+    expect(result.finished).toEqual([
+      expect.objectContaining({ id: 'a', doneAt: T0 + 60_000 }),
+      expect.objectContaining({ id: 'x', doneAt: T0 + 90_000 }),
+    ]);
     expect(result.timers).toEqual([watch]);
+    expect(result.changed).toBe(true);
+    expect(step(result.timers, now + 1000).finished).toEqual([]);
+  });
+
+  it('keeps the row of a timer that ended less than two minutes ago', () => {
+    const result = step([timer], T0 + 60_000 + DONE_MS - 1);
+    expect(result.finished).toHaveLength(1);
+    expect(result.timers).toEqual(result.finished);
   });
 
   it('never ends a paused timer', () => {
@@ -165,6 +184,30 @@ describe('chipTimer', () => {
   });
 });
 
+describe('the announcement of an end', () => {
+  const [done] = step([createCountdown('a', 60_000, '', T0)], T0 + 60_000).finished;
+  const end = T0 + 60_000;
+
+  it('has a sound for two minutes', () => {
+    expect(ringsAloud(done!, end)).toBe(true);
+    expect(ringsAloud(done!, end + DONE_MS - 1)).toBe(true);
+    expect(ringsAloud(done!, end + DONE_MS)).toBe(false);
+  });
+
+  it('names the time of the end when it is more than a minute old', () => {
+    expect(endedLate(done!, end + LATE_MS)).toBe(false);
+    expect(endedLate(done!, end + LATE_MS + 1)).toBe(true);
+  });
+});
+
+describe('waitFor', () => {
+  it('is the time to the deadline, at least nothing and at most a day', () => {
+    expect(waitFor(T0 + 500, T0)).toBe(500);
+    expect(waitFor(T0 - 500, T0)).toBe(0);
+    expect(waitFor(T0 + 30 * 86_400_000, T0)).toBe(MAX_WAIT_MS);
+  });
+});
+
 describe('parseTimers', () => {
   it('reads back what was saved', () => {
     const list = [
@@ -173,7 +216,7 @@ describe('parseTimers', () => {
       createAlarm('x', T0 + 3_600_000, '', T0),
       step([createCountdown('d', 1000, '', T0)], T0 + 1000).timers[0]!,
     ];
-    expect(parseTimers(serializeTimers(list))).toEqual(list);
+    expect(parseTimers(serializeTimers(list), T0)).toEqual(list);
   });
 
   it('survives anything', () => {
@@ -190,10 +233,31 @@ describe('parseTimers', () => {
           { id: 'b', kind: 'countdown' },
           { id: 'c', kind: 'countdown', endsAt: 'soon' },
           { id: 'd', kind: 'stopwatch', endsAt: 5 },
-          { id: 'e', kind: 'countdown', endsAt: 5, label: 7, totalMs: -1 },
-          { id: 'e', kind: 'countdown', endsAt: 9 },
+          { id: 'e', kind: 'countdown', endsAt: T0 + 5, label: 7, totalMs: -1 },
+          { id: 'e', kind: 'countdown', endsAt: T0 + 9 },
         ]),
+        T0,
       ),
-    ).toEqual([{ id: 'e', kind: 'countdown', label: '', durationMs: 0, totalMs: 0, endsAt: 5 }]);
+    ).toEqual([
+      { id: 'e', kind: 'countdown', label: '', durationMs: 0, totalMs: 0, endsAt: T0 + 5 },
+    ]);
+  });
+
+  it('leaves out times that cannot be meant', () => {
+    const read = (item: object): unknown[] =>
+      parseTimers(JSON.stringify([{ id: 'a', kind: 'countdown', ...item }]), T0);
+    expect(read({ endsAt: T0 + MAX_SPAN_MS })).toHaveLength(1);
+    expect(read({ endsAt: T0 + MAX_SPAN_MS + 1 })).toEqual([]);
+    expect(read({ endsAt: T0 - MAX_SPAN_MS - 1 })).toEqual([]);
+    expect(read({ endsAt: 8.64e15 })).toEqual([]);
+    expect(read({ pausedMs: MAX_SPAN_MS + 1 })).toEqual([]);
+    expect(read({ doneAt: 5 })).toEqual([]);
+    expect(parseTimers('[{"id":"a","kind":"countdown","endsAt":1e400}]', T0)).toEqual([]);
+    expect(
+      parseTimers(JSON.stringify([{ id: 'w', kind: 'stopwatch', startedAt: 1e300 }]), T0),
+    ).toEqual([]);
+    expect(read({ endsAt: T0 + 1000, durationMs: 1e300, totalMs: 1e300 })).toEqual([
+      { id: 'a', kind: 'countdown', label: '', durationMs: 0, totalMs: 0, endsAt: T0 + 1000 },
+    ]);
   });
 });

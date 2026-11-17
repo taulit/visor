@@ -23,6 +23,7 @@ import { parseTimer } from './parse.js';
 import {
   addTime,
   chipTimer,
+  endedLate,
   createAlarm,
   createCountdown,
   createStopwatch,
@@ -35,9 +36,11 @@ import {
   progressOf,
   restart,
   resume,
+  ringsAloud,
   serializeTimers,
   step,
   timeOf,
+  waitFor,
   type Timer,
 } from './state.js';
 
@@ -200,13 +203,14 @@ class TimersModule implements VisorModule {
     }
     this.render(now);
     this.schedule(now);
-    for (const timer of finished) this.ring(timer);
+    for (const timer of finished) this.ring(timer, now);
   }
 
   private schedule(now: number): void {
     const ctx = this.ctx;
     const deadline = nextDeadline(this.timers);
-    const wait = deadline === null ? Infinity : Math.max(0, deadline - now);
+    // At most a day: a timeout takes 32 bits of milliseconds, and the clock may be set.
+    const wait = deadline === null ? Infinity : waitFor(deadline, now);
     // The last second before an end is awaited exactly, so a timer never ends late.
     const tick = ctx !== null && ctx.isOpen && this.timers.some(isRunning) && wait > 1000;
     if (tick && this.ticking) return;
@@ -342,13 +346,20 @@ class TimersModule implements VisorModule {
 
   // --- the end of a timer ---
 
-  private ring(timer: Timer): void {
+  /**
+   * Every timer that ended is announced once. One that ended while nobody
+   * watched has no row any more and makes no sound, but its notification says
+   * when it ended.
+   */
+  private ring(timer: Timer, now: number): void {
     const ctx = this.ctx;
     if (!ctx) return;
     const _ = ctx.t;
     const chip = this.doneChip(timer);
-    ctx.peek.flash(chip);
-    global.display.get_sound_player().play_from_theme('complete', _('Timer finished'), null);
+    if (ringsAloud(timer, now)) {
+      ctx.peek.flash(chip);
+      global.display.get_sound_player().play_from_theme('complete', _('Timer finished'), null);
+    }
 
     // A source destroys itself with its last notification, so there may be none.
     if (!this.tray) {
@@ -361,10 +372,12 @@ class TimersModule implements VisorModule {
       Main.messageTray.add(tray);
       this.tray = tray;
     }
-    const body =
+    let body =
       timer.kind === 'alarm'
         ? `${this.kindName(timer)} · ${clock(timer.doneAt ?? 0)}`
         : `${this.kindName(timer)} · ${formatDuration(timer.durationMs)}`;
+    if (endedLate(timer, now))
+      body = `${body} · ${_('Ended at %s').replace('%s', clock(timer.doneAt ?? now))}`;
     const notification = new MessageTray.Notification({
       source: this.tray,
       title: chip.text,

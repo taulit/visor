@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 11:06+0100\n"
+"POT-Creation-Date: 2026-11-17 11:26+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -73,8 +73,8 @@ msgid "Shows up only while something is running."
 msgstr "Zeigt sich nur, solange etwas läuft."
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:391 build/modules/upcoming/module.js:27
-#: build/modules/upcoming/module.js:97
+#: build/core/sheet.js:391 build/modules/upcoming/module.js:28
+#: build/modules/upcoming/module.js:99
 msgid "Up Next"
 msgstr "Als Nächstes"
 
@@ -98,15 +98,15 @@ msgstr "Keine Module"
 msgid "Downloads"
 msgstr "Downloads"
 
-#: build/modules/downloads/module.js:291 build/modules/timers/module.js:228
+#: build/modules/downloads/module.js:336 build/modules/timers/module.js:229
 msgid "Done"
 msgstr "Fertig"
 
-#: build/modules/downloads/module.js:297
+#: build/modules/downloads/module.js:342
 msgid "Show in folder"
 msgstr "Im Ordner zeigen"
 
-#: build/modules/downloads/module.js:304
+#: build/modules/downloads/module.js:349
 msgid "Open"
 msgstr "Öffnen"
 
@@ -118,7 +118,7 @@ msgstr "Medien"
 msgid "Previous"
 msgstr "Vorheriger Titel"
 
-#: build/modules/media/module.js:153 build/modules/timers/module.js:240
+#: build/modules/media/module.js:153 build/modules/timers/module.js:241
 msgid "Pause"
 msgstr "Pause"
 
@@ -132,32 +132,32 @@ msgstr "Nächster Titel"
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/modules/notifications/module.js:19
-#: build/modules/notifications/module.js:91
+#: build/modules/notifications/module.js:92
 msgid "Notifications"
 msgstr "Mitteilungen"
 
-#: build/modules/notifications/module.js:93
+#: build/modules/notifications/module.js:94
 msgid "Do Not Disturb"
 msgstr "Nicht stören"
 
-#: build/modules/notifications/module.js:100
+#: build/modules/notifications/module.js:101
 msgid "No new notifications"
 msgstr "Keine neuen Mitteilungen"
 
-#: build/modules/notifications/module.js:281
+#: build/modules/notifications/module.js:298
 msgid "Show less"
 msgstr "Weniger anzeigen"
 
-#: build/modules/notifications/module.js:283
+#: build/modules/notifications/module.js:300
 #, javascript-format
 msgid "Show all %d"
 msgstr "Alle %d anzeigen"
 
-#: build/modules/notifications/module.js:306
+#: build/modules/notifications/module.js:323
 msgid "Clear all"
 msgstr "Alle löschen"
 
-#: build/modules/notifications/module.js:328
+#: build/modules/notifications/module.js:345
 msgid "Dismiss"
 msgstr "Entfernen"
 
@@ -187,58 +187,63 @@ msgstr "Timer starten · %s"
 msgid "Start stopwatch"
 msgstr "Stoppuhr starten"
 
-#: build/modules/timers/module.js:204
+#: build/modules/timers/module.js:205
 msgid "Stopwatch"
 msgstr "Stoppuhr"
 
-#: build/modules/timers/module.js:205
+#: build/modules/timers/module.js:206
 msgid "Alarm"
 msgstr "Wecker"
 
-#: build/modules/timers/module.js:205 build/modules/timers/module.js:313
+#: build/modules/timers/module.js:206 build/modules/timers/module.js:321
 msgid "Timer"
 msgstr "Timer"
 
-#: build/modules/timers/module.js:229 build/modules/timers/module.js:331
+#: build/modules/timers/module.js:230 build/modules/timers/module.js:341
 msgid "Restart"
 msgstr "Neu starten"
 
-#: build/modules/timers/module.js:235
+#: build/modules/timers/module.js:236
 msgid "Resume"
 msgstr "Weiter"
 
-#: build/modules/timers/module.js:245
+#: build/modules/timers/module.js:246
 msgid "Stop"
 msgstr "Stoppen"
 
-#: build/modules/timers/module.js:250
+#: build/modules/timers/module.js:251
 msgid "+1 min"
 msgstr "+1 Min."
 
-#: build/modules/timers/module.js:260 build/modules/timers/module.js:265
+#: build/modules/timers/module.js:261 build/modules/timers/module.js:266
 msgid "Paused"
 msgstr "Pausiert"
 
-#: build/modules/timers/module.js:265 build/modules/timers/module.js:294
+#: build/modules/timers/module.js:266 build/modules/timers/module.js:295
 #: build/modules/upcoming/plan.js:32
 #, javascript-format
 msgid "until %s"
 msgstr "bis %s"
 
-#: build/modules/timers/module.js:300
+#: build/modules/timers/module.js:301
 #, javascript-format
 msgid "%s done"
 msgstr "%s fertig"
 
-#: build/modules/timers/module.js:310
+#: build/modules/timers/module.js:317
 msgid "Timer finished"
 msgstr "Timer abgelaufen"
 
-#: build/modules/upcoming/module.js:98
+#: build/modules/timers/module.js:334
+#, javascript-format
+msgid "Ended at %s"
+msgstr "Beendet um %s"
+
+#: build/modules/upcoming/module.js:100
 msgid "Nothing else today"
 msgstr "Heute nichts mehr"
 
-#: build/modules/upcoming/module.js:180
+#: build/modules/upcoming/module.js:182
 msgid "Join"
 msgstr "Beitreten"
 

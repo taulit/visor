@@ -251,7 +251,7 @@ check 'timers: back after disable and enable' "(() => {
     return N.rows('timers').length === 2 && tea < 600 && tea > 590 && N.seconds(N.row('timers', 'Research').value) >= 3;
 })()"
 
-# Ended while Visor was off: a moment ago rings once, long ago is dropped.
+# Ended while Visor was off: both are announced once; the one from long ago has no row and says when it ended.
 run "Main.extensionManager.disableExtension('$uuid')"
 shell_wait_for "$state !== 1"
 run "visor.getSettings().set_string('timers', JSON.stringify([
@@ -260,7 +260,8 @@ run "visor.getSettings().set_string('timers', JSON.stringify([
 ]))"
 run "Main.extensionManager.enableExtension('$uuid')"
 shell_wait_for "$state === 1"
-check 'timers: one that ended a moment ago rings once on enable' "N.rows('timers').length === 1 && N.row('timers', 'Recent').subtitle === 'Timer · Done' && N.timerSource().notifications.length === 1"
+check 'timers: one that ended a moment ago rings once on enable' "N.rows('timers').length === 1 && N.row('timers', 'Recent').subtitle === 'Timer · Done' && N.timerSource().notifications.filter(n => n.title === 'Recent done' && !n.body.includes('Ended at')).length === 1"
+check 'timers: one that ended long ago is announced with the time it ended, without a row' "(() => { const all = N.timerSource().notifications; const old = all.filter(n => n.title === 'Old done'); return all.length === 2 && old.length === 1 && old[0].body.startsWith('Timer · 1:00 · Ended at ') || all.map(n => n.title + '/' + n.body).join('|'); })()"
 run "Main.extensionManager.disableExtension('$uuid')"
 shell_wait_for "$state !== 1"
 check 'timers: disable takes the notification source along' "N.timerSource() === undefined"
