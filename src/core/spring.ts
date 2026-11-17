@@ -1,6 +1,6 @@
 // Easing curves of the notch as closed-form functions of time. Pure, no gi:// imports.
 
-export interface SpringConfig {
+interface SpringConfig {
   stiffness: number;
   damping: number;
   mass: number;

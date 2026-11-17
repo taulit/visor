@@ -36,13 +36,13 @@ const PROXY_WAITS = 50;
 /** Microseconds a change of the list may spend before new icons are left for later. */
 const ICON_BUDGET = 6000;
 
-export interface SearchHost {
+interface SearchHost {
   /** Closes the panel. */
   close(): void;
 }
 
 /** How long the last query took, in microseconds. */
-export interface SearchTiming {
+interface SearchTiming {
   /** Until commands, calculation and apps were in the list. */
   local: number;
   /** Until the modules and the GNOME search providers were asked as well. */

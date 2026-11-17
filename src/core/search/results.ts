@@ -42,7 +42,7 @@ export interface Group {
   items: Item[];
 }
 
-export interface ResultsCallbacks {
+interface ResultsCallbacks {
   /** A line was clicked. */
   activate(item: Item): void;
 }

@@ -57,7 +57,7 @@ function localOrigin(): string | null {
  * sent; once it is on its way the answer is awaited, bounded by the timeout
  * of `http`, so that a token the server issued is not thrown away.
  */
-export async function exchangePairingCode(
+async function exchangePairingCode(
   http: Soup.Session,
   origin: string,
   code: string,

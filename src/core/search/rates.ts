@@ -19,7 +19,7 @@ export interface CurrencyQuery {
 
 /** The currencies the ECB publishes a reference rate for (BGN left in 2026 with the euro). */
 // prettier-ignore
-export const ECB_CURRENCIES = [
+const ECB_CURRENCIES = [
   'EUR', 'USD', 'JPY', 'CZK', 'DKK', 'GBP', 'HUF', 'PLN', 'RON', 'SEK',
   'CHF', 'ISK', 'NOK', 'TRY', 'AUD', 'BRL', 'CAD', 'CNY', 'HKD', 'IDR',
   'ILS', 'INR', 'KRW', 'MXN', 'MYR', 'NZD', 'PHP', 'SGD', 'THB', 'ZAR',

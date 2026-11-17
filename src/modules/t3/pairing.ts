@@ -16,7 +16,7 @@ export const TOKEN_SERIAL_KEY = 't3-token-serial';
 /** Where a server listens when nothing says otherwise. */
 export const DEFAULT_ORIGIN = 'http://127.0.0.1:3773';
 /** Reading the sessions and answering them. */
-export const PAIRING_SCOPES = ['orchestration:read', 'orchestration:operate'] as const;
+const PAIRING_SCOPES = ['orchestration:read', 'orchestration:operate'] as const;
 
 const MAX_INPUT = 2048;
 const MAX_CODE = 512;

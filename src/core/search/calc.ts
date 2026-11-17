@@ -3,9 +3,9 @@
  * Pure logic. Uses only `Intl`, which exists both in GJS and in Node.
  */
 
-export type CalcResult = { ok: true; value: number } | { ok: false };
+type CalcResult = { ok: true; value: number } | { ok: false };
 
-export interface Separators {
+interface Separators {
   decimal: string;
   group: string;
 }

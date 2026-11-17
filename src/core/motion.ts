@@ -7,7 +7,7 @@ import St from 'gi://St';
 import { FrameProbe, now } from './metrics.js';
 import { easeOutQuint, springValue } from './spring.js';
 
-export interface MotionRun {
+interface MotionRun {
   /** Nominal length in milliseconds, before the slow-down factor. */
   duration: number;
   /** `spring` may pass 1 on the way, `quint` eases out without overshoot. */

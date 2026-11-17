@@ -38,7 +38,7 @@ export interface SearchMount {
   setKeyHandler(handler: ((event: Clutter.Event) => boolean) | null): void;
 }
 
-export interface SheetCallbacks {
+interface SheetCallbacks {
   /** The width or the height the sheet asks for changed. */
   changed(): void;
 }

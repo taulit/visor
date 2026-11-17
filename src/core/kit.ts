@@ -390,7 +390,7 @@ function setState(actor: St.Widget, state: Atk.StateType, on: boolean): void {
 }
 
 /** What the colour of a row or a chip says, for screen readers. */
-export function statusWords(status: string | undefined): string {
+function statusWords(status: string | undefined): string {
   if (status === 'waiting') return _('waits for you');
   if (status === 'done') return _('done');
   return '';

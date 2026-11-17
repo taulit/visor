@@ -1,13 +1,13 @@
 // Pure logic: sizes of the open panel in CSS pixels.
 
-export type WidthSetting = 'compact' | 'normal' | 'wide';
+type WidthSetting = 'compact' | 'normal' | 'wide';
 
 const WIDTHS: Record<WidthSetting, number> = { compact: 800, normal: 960, wide: 1120 };
 
 /** Width of the panel when only one of the two columns has content. */
-export const ONE_COLUMN_WIDTH = 600;
+const ONE_COLUMN_WIDTH = 600;
 /** Padding of the sheet on the left and on the right. */
-export const SHEET_PADDING = 24;
+const SHEET_PADDING = 24;
 
 /**
  * Panel width: the setting when both columns have content or a module view is

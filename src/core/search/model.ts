@@ -7,7 +7,7 @@ import { convert, type CurrencyQuery, type Rates } from './rates.js';
 
 // --- Locale ------------------------------------------------------------------------------------
 
-export interface LocaleInfo {
+interface LocaleInfo {
   /** BCP-47 tag for `Intl`, such as `de-DE`. Undefined leaves the choice to the runtime. */
   locale: string | undefined;
   /** ISO 3166 region such as `DE`, or null when the locale names none. */
@@ -27,7 +27,7 @@ export function localeOf(names: readonly string[]): LocaleInfo {
 
 // --- Commands ----------------------------------------------------------------------------------
 
-export interface Completion {
+interface Completion {
   /** Index into the list of commands. */
   index: number;
   /** The keyword the typed text is the beginning of. */

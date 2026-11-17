@@ -1,6 +1,6 @@
 // Pure logic: how a list of items with ids turns into the next one.
 
-export interface IdDiff {
+interface IdDiff {
   /** In the previous list but not in the next one. */
   removed: string[];
   /** False when the next list has the same ids in the same order as the previous one. */

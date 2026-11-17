@@ -1,6 +1,6 @@
 /** Date and time wording for the upcoming-events and notification rows. Pure logic. */
 
-export interface CalendarEvent {
+interface CalendarEvent {
   start: Date;
   end: Date;
   allDay: boolean;

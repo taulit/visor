@@ -14,7 +14,7 @@ export interface Query {
   currency: { amount: number; from: string; to: string } | null;
 }
 
-export interface ParseOptions {
+interface ParseOptions {
   /** The keywords of every registered command, e.g. `[['timer'], ['stoppuhr', 'stopwatch']]`. */
   commands: string[][];
   locale?: string;
