@@ -86,6 +86,9 @@ run "(() => {
         chip: () => entry().chip,
         action: (row, label) => [...(row.controls ?? []), row.primary].find(a => a && a.label === label),
         // The row with this title as it is on screen.
+        chevron: title => A.find('visor-row-chevron').find(c => A.actor(title).contains(c)),
+        // Deny and Allow below the full command of an expanded row.
+        answers: () => A.find('visor-t3-buttons').filter(a => a.mapped && a.get_children().length === 2 && a.get_first_child().label_actor.text === 'Deny').flatMap(a => a.get_children()),
         actor: title => up(A.find('visor-row-title').find(a => a.mapped && a.text === title), 'visor-row'),
         async type(text) {
             for (const char of text) {
@@ -124,8 +127,8 @@ check 'the waiting row is amber and names the project' \
     "A.row('thread-wait').status === 'waiting' && A.row('thread-wait').title === '$wait_title' && A.row('thread-wait').subtitle === 'visor · Wants to run'"
 wait_check 'it shows the command the subagent asks about' \
     "A.row('thread-wait').detail === \"printf 'subagent approval fixture' > subagent-approval.txt\""
-check 'Deny is a ghost button, Allow the primary one' \
-    "A.row('thread-wait').controls.map(a => a.label + ':' + a.style).join() === 'Deny:ghost' && A.row('thread-wait').primary.label === 'Allow' && A.row('thread-wait').primary.style === 'primary'"
+check 'a command the one line cuts off cannot be allowed from the collapsed row' \
+    "A.row('thread-wait').controls === undefined && A.row('thread-wait').primary === undefined"
 check 'the dot next to the clock is amber' \
     "visor.content.attention === 'waiting' && A.dot().visible && A.dot().has_style_class_name('waiting')"
 check 'the chip: amber, most important' \
@@ -136,12 +139,21 @@ check 'the running row counts the time only with the panel open' \
     "/^visor · Working · 4:[0-9][0-9]$/.test(A.row('thread-run').subtitle) && A.mod().tickSource === 0"
 check 'the done row has a check' "A.row('thread-done').status === 'done' && A.row('thread-done').icon === 'object-select-symbolic' && A.row('thread-done').subtitle === 'visor · Done'"
 
-run "A.action(A.row('thread-wait'), 'Allow').run()"
+run 'visor.notch.open()'
+shell_wait_for 'visor.notch.state === "open"'
+check 'the expanded waiting row shows the complete command' \
+    "(async () => { A.chevron('$wait_title').emit('clicked', 1); await A.wait(300); const label = A.find('visor-t3-command').find(a => a.mapped); return label != null && label.text === \"printf 'subagent approval fixture' > subagent-approval.txt\" && !label.clutter_text.get_layout().is_ellipsized() && !A.find('visor-t3-cut').some(a => a.mapped) || (label ? label.text : 'no label'); })()"
+check 'with Deny and Allow below it' \
+    "A.answers().map(b => b.label_actor.text).join() === 'Deny,Allow'"
+run "A.answers()[1].emit('clicked', 1)"
 check 'Allow: the row runs at once' "A.row('thread-wait').status === undefined && A.row('thread-wait').primary === undefined && A.row('thread-wait').subtitle.startsWith('visor · Working')"
 wait_check 'the dot and the chip are gone' "visor.content.attention === null && A.chip() === null && !A.dot().visible"
 sleep 0.5
 check 'the mock received the approval for the subagent thread' \
     "$(actions "len(a) == 1 and a[0]['type'] == 'runtime-request.respond' and a[0]['decision'] == 'accept' and a[0]['threadId'] == 'thread-wait-child' and a[0]['requestId'] == 'request-1'")"
+check 'the command and its buttons are gone from the expanded row' \
+    "!A.find('visor-t3-command').some(a => a.mapped) && A.answers().length === 0"
+run "A.chevron('$wait_title').emit('clicked', 1)"
 wait_check 'the server confirms: the row shows running' \
     "A.row('thread-wait').subtitle.startsWith('visor · Working') && A.mod().answered.size === 0 && A.mod().client.shell.threads.get('thread-wait-child').request === null"
 
@@ -151,6 +163,8 @@ run 'visor.notch.open()'
 shell_wait_for 'visor.notch.state === "open"'
 mock 'wait?thread=thread-run&request=request-2&prompt=rm%20-rf%20build'
 wait_check 'a second approval: the row waits, on top' "A.ids().startsWith('thread-run,') && A.row('thread-run').detail === 'rm -rf build'"
+check 'a short command is answered in the row: Deny is a ghost button, Allow the primary one' \
+    "A.row('thread-run').controls.map(a => a.label + ':' + a.style).join() === 'Deny:ghost' && A.row('thread-run').primary.label === 'Allow' && A.row('thread-run').primary.style === 'primary'"
 check 'no flash while the panel is open, but the dot' "visor.notch.state === 'open' && visor.content.attention === 'waiting'"
 mock fail-next
 run "A.action(A.row('thread-run'), 'Deny').run()"
@@ -166,7 +180,7 @@ check 'the mock received the denial' "$(actions "a[-1]['type'] == 'runtime-reque
 check 'the time ticks while the panel is open' "A.mod().tickSource !== 0"
 check 'and moves' "(async () => { const before = A.row('thread-wait').subtitle; await A.wait(2100); return A.row('thread-wait').subtitle !== before; })()"
 check 'expanding shows the last message of the agent, as plain text' \
-    "(async () => { A.find('visor-row-chevron').find(c => A.actor('$wait_title').contains(c)).emit('clicked', 1); await A.wait(200); const label = A.find('visor-t3-message').find(a => a.mapped); return label !== undefined && label.text === 'I asked a subagent to write the fixture file. It needs your approval to run the command.' && !label.clutter_text.use_markup; })()"
+    "(async () => { A.chevron('$wait_title').emit('clicked', 1); await A.wait(200); const label = A.find('visor-t3-message').find(a => a.mapped); return label !== undefined && label.text === 'I asked a subagent to write the fixture file. It needs your approval to run the command.' && !label.clutter_text.use_markup; })()"
 check 'with a reply field and the buttons Stop and Open in T3 Code' \
     "A.find('visor-t3-reply').filter(a => a.mapped).length === 1 && A.find('visor-t3-buttons').find(a => a.mapped).get_children().map(b => b.label_actor.text).join() === 'Stop,Open in T3 Code'"
 check 'typing a reply and Enter sends it' \
@@ -179,6 +193,20 @@ sleep 0.3
 check 'the mock received the stop' "$(actions "a[-1]['type'] == 'thread.stop' and a[-1]['threadId'] == 'thread-wait'")"
 wait_check 'the server confirms: three sessions, no "more" row' "A.ids() === 'thread-run,thread-done,thread-error' && A.mod().stopped.size === 0"
 check 'a failed session says why' "A.row('thread-error').subtitle === 'visor · Failed · The provider process exited with code 1.' && A.row('thread-error').icon === 'dialog-warning-symbolic'"
+
+# --- a command of many lines ---------------------------------------------------
+
+long_command="$(printf 'echo step-%s && ' $(seq 1 60))true"
+mock "wait?thread=thread-run&request=request-3&prompt=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$long_command")"
+wait_check 'a very long command: one line in the row, no Allow there' \
+    "A.row('thread-run').status === 'waiting' && A.row('thread-run').detail?.endsWith('…') && A.row('thread-run').primary === undefined"
+check 'expanded it is complete in the label, cut after eight lines on screen, with the hint' \
+    "(async () => { A.chevron(A.row('thread-run').title).emit('clicked', 1); await A.wait(400); const label = A.find('visor-t3-command').find(a => a.mapped); const hint = A.find('visor-t3-cut').find(a => a.mapped); const lines = label ? label.clutter_text.get_layout().get_line_count() : 0; return label != null && label.text === '$long_command' && label.clutter_text.get_layout().is_ellipsized() && lines === 8 && hint?.text === 'Open T3 Code to read all of it' || (label ? lines + ' lines, hint ' + (hint != null) : 'no label'); })()"
+run "A.answers()[0].emit('clicked', 1)"
+wait_check 'Deny below it: the row runs again' "A.row('thread-run').status === undefined && A.answers().length === 0"
+sleep 0.3
+check 'the mock received the denial of that request' "$(actions "a[-1]['type'] == 'runtime-request.respond' and a[-1]['decision'] == 'decline' and a[-1]['requestId'] == 'request-3'")"
+run "A.chevron(A.row('thread-run').title).emit('clicked', 1)"
 
 # --- "+ n more" and a finished session ---------------------------------------
 

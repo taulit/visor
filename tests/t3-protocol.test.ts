@@ -4,7 +4,12 @@ import {
   PROTOCOL_VERSION,
   ackFrame,
   applyShellItem,
+  MAX_COMMAND,
+  PREVIEW_CHARS,
   approvalPrompt,
+  cleanBlock,
+  fitsPreview,
+  promptPreview,
   backoffSeconds,
   clean,
   cleanOrigin,
@@ -402,6 +407,32 @@ describe('commands', () => {
     expect(approvalPrompt(projection, 'request-2')).toBe('');
     expect(approvalPrompt({ turnItems: 'none' }, 'request-1')).toBe('');
     expect(approvalPrompt(null, 'request-1')).toBe('');
+  });
+
+  it('keeps a long command whole, with its lines', () => {
+    const long = `git commit -m "${'x'.repeat(500)}"\r\n  && git push\torigin\u0007 main  \n`;
+    const projection = { turnItems: [fixtures.approvalItem('request-1', long)] };
+    const prompt = approvalPrompt(projection, 'request-1');
+    expect(prompt).toBe(`git commit -m "${'x'.repeat(500)}"\n  && git push  origin  main`);
+    expect(promptPreview(prompt)).toHaveLength(200);
+    expect(promptPreview(prompt).endsWith('…')).toBe(true);
+    expect(promptPreview('a\nb')).toBe('a b');
+  });
+
+  it('cuts a command only at its limit', () => {
+    expect(cleanBlock('y'.repeat(MAX_COMMAND), MAX_COMMAND)).toHaveLength(MAX_COMMAND);
+    const cut = cleanBlock('y'.repeat(MAX_COMMAND + 1), MAX_COMMAND);
+    expect(cut).toHaveLength(MAX_COMMAND);
+    expect(cut.endsWith('…')).toBe(true);
+    expect(cleanBlock(7, 10)).toBe('');
+  });
+
+  it('knows when the one-line preview shows a command whole', () => {
+    expect(fitsPreview('rm -rf build')).toBe(true);
+    expect(fitsPreview('x'.repeat(PREVIEW_CHARS))).toBe(true);
+    expect(fitsPreview('x'.repeat(PREVIEW_CHARS + 1))).toBe(false);
+    expect(fitsPreview('ls\nrm -rf ~')).toBe(false);
+    expect(fitsPreview(fixtures.APPROVAL_COMMAND)).toBe(false);
   });
 });
 

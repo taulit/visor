@@ -18,6 +18,10 @@ const MAX_ID = 200;
 const MAX_TITLE = 80;
 const MAX_PROJECT = 40;
 const MAX_DETAIL = 200;
+/** A whole command or path as the expanded row shows it. */
+export const MAX_COMMAND = 4000;
+/** What the one-line preview of a row shows for certain, at any width of the panel. */
+export const PREVIEW_CHARS = 16;
 const MAX_MESSAGE = 600;
 const MAX_ERROR = 160;
 /** A reply typed into Visor; the server takes far more. */
@@ -262,17 +266,40 @@ export function launchPayload(
   };
 }
 
-/** The command or file an approval asks about, from the answer of getThreadProjection. */
+/** Text with its line breaks but no other control characters, at most `max` characters. */
+export function cleanBlock(value: unknown, max: number): string {
+  if (typeof value !== 'string') return '';
+  const text = value
+    .slice(0, max * 4)
+    .replace(/\r\n?|[\p{Zl}\p{Zp}]/gu, '\n')
+    .replace(/\t/g, '  ')
+    .replace(/[^\P{Cc}\n]/gu, ' ')
+    .replace(/[ ]+$/gm, '')
+    .replace(/^\n+|\n+$/g, '');
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+/**
+ * The whole command or file an approval asks about, from the answer of
+ * getThreadProjection: line breaks kept, cut only at MAX_COMMAND.
+ */
 export function approvalPrompt(projection: unknown, requestId: string): string {
   const items =
     isObject(projection) && Array.isArray(projection.turnItems) ? projection.turnItems : [];
   for (let i = items.length - 1; i >= 0; i--) {
     const item: unknown = items[i];
     if (isObject(item) && item.type === 'approval_request' && item.requestId === requestId)
-      return clean(item.prompt, MAX_DETAIL) || clean(item.reason, MAX_DETAIL);
+      return cleanBlock(item.prompt, MAX_COMMAND) || cleanBlock(item.reason, MAX_COMMAND);
   }
   return '';
 }
+
+/** The one line a collapsed row shows of a command. */
+export const promptPreview = (prompt: string): string => clean(prompt, MAX_DETAIL);
+
+/** True when the one-line preview shows the command whole, so it can be allowed from there. */
+export const fitsPreview = (prompt: string): boolean =>
+  prompt.length <= PREVIEW_CHARS && !prompt.includes('\n');
 
 // --- the threads ---
 

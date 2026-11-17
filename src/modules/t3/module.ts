@@ -14,11 +14,14 @@ import { formatDuration, truncate } from '../../lib/format.js';
 import { T3Client } from './client.js';
 import {
   METHODS,
+  MAX_COMMAND,
   MAX_REPLY,
   approvalPrompt,
+  fitsPreview,
   isWaiting,
   lastActive,
   launchPayload,
+  promptPreview,
   replyCommand,
   respondCommand,
   sessionsOf,
@@ -45,6 +48,10 @@ interface Details {
   expand: () => St.Widget;
   message: St.Label | null;
   stop: St.Widget | null;
+  /** The whole command of an approval, the hint that it is cut, and Deny and Allow next to it. */
+  command: St.Label | null;
+  cut: St.Widget | null;
+  answers: St.Widget | null;
 }
 
 class T3Module implements VisorModule {
@@ -362,10 +369,16 @@ class T3Module implements VisorModule {
     };
     if (session.phase === 'approval') {
       const prompt = this.prompts.get(session.request!.id);
-      return {
+      const waiting: NowRow = {
         ...row,
         status: 'waiting',
-        detail: prompt || undefined,
+        detail: prompt ? promptPreview(prompt) : undefined,
+      };
+      // Nobody allows what they cannot read: while the command is asked for the row has no
+      // buttons, and a command the one line cuts off is answered next to its full text.
+      if (prompt === null || (prompt && !fitsPreview(prompt))) return waiting;
+      return {
+        ...waiting,
         controls: [
           { label: _('Deny'), style: 'ghost', run: () => this.answer(session, 'decline') },
         ],
@@ -390,6 +403,9 @@ class T3Module implements VisorModule {
       const created: Details = {
         message: null,
         stop: null,
+        command: null,
+        cut: null,
+        answers: null,
         expand: () => this.buildDetails(threadId, created),
       };
       this.details.set(threadId, (details = created));
@@ -399,7 +415,20 @@ class T3Module implements VisorModule {
       details.message.visible = session.lastMessage !== '';
     }
     if (details.stop) details.stop.visible = session.runId !== null;
+    if (details.command && details.cut && details.answers) {
+      const prompt = this.promptOf(session);
+      if (details.command.text !== prompt) details.command.text = prompt;
+      details.command.visible = prompt !== '';
+      if (!prompt) details.cut.visible = false;
+      details.answers.visible = prompt !== '' && !fitsPreview(prompt);
+    }
     return details;
+  }
+
+  /** The whole command a session waits for, empty when it waits for none or it is not known. */
+  private promptOf(session: Session | undefined): string {
+    if (session?.phase !== 'approval' || !session.request) return '';
+    return this.prompts.get(session.request.id) ?? '';
   }
 
   private buildDetails(threadId: string, details: Details): St.Widget {
@@ -423,6 +452,55 @@ class T3Module implements VisorModule {
     message.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
     message.clutter_text.ellipsize = Pango.EllipsizeMode.END;
     box.add_child(message);
+
+    // The whole command, so that what is allowed can be read: it wraps, and
+    // after eight lines it ends in an ellipsis and says where the rest is.
+    const prompt = this.promptOf(session);
+    const command = new St.Label({
+      style_class: 'visor-t3-command',
+      text: prompt,
+      visible: prompt !== '',
+      x_expand: true,
+    });
+    command.clutter_text.line_wrap = true;
+    command.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
+    command.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+    box.add_child(command);
+    const cut = new St.Label({
+      style_class: 'visor-t3-cut',
+      text: _('Open T3 Code to read all of it'),
+      visible: false,
+    });
+    box.add_child(cut);
+    // Whether the eight lines were enough is known once the text is laid out.
+    let cutSource = 0;
+    command.connect('notify::allocation', () => {
+      if (cutSource) return;
+      cutSource = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+        cutSource = 0;
+        const text = command.clutter_text;
+        const shortened =
+          command.visible &&
+          (text.get_layout().is_ellipsized() || command.text.length >= MAX_COMMAND);
+        if (cut.visible !== shortened) cut.visible = shortened;
+        return GLib.SOURCE_REMOVE;
+      });
+    });
+    const respond = (decision: 'accept' | 'decline'): void => {
+      const current = this.sessions.find(s => s.id === threadId);
+      if (current?.phase === 'approval') this.answer(current, decision);
+    };
+    const answers = new St.BoxLayout({
+      style_class: 'visor-t3-buttons',
+      visible: prompt !== '' && !fitsPreview(prompt),
+    });
+    answers.add_child(
+      ctx.kit.button({ label: _('Deny'), style: 'ghost', run: () => respond('decline') }),
+    );
+    answers.add_child(
+      ctx.kit.button({ label: _('Allow'), style: 'primary', run: () => respond('accept') }),
+    );
+    box.add_child(answers);
 
     const name = truncate(session?.title ?? '', 24);
     const entry = new St.Entry({
@@ -465,8 +543,14 @@ class T3Module implements VisorModule {
 
     details.message = message;
     details.stop = stop;
+    details.command = command;
+    details.cut = cut;
+    details.answers = answers;
     box.connect('destroy', () => {
-      if (details.message === message) details.message = details.stop = null;
+      if (cutSource) GLib.source_remove(cutSource);
+      cutSource = 0;
+      if (details.message !== message) return;
+      details.message = details.stop = details.command = details.cut = details.answers = null;
     });
     return box;
   }

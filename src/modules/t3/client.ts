@@ -1,7 +1,8 @@
 // The connection to the local T3 Code server, see docs/t3-protocol.md:
 // descriptor, WebSocket ticket, socket, the shell stream. It reconnects with
 // a growing wait and at once when the network or the server's runtime file
-// changes. Without a token it does nothing at all.
+// changes. Without a token it does nothing at all, and a token the server
+// refuses is not tried again until the setting changes.
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Soup from 'gi://Soup?version=3.0';
@@ -70,6 +71,8 @@ export class T3Client {
   private monitor: Gio.FileMonitor | null = null;
   private network: Gio.NetworkMonitor | null = null;
   private incompatibleLogged = false;
+  /** The server refused the token; nothing is tried until the token or the address changes. */
+  private rejected = false;
 
   /** `changed` is called when the threads or the connection changed. */
   constructor(
@@ -112,6 +115,7 @@ export class T3Client {
     this.drop();
     this.attempt = 0;
     this.incompatibleLogged = false;
+    this.rejected = false;
   }
 
   /** The address that opens a thread in T3 Code. */
@@ -154,13 +158,14 @@ export class T3Client {
     if (!this.running) return;
     this.drop();
     this.attempt = 0;
+    this.rejected = false;
     this.changed();
     this.connect();
   }
 
   /** The network or the server's runtime file changed: do not sit out the wait. */
   private retryNow(): void {
-    if (!this.running || this.connected || this.connecting) return;
+    if (!this.running || this.connected || this.connecting || this.rejected) return;
     this.attempt = 0;
     this.connect();
   }
@@ -170,7 +175,7 @@ export class T3Client {
     this.retrySource = 0;
     const token = this.settings?.get_string(TOKEN_KEY) ?? '';
     // Not paired: nothing to do until the setting changes.
-    if (!this.running || this.connecting || this.connected || !token) return;
+    if (!this.running || this.connecting || this.connected || !token || this.rejected) return;
     this.connecting = true;
     const cancellable = (this.cancellable = new Gio.Cancellable());
     this.open(token, cancellable)
@@ -183,7 +188,7 @@ export class T3Client {
   }
 
   private retryLater(): void {
-    if (!this.running || this.retrySource) return;
+    if (!this.running || this.retrySource || this.rejected) return;
     this.retrySource = GLib.timeout_add_seconds(
       GLib.PRIORITY_DEFAULT,
       backoffSeconds(this.attempt++),
@@ -203,7 +208,7 @@ export class T3Client {
       : decodeRuntimeState((await this.readFile(runtimeFile(), cancellable)) ?? '');
     if (!origin || cancellable.is_cancelled()) return false;
 
-    const about = await this.fetch('GET', descriptorUrl(origin), null, cancellable);
+    const about = (await this.fetch('GET', descriptorUrl(origin), null, cancellable)).body;
     const descriptor = about ? decodeDescriptor(about) : null;
     if (!descriptor || cancellable.is_cancelled()) return false;
     if (!isCompatible(descriptor)) {
@@ -217,10 +222,19 @@ export class T3Client {
       return false;
     }
 
-    const ticket = decodeTicket(
-      (await this.fetch('POST', ticketUrl(origin), token, cancellable)) ?? '',
-    );
-    if (!ticket || cancellable.is_cancelled()) return false;
+    const answer = await this.fetch('POST', ticketUrl(origin), token, cancellable);
+    if (cancellable.is_cancelled()) return false;
+    if (answer.status === 401 || answer.status === 403) {
+      // Asking again gets the same answer; the token itself is never logged.
+      this.rejected = true;
+      log(
+        `T3 Code refused the access token (HTTP ${answer.status}); ` +
+          'pair again in the settings of Visor. Not trying again until then.',
+      );
+      return false;
+    }
+    const ticket = decodeTicket(answer.body ?? '');
+    if (!ticket) return false;
 
     const socket = await this.openSocket(socketUrl(origin, ticket), cancellable);
     if (!socket) return false;
@@ -267,19 +281,19 @@ export class T3Client {
     });
   }
 
-  /** The body of a 200 answer, or null. */
+  /** The status (0 when there was no answer) and, for a 200 answer, the body. */
   private fetch(
     method: string,
     url: string,
     token: string | null,
     cancellable: Gio.Cancellable,
-  ): Promise<string | null> {
+  ): Promise<{ status: number; body: string | null }> {
     return new Promise(resolve => {
       let message: Soup.Message;
       try {
         message = Soup.Message.new(method, url);
       } catch {
-        resolve(null);
+        resolve({ status: 0, body: null });
         return;
       }
       if (token) message.get_request_headers().append('Authorization', `Bearer ${token}`);
@@ -290,13 +304,11 @@ export class T3Client {
         (_source, result) => {
           try {
             const data = this.http.send_and_read_finish(result).get_data();
-            const ok =
-              message.get_status() === Soup.Status.OK &&
-              data !== null &&
-              data.length <= MAX_HTTP_BYTES;
-            resolve(ok ? new TextDecoder().decode(data) : null);
+            const status = message.get_status();
+            const ok = status === Soup.Status.OK && data !== null && data.length <= MAX_HTTP_BYTES;
+            resolve({ status, body: ok ? new TextDecoder().decode(data) : null });
           } catch {
-            resolve(null);
+            resolve({ status: 0, body: null });
           }
         },
       );
