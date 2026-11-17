@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 11:51+0100\n"
+"POT-Creation-Date: 2026-11-17 11:58+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -370,7 +370,9 @@ msgstr "Mitteilungsliste"
 msgid ""
 "The shortcut of the shell for the notification list, Super+V by default, "
 "always opens Visor. Change it in the keyboard settings."
-msgstr "Das Tastenkürzel der Shell für die Mitteilungsliste, standardmäßig Super+V, öffnet immer Visor. Du änderst es in den Tastatureinstellungen."
+msgstr ""
+"Das Tastenkürzel der Shell für die Mitteilungsliste, standardmäßig Super+V, "
+"öffnet immer Visor. Du änderst es in den Tastatureinstellungen."
 
 #: build/prefs/general.js:66
 msgid "Behavior"
@@ -398,37 +400,38 @@ msgstr "Wechselkurse laden"
 
 #: build/prefs/general.js:76
 msgid "The rates come from the European Central Bank, at most once a day."
-msgstr "Die Kurse kommen von der Europäischen Zentralbank, höchstens einmal am Tag."
+msgstr ""
+"Die Kurse kommen von der Europäischen Zentralbank, höchstens einmal am Tag."
 
-#: build/prefs/modules.js:71
+#: build/prefs/modules.js:75
 msgid "Discover"
 msgstr "Entdecken"
 
-#: build/prefs/modules.js:104
+#: build/prefs/modules.js:108
 msgid "Move up"
 msgstr "Nach oben"
 
-#: build/prefs/modules.js:105
+#: build/prefs/modules.js:109
 msgid "Move down"
 msgstr "Nach unten"
 
-#: build/prefs/modules.js:108
+#: build/prefs/modules.js:112
 msgid "Change the order"
 msgstr "Reihenfolge ändern"
 
-#: build/prefs/modules.js:118
+#: build/prefs/modules.js:122
 msgid "Drag to change the order"
 msgstr "Ziehen, um die Reihenfolge zu ändern"
 
-#: build/prefs/modules.js:145
+#: build/prefs/modules.js:149
 msgid "Built for another version of Visor"
 msgstr "Für eine andere Version von Visor gebaut"
 
-#: build/prefs/modules.js:147
+#: build/prefs/modules.js:151
 msgid "Turned off in the extensions"
 msgstr "In den Erweiterungen ausgeschaltet"
 
-#: build/prefs/modules.js:157
+#: build/prefs/modules.js:161
 msgid "Settings of the module"
 msgstr "Einstellungen des Moduls"
 
@@ -451,7 +454,9 @@ msgstr "Tastenkürzel entfernen"
 #: build/prefs/shortcut.js:46
 msgid ""
 "Press the keys you want to use. Esc cancels, Backspace removes the shortcut."
-msgstr "Drücke die gewünschten Tasten. Esc bricht ab, Rücktaste entfernt das Tastenkürzel."
+msgstr ""
+"Drücke die gewünschten Tasten. Esc bricht ab, Rücktaste entfernt das "
+"Tastenkürzel."
 
 #: build/prefs/shortcut.js:48
 msgid "Cancel"

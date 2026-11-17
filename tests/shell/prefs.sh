@@ -48,13 +48,33 @@ check 'the shell knows both module extensions' \
     "Main.extensionManager.getUuids().filter(u => u.endsWith('-visor@example.org')).sort()" \
     '["notes-visor@example.org","old-visor@example.org"]'
 
-for page in modules about general; do prefs_page "$page"; done
+for page in about general modules; do prefs_page "$page"; done
 check 'the window stays open when pages change' "$window_titles.includes('Visor')" true
+
+# The Modules page writes the order of the modules. Rows are 55 px apart, the first
+# one is at 137 px; the menu button is at 555 px, the drag handle at 76 px.
+gs() { gsettings set org.gnome.shell.extensions.visor "$@"; }
+export GSETTINGS_SCHEMA_DIR="$HOME/.local/share/gnome-shell/extensions/$uuid/schemas"
+setting() { gsettings get org.gnome.shell.extensions.visor "$1"; }
+expect_setting() {
+    local got
+    got="$(setting "$2")"
+    if [[ "$got" == "$3" ]]; then echo "ok    $1  ($got)"; else echo "FAIL  $1: expected $3, got $got"; failures=$((failures + 1)); fi
+}
+prefs_click 555 137
+prefs_click 552 221
+expect_setting 'Move down in the menu of the first row moves it down' module-order \
+    "['timers', 'media', 'downloads', 't3', 'upcoming', 'notifications']"
+prefs_drag 76 137 76 247
+expect_setting 'dragging the first row onto the third moves it there' module-order \
+    "['media', 'downloads', 'timers', 't3', 'upcoming', 'notifications']"
+prefs_click 520 247
+expect_setting 'the switch of the third module turns it off' disabled-modules "['timers']"
+prefs_click 520 247
+expect_setting 'and on again' disabled-modules '@as []'
 
 # Change what the window shows while it is open. Visor in the shell follows the
 # same settings, so the shell is checked as well.
-gs() { gsettings set org.gnome.shell.extensions.visor "$@"; }
-export GSETTINGS_SCHEMA_DIR="$HOME/.local/share/gnome-shell/extensions/$uuid/schemas"
 for width in compact wide normal; do gs width "$width"; done
 gs hover-preview false
 gs peek-delay 900

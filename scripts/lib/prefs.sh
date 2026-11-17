@@ -28,6 +28,33 @@ prefs_click() {
     })()" >/dev/null
 }
 
+# prefs_drag DX DY TO_DX TO_DY: drags from one place of the window to another.
+prefs_drag() {
+    shell_eval "(async () => {
+        const meta = global.get_window_actors().map(a => a.meta_window).find(w => w.title === '$PREFS_WINDOW');
+        const { x, y } = meta.get_frame_rect();
+        const pointer = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+        const now = () => GLib.get_monotonic_time();
+        const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
+        for (const dx of [-10, 0]) {
+            pointer.notify_absolute_motion(now(), x + $1 + dx, y + $2);
+            await wait(300);
+        }
+        pointer.notify_button(now(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.PRESSED);
+        await wait(200);
+        for (let i = 1; i <= 12; i++) {
+            pointer.notify_absolute_motion(now(), x + $1 + (($3) - ($1)) * i / 12, y + $2 + (($4) - ($2)) * i / 12);
+            await wait(60);
+        }
+        await wait(300);
+        pointer.notify_button(now(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.RELEASED);
+        await wait(1500);
+        pointer.notify_absolute_motion(now(), 5, 5);
+        await wait(300);
+        return true;
+    })()" >/dev/null
+}
+
 # prefs_open: asks the shell for the settings window and waits until it can be used.
 prefs_open() {
     shell_wait_for "Main.extensionManager.lookup('visor@taulit.github.io')?.state === 1"

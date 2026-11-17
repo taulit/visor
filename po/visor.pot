@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 11:51+0100\n"
+"POT-Creation-Date: 2026-11-17 11:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -403,35 +403,35 @@ msgstr ""
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr ""
 
-#: build/prefs/modules.js:71
+#: build/prefs/modules.js:75
 msgid "Discover"
 msgstr ""
 
-#: build/prefs/modules.js:104
+#: build/prefs/modules.js:108
 msgid "Move up"
 msgstr ""
 
-#: build/prefs/modules.js:105
+#: build/prefs/modules.js:109
 msgid "Move down"
 msgstr ""
 
-#: build/prefs/modules.js:108
+#: build/prefs/modules.js:112
 msgid "Change the order"
 msgstr ""
 
-#: build/prefs/modules.js:118
+#: build/prefs/modules.js:122
 msgid "Drag to change the order"
 msgstr ""
 
-#: build/prefs/modules.js:145
+#: build/prefs/modules.js:149
 msgid "Built for another version of Visor"
 msgstr ""
 
-#: build/prefs/modules.js:147
+#: build/prefs/modules.js:151
 msgid "Turned off in the extensions"
 msgstr ""
 
-#: build/prefs/modules.js:157
+#: build/prefs/modules.js:161
 msgid "Settings of the module"
 msgstr ""
 

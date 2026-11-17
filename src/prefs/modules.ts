@@ -59,19 +59,27 @@ export function modulesPage(
   };
 
   const setEnabled = (id: string, enabled: boolean): void => {
-    const disabled = settings.get_strv('disabled-modules').filter(other => other !== id);
-    if (!enabled) disabled.push(id);
-    settings.set_strv('disabled-modules', disabled);
+    const disabled = settings.get_strv('disabled-modules');
+    if (disabled.includes(id) !== enabled) return; // the switch only follows the setting
+    settings.set_strv(
+      'disabled-modules',
+      enabled ? disabled.filter(other => other !== id) : [...disabled, id],
+    );
   };
 
   const fill = (): void => {
+    const disabled = settings.get_strv('disabled-modules');
     switches.clear();
     for (const entry of groups) {
       for (const row of entry.rows) entry.group.remove(row);
       const modules = ofSlot(entry.slot);
       entry.rows = [
         ...modules.map((module, index) =>
-          builtinRow(module, index, modules.length, { move, setEnabled, switches }),
+          builtinRow(module, index, modules.length, !disabled.includes(module.id), {
+            move,
+            setEnabled,
+            switches,
+          }),
         ),
         ...foreign.filter(other => other.slot === entry.slot).map(foreignRow),
       ];
@@ -90,7 +98,6 @@ export function modulesPage(
   settings.connect('changed::module-order', () =>
     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => (fill(), GLib.SOURCE_REMOVE)),
   );
-  syncSwitches();
 
   const discover = new Adw.PreferencesGroup({ title: _('Discover') });
   buildDiscover(discover);
@@ -109,12 +116,13 @@ function builtinRow(
   module: ModuleInfo,
   index: number,
   count: number,
+  enabled: boolean,
   actions: RowActions,
 ): Adw.ActionRow {
   const row = new Adw.ActionRow({ title: _(module.name) });
   row.add_prefix(new Gtk.Image({ icon_name: module.icon }));
 
-  const toggle = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+  const toggle = new Gtk.Switch({ active: enabled, valign: Gtk.Align.CENTER });
   toggle.connect('notify::active', () => actions.setEnabled(module.id, toggle.active));
   actions.switches.set(module.id, toggle);
   row.add_suffix(toggle);
