@@ -85,7 +85,7 @@ mock visormock SetStatus Playing >/dev/null
 wait_check 'media: a row appears when the player plays' "N.rows('media').length === 1 && $media_row.id === '$one'"
 check 'media: title, artist and player' "$media_row.title === 'Midnight City' && $media_row.subtitle === 'M83 · Visor Mock'"
 check 'media: controls' "$media_row.controls.map(a => a.label).join() === 'Previous,Pause,Next' && $media_row.controls[1].style === 'filled'"
-check 'media: no art, a music symbol' "$media_row.icon === 'audio-x-generic-symbolic' && $media_row.iconStyle === 'cover'"
+check 'media: no art, a music symbol' "$media_row.icon === 'audio-x-generic-symbolic' && $media_row.iconStyle === 'symbolic'"
 check 'media: the chip' "N.chip('media').text === 'Midnight City' && N.chip('media').priority === 30 && N.chip('media').icon === 'media-playback-start-symbolic'"
 check 'media: no timeout with the panel closed' "N.mod('media').pollSource === 0 && N.mod('media').pauseSource === 0"
 

@@ -17,6 +17,7 @@ const BUS_PATH = '/org/freedesktop/DBus';
 const FALLBACK_ICON = 'audio-x-generic-symbolic';
 const COVER_PREFIX = 'cover-';
 const MAX_COVER_BYTES = 8_000_000;
+const MAX_COVERS = 50;
 
 const nowMs = (): number => GLib.get_monotonic_time() / 1000;
 
@@ -191,10 +192,12 @@ class MediaModule implements VisorModule {
         run: () => player.next(),
       });
     }
+    const icon = this.cover(track.artUrl) ?? player.icon ?? FALLBACK_ICON;
     return {
       id: player.busName,
-      icon: this.cover(track.artUrl) ?? player.icon ?? FALLBACK_ICON,
-      iconStyle: 'cover',
+      icon,
+      // Without art and without an app, a symbol like the ones of the other rows.
+      iconStyle: icon === FALLBACK_ICON ? 'symbolic' : 'cover',
       ...describeTrack(track, player.name),
       progress: trackProgress(player.positionUs, track.lengthUs),
       controls,
@@ -234,6 +237,8 @@ class MediaModule implements VisorModule {
     if (url.startsWith('file://')) icon = new Gio.FileIcon({ file: Gio.File.new_for_uri(url) });
     else if (/^https?:\/\//i.test(url)) this.loadCover(url);
     this.covers.set(url, icon);
+    // A long session sees many tracks; the oldest address is forgotten first.
+    if (this.covers.size > MAX_COVERS) this.covers.delete(this.covers.keys().next().value!);
     return icon;
   }
 
