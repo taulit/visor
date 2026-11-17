@@ -80,6 +80,14 @@ for name in "${names[@]}"; do
     for scheme in dark light; do
         shot "$scenario" "$dir/$name-$scheme.png" --scheme "$scheme" "${options[@]}"
     done
+    # The settings window in German, to see that nothing is cut off or left in English.
+    if [[ "$name" == prefs-general || "$name" == prefs-modules ]]; then
+        if locale -a | grep -qix 'de_DE\.utf-\?8'; then
+            VISOR_TEST_LOCALE=de_DE.UTF-8 shot "$scenario" "$dir/$name-de-dark.png" --scheme dark "${options[@]}"
+        else
+            echo "skip  $name-de-dark.png: this machine has no locale de_DE.UTF-8"
+        fi
+    fi
     # The accent colour comes from the system; one screenshot shows another one.
     [[ "$name" == open ]] && shot "$scenario" "$dir/open-dark-green.png" --scheme dark --accent green
 done

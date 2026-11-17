@@ -551,3 +551,11 @@ Checked on 2026-11-17 (gnome-shell 50.5, gjs 1.88.1, libsecret 0.21.8).
   `XDG_DATA_HOME` and `XDG_RUNTIME_DIR` (keyring files in `$sandbox/home/.local/share/keyrings`, control
   socket in `$sandbox/run/keyring`). `scripts/lib/keyring.sh` refuses to run `secret-tool` unless all of
   these point into the sandbox. With `--no-keyring` no daemon runs and a call fails at once.
+
+### The settings window of another extension
+
+`org.gnome.Shell.Extensions` shows one settings window at a time: `OpenExtensionPrefs` throws "Already
+showing a prefs dialog" while one is open (`extensionsService.js:132` in
+`/usr/share/gnome-shell/org.gnome.Shell.Extensions.src.gresource`, seen at runtime in `tests/shell/prefs.sh`).
+The button to the settings of a foreign module therefore closes the window of Visor first; the service
+stays alive for two seconds without a window (`dbusService.js`, `IDLE_SHUTDOWN_TIME`), long enough for the call.
