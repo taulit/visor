@@ -38,4 +38,4 @@ The extension directory has no `schemas/` and no `locale/`. The shell then looks
 
 ## Checked here
 
-Only `bash -n PKGBUILD` and a dry run of `package()` against a local build (file layout as in the table above). `makepkg` and `namcap` were not run: the first builds and installs nothing here by design, the second is not installed on the development machine.
+Only `bash -n PKGBUILD` and a dry run of `package()` against a local build (file layout as in the table above). `makepkg` was not run, and `namcap` is not installed on the development machine.

@@ -132,7 +132,7 @@ How the code is organised: [docs/architecture.md](docs/architecture.md). Which s
 
 ## Translations
 
-The source language is English; German is translated. To add a language or fix a text, see [docs/translating.md](docs/translating.md).
+The source language is English. German is the reference translation. Spanish, French, Brazilian Portuguese, Italian, Polish, Russian, Simplified Chinese and Japanese are machine translated, and corrections are welcome. To fix a text or add a language, see [docs/translating.md](docs/translating.md).
 
 ## License
 
