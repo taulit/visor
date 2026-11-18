@@ -25,7 +25,7 @@ The environment issues its own sessions (`docs/internals/environment-auth.md`,
    `{environmentId, label, serverVersion, orchestrationProtocolVersion, capabilities}`.
 2. **Pairing**, once per device, as the mobile app does (`apps/mobile/src/features/connection/pairing.ts`,
    `packages/client-runtime/src/authorization/remote.ts`): the user creates a one-time pairing token in
-   T3 Code (Settings → Connections, or `t3 auth pairing create`), shown as `<origin>/pair#token=<code>`.
+   T3 Code (Settings → Sharing & access, or `t3 auth pairing create`), shown as `<origin>/pair#token=<code>`.
    The client exchanges it:
    `POST /oauth/token`, form-encoded: `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`,
    `subject_token=<code>`, `subject_token_type=urn:t3:params:oauth:token-type:environment-bootstrap`,
@@ -73,7 +73,7 @@ https. None of the requests that carry the pairing code, the token or the ticket
 **Revoking.** `POST /api/auth/clients/revoke` (`{sessionId}`) needs the scope `access:write`, which Visor
 does not ask for, and refuses the session that calls it (`current_session_revoke_not_allowed`, 403). A
 client cannot end its own session, so Disconnect only forgets the token; the session stays listed in
-T3 Code under Settings → Connections until it is revoked there or expires.
+T3 Code under Settings → Sharing & access until it is revoked there or expires.
 
 ## 3. Messages
 

@@ -705,10 +705,10 @@ msgstr "サーバーのアドレスではありません"
 
 #: build/prefs/t3.js:227
 msgid ""
-"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
 "here."
 msgstr ""
-"T3 Code の Settings → Connections でペアリングリンクを作成し、ここに貼り付け"
+"T3 Code の Settings → Sharing & access でペアリングリンクを作成し、ここに貼り付け"
 "てください。"
 
 #: build/prefs/t3.js:230 build/prefs/t3.js:231

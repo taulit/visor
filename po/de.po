@@ -708,10 +708,10 @@ msgstr "Das ist keine Serveradresse"
 
 #: build/prefs/t3.js:227
 msgid ""
-"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
 "here."
 msgstr ""
-"Erstelle in T3 Code unter Settings → Connections einen Kopplungslink und "
+"Erstelle in T3 Code unter Settings → Sharing & access einen Kopplungslink und "
 "füge ihn hier ein."
 
 #: build/prefs/t3.js:230 build/prefs/t3.js:231

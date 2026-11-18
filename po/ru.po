@@ -708,10 +708,10 @@ msgstr "Это не адрес сервера"
 
 #: build/prefs/t3.js:227
 msgid ""
-"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
 "here."
 msgstr ""
-"Создайте ссылку для сопряжения в T3 Code в разделе Settings → Connections и "
+"Создайте ссылку для сопряжения в T3 Code в разделе Settings → Sharing & access и "
 "вставьте её сюда."
 
 #: build/prefs/t3.js:230 build/prefs/t3.js:231

@@ -257,7 +257,7 @@ export function t3Group(
     const server = settings.get_string(SERVER_KEY);
     group.description = isPaired
       ? ''
-      : _('Create a pairing link in T3 Code under Settings → Connections and paste it here.');
+      : _('Create a pairing link in T3 Code under Settings → Sharing & access and paste it here.');
     entry.visible = !isPaired;
     paired.visible = isPaired;
     paired.subtitle = server || _('This machine');

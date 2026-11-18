@@ -709,10 +709,10 @@ msgstr "Questo non è un indirizzo di server"
 
 #: build/prefs/t3.js:227
 msgid ""
-"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
 "here."
 msgstr ""
-"Crea un link di abbinamento in T3 Code in Settings → Connections e incollalo "
+"Crea un link di abbinamento in T3 Code in Settings → Sharing & access e incollalo "
 "qui."
 
 #: build/prefs/t3.js:230 build/prefs/t3.js:231

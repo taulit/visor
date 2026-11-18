@@ -706,10 +706,10 @@ msgstr "Este não é um endereço de servidor"
 
 #: build/prefs/t3.js:227
 msgid ""
-"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
 "here."
 msgstr ""
-"Crie um link de pareamento no T3 Code em Settings → Connections e cole aqui."
+"Crie um link de pareamento no T3 Code em Settings → Sharing & access e cole aqui."
 
 #: build/prefs/t3.js:230 build/prefs/t3.js:231
 msgid "This machine"
