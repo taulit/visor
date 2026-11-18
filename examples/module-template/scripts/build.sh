@@ -11,6 +11,9 @@ cp metadata.json build/
 mkdir -p build/visor
 cp src/visor/connect.js build/visor/
 
+# Optional: a stylesheet of the extension. The shell loads it by itself.
+if [[ -f stylesheet.css ]]; then cp stylesheet.css build/; fi
+
 mkdir -p build/schemas
 cp schemas/*.gschema.xml build/schemas/
 glib-compile-schemas --strict build/schemas
