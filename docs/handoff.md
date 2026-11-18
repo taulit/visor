@@ -18,16 +18,13 @@ The maintainer wants "a store with extensions". Order of work, each step a pull 
 
 1. **T3 Code moved out of Visor** into the module repository `taulit/visor-t3` (private, local
    `~/development/visor-t3`, UUID `visor-t3@taulit.github.io`, store name "Visor: T3 Code", module id
-   `t3`). Visor's side is the branch `refactor/extract-t3`. It deletes what pull request #10
-   (`fix/t3-open-in-app`) changes, and `visor-t3` was started from the code of #10, so **#10 is closed, not
-   merged**, once the extraction is merged.
-2. Template and SDK: pull request #12 (`feat/template-tests`, independent of #11): a smoke test in the
-   sandbox for modules, `stylesheet.css` in the build, docs. After its merge the template is mirrored to
-   `taulit/visor-module-template`.
+   `t3`). Done with pull request #11, which also carries the template work of #12.
+2. Template and SDK: a smoke test in the sandbox for modules, `stylesheet.css` in the build, docs (in #11).
+   Still to do: mirror the template to `taulit/visor-module-template`.
 3. Catalog: the repository `taulit/visor-modules` exists (private, local `~/development/visor-modules`):
    schema, the entry of Visor: T3 Code, `scripts/build-catalog.ts` (checks and `catalog.json`),
    `src/catalog-search.ts` with tests, submission form, `REVIEW.md`, workflow. Not done: "Discover" in the
-   settings (`src/prefs/discover.ts`, a link so far). It waits for #11 (same page of the settings) and for
+   settings (`src/prefs/discover.ts`, a link so far). It waits for
    the decision where `catalog.json` is served from. Plan for it: vendor `catalog-search.ts` into
    `src/lib/` (checked like the SDK copy), ship a snapshot of `catalog.json` in the extension, refresh it
    from the network in the settings window, install through
@@ -42,7 +39,7 @@ The maintainer wants "a store with extensions". Order of work, each step a pull 
 
 - A module can be tested next to Visor with the sandbox of this repository:
   `scripts/nested.sh --extension <module>/build -- <test>`. `visor-t3/tests/shell/lib.sh` is the pattern
-  (`VISOR_REPO`, default `../visor`). Pull request #12 gives the template the same.
+  (`VISOR_REPO`, default `../visor`). The template has the same (`examples/module-template/tests/shell/`).
 - **API gap, not decided:** v1 has no kit element for body text and none for a text field. Both `visor-t3`
   and the notes module of Sheaf build them from `St.Label` and `St.Entry` and style them through the classes
   `.visor-dark`, `.visor-light` and `.visor-hc` that Visor sets on its root. Those classes are not part of
