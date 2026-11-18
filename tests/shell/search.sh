@@ -274,6 +274,25 @@ check 'turning the rates on again shows the amount at once' \
 check 'a currency without a target converts to the currency of the locale' \
     'T.ask("50 gbp", 300).then(() => T.lines()[0].startsWith(">$64.53|1 GBP = 1.2907 USD") || T.lines().join(" / "))'
 
+echo "# quick answers, emoji and system"
+check 'vor 12h shows a time, and what was asked below it' \
+    'T.ask("vor 12h", 300).then(() => { const [line] = T.lines(); return /^>\d\d:\d\d( [AP]M)?\|vor 12h · /.test(line) && T.groups().join() === "CALCULATE" || T.lines().join(" / ") + " # " + T.groups().join(); })'
+# The virtual keyboard of the sandbox has no keys for these letters: the text is set, not typed.
+check 'the same in Spanish, Russian and Japanese' \
+    '(async () => { const out = []; for (const text of ["hace 12 horas", "12 часов назад", "12時間前"]) { await T.ask("", 50); T.sheet.entry.set_text(text); await T.wait(300); out.push(T.lines()[0] ?? ""); } return out.every(line => /^>\d\d:\d\d( [AP]M)?\|/.test(line)) || out.join(" / "); })()'
+check 'units, percentages and time zones are answered' \
+    '(async () => { const out = []; for (const text of ["10ft in m", "20% off 80", "time in tokyo"]) { await T.ask(text, 300); out.push(T.group("calc")?.join() ?? ""); } return out[0].replace(/[^0-9a-z.]/g, "") === "3.048m" && out[1] === "64" && /^[0-9][0-9]:[0-9][0-9]/.test(out[2]) || JSON.stringify(out); })()'
+check 'Enter copies the answer' \
+    '(async () => { await T.ask("10ft in m", 300); await T.key(Clutter.KEY_Return); const text = await T.clipboard(); return text === "3.048" && visor.notch.state === "idle" || [text, visor.notch.state].join(); })()'
+check 'a colon asks for emoji and nothing else' \
+    '(async () => { await T.ask(":rocket", 500); const titles = T.group("emoji") ?? []; return titles[0] === "🚀  rocket" && titles.length <= 8 && T.finder.groups.map(g => g.id).join() === "command,emoji" || [titles.join(), T.finder.groups.map(g => g.id).join()].join(" # "); })()'
+check 'Enter copies the emoji' \
+    'T.key(Clutter.KEY_Return).then(() => T.clipboard()).then(text => text === "🚀" && visor.notch.state === "idle" || [text, visor.notch.state].join())'
+check 'the actions of the system are found by their words, in German too' \
+    '(async () => { await T.ask("lock", 300); const lock = T.group("system").join(); await T.ask("herunterfahren", 300); const off = T.group("system").join(); await T.ask("lo", 300); const short = T.group("system").join(); return lock === "Lock Screen" && off === "Power Off" && short === "" || [lock, off, short].join(" # "); })()'
+check 'the dark style is switched from the search' \
+    '(async () => { const desktop = new Gio.Settings({ schema_id: "org.gnome.desktop.interface" }); const before = desktop.get_string("color-scheme"); await T.ask("dark style", 300); const title = T.group("system").join(); T.finder.groups.find(g => g.id === "system").items[0].activate(); await T.wait(100); const after = desktop.get_string("color-scheme"); desktop.set_string("color-scheme", before); await T.wait(200); return /^Turn O(n|ff) Dark Style$/.test(title) && after !== before || [title, before, after].join(); })()'
+
 echo "# apps"
 run '(() => {
     const apps = Shell.AppSystem.get_default().get_installed().filter(info => info.should_show());
@@ -347,7 +366,7 @@ echo "# module source"
 check 'the search source of a module has its own group below the apps' \
     'T.ask("shop", 300).then(() => T.group("source:demo-notes").join() === "Shopping list,Shop opening hours,Workshop notes" && T.groups().at(-1) === "NOTES" && T.demo.queries.at(-1) === "shop" || [T.group("source:demo-notes"), T.groups().join()].join(" # "))'
 check 'the groups keep the fixed order' \
-    '(() => { const ids = T.finder.groups.map(g => g.id); return ids.slice(0, 4).join() === "command,calc,apps,source:demo-notes" && ids.slice(4).every(id => id.startsWith("provider:")) || ids.join(); })()'
+    '(() => { const ids = T.finder.groups.map(g => g.id); return ids.slice(0, 5).join() === "command,calc,apps,system,source:demo-notes" && ids.slice(5).every(id => id.startsWith("provider:")) || ids.join(); })()'
 
 echo "# keys and pointer"
 check 'Down and Up walk through all results that can be chosen and stop at the ends' \
