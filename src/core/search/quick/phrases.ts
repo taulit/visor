@@ -21,7 +21,7 @@ const WORDS: Record<string, string[]> = {
   today: ['hoy', "aujourd'hui", 'aujourd’hui', 'hoje', 'oggi', 'dziś', 'dzisiaj', 'сегодня'],
   tomorrow: ['mañana', 'demain', 'amanhã', 'domani', 'jutro', 'завтра'],
   yesterday: ['ayer', 'hier', 'ontem', 'ieri', 'wczoraj', 'вчера'],
-  now: ['ahora', 'maintenant', 'agora', 'adesso', 'ora', 'teraz', 'сейчас'],
+  now: ['ahora', 'maintenant', 'agora', 'adesso', 'teraz', 'сейчас'],
   day: ['día', 'días', 'dia', 'dias', 'jour', 'jours', 'giorno', 'giorni', 'dzień', 'dni', 'dnia', 'день', 'дня', 'дней', 'днях'],
   week: [
     'semana', 'semanas', 'semaine', 'semaines', 'settimana', 'settimane',
@@ -55,7 +55,8 @@ const WORDS: Record<string, string[]> = {
   until: ["jusqu'à", 'jusqu’à', "jusqu'au", 'jusqu’au', 'hasta', 'até', 'fino', 'до'],
   since: ['desde', 'depuis', 'od', 'с'],
   time: ['orario', 'время'],
-  date: ['fecha', 'data', 'дата'],
+  // `data` (Italian, Polish, Portuguese) and `ora` (Italian for now) begin too many app names.
+  date: ['fecha', 'дата'],
   christmas: ['navidad', 'noël', 'natal', 'natale', 'рождество'],
   easter: ['pascua', 'pâques', 'páscoa', 'pasqua', 'wielkanoc', 'пасха'],
 };

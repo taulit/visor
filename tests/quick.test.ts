@@ -205,6 +205,8 @@ test('words of those languages alone are not answers', () => {
     'jour',
     '前',
     'firefox',
+    'ora',
+    'data',
   ]) {
     expect(show(query), query).toBeNull();
   }
