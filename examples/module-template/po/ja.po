@@ -1,0 +1,74 @@
+# Japanese translation for the Visor example module.
+# This file is distributed under the same license as the visor-example package.
+# Machine translated, improvements welcome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: visor-example\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-17 11:42+0100\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: Visor contributors\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: build/examples/ahead.js:5 build/examples/ahead.js:26
+#: build/examples/dock.js:21 build/examples/now.js:23 build/prefs.js:42
+msgid "Example"
+msgstr "例"
+
+#: build/examples/ahead.js:16 build/examples/dock.js:37 build/examples/now.js:9
+msgid "Hello from Visor"
+msgstr "Visor からこんにちは"
+
+#: build/examples/ahead.js:21 build/examples/now.js:15
+msgid "Example module"
+msgstr "サンプルモジュール"
+
+#: build/examples/ahead.js:27
+msgid "Refresh"
+msgstr "更新"
+
+#: build/examples/dock.js:25
+msgid "Reset"
+msgstr "リセット"
+
+#: build/examples/dock.js:41
+msgid "Clicks"
+msgstr "クリック数"
+
+#: build/examples/dock.js:43
+msgid "Add"
+msgstr "追加"
+
+#: build/examples/dock.js:52
+msgid "This view belongs to the example module."
+msgstr "このビューはサンプルモジュールのものです。"
+
+#: build/examples/now.js:17
+msgid "Dismiss"
+msgstr "閉じる"
+
+#: build/prefs.js:28
+msgid "General"
+msgstr "一般"
+
+#: build/prefs.js:35
+msgid "Visor is not installed"
+msgstr "Visor がインストールされていません"
+
+#: build/prefs.js:36
+msgid "This module needs Visor and does nothing without it."
+msgstr "このモジュールには Visor が必要で、なければ何もしません。"
+
+#: build/prefs.js:38
+msgid "Get Visor"
+msgstr "Visor を入手"
+
+#: build/prefs.js:43
+msgid "Greeting"
+msgstr "あいさつ"

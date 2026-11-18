@@ -1,0 +1,63 @@
+name: Release
+
+# A pushed tag vX.Y.Z checks the code, builds the store ZIP and creates a DRAFT
+# GitHub release with notes from the Conventional Commits (git-cliff, cliff.toml)
+# and the ZIP attached. Nothing is published beyond that draft: the upload to
+# extensions.gnome.org, `npm publish` of sdk/ and the AUR package stay manual
+# (docs/release-checklist.md). The maintainer reads the draft and publishes it.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install system packages
+        run: sudo apt-get install -y libglib2.0-bin gettext zip
+      - name: Check that the tag is the version of the extension
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          name="$(node -p "require('./metadata.json')['version-name']")"
+          pkg="$(node -p "require('./package.json').version")"
+          if [[ "$tag" != "v$name" || "$tag" != "v$pkg" ]]; then
+            echo "::error::tag $tag, version-name in metadata.json $name, version in package.json $pkg: they must be the same"
+            exit 1
+          fi
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm run pack:zip
+      - name: Write the release notes
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: RELEASE_NOTES.md
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=(--draft --title "Visor ${GITHUB_REF_NAME#v}" --notes-file RELEASE_NOTES.md)
+          # 1.0.0-rc.1 and the like are marked as pre-releases.
+          [[ "$GITHUB_REF_NAME" == *-* ]] && flags+=(--prerelease)
+          gh release create "$GITHUB_REF_NAME" dist/*.zip "${flags[@]}"

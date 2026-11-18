@@ -19,6 +19,13 @@ gsettings set org.gnome.desktop.background color-shading-type 'solid'
 gsettings set org.gnome.desktop.media-handling automount false
 gsettings set org.gnome.desktop.media-handling automount-open false
 
+# The keyring of the sandbox: an unlocked login keyring in the sandbox HOME,
+# served on the bus of the sandbox only. Its password is no secret.
+if [[ "$VISOR_KEYRING" == true ]]; then
+    source "$VISOR_REPO/scripts/lib/keyring.sh"
+    keyring_start
+fi
+
 shell_args=(--headless --wayland --no-x11 --virtual-monitor "$VISOR_SIZE")
 [[ "$VISOR_ANIMATIONS" == true ]] && shell_args+=(--force-animations)
 gnome-shell "${shell_args[@]}" >"$HOME/shell.log" 2>&1 &

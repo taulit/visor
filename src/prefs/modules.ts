@@ -17,7 +17,13 @@ import type { ForeignModule } from './foreign.js';
 import { openExtensionPrefs } from './shell-extensions.js';
 import { t3Group } from './t3.js';
 
-const KNOWN_IDS = BUILTIN_MODULES.map(module => module.id);
+/** A module the window can switch off and put in order: it knows its id. */
+interface Managed {
+  id: string;
+  slot: Slot;
+  builtin?: ModuleInfo;
+  foreign?: ForeignModule;
+}
 
 /** Where the modules of one slot are, in display order, and what to do with them. */
 interface SlotGroup {
@@ -43,23 +49,37 @@ export function modulesPage(
   });
   const switches = new Map<string, Gtk.Switch>();
 
-  /** The built-in modules of a slot in display order. */
-  const ofSlot = (slot: Slot): ModuleInfo[] => {
-    const info = new Map(BUILTIN_MODULES.map(module => [module.id, module]));
-    return orderIds(KNOWN_IDS, settings.get_strv('module-order'))
-      .map(id => info.get(id)!)
+  // Built-in modules, then those of other extensions that name their id
+  // (`visor.id` in metadata.json), as the registry in the shell has them.
+  const managed = new Map<string, Managed>(
+    BUILTIN_MODULES.map(builtin => [builtin.id, { id: builtin.id, slot: builtin.slot, builtin }]),
+  );
+  for (const module of foreign) {
+    if (module.id === null || module.incompatible || managed.has(module.id)) continue;
+    managed.set(module.id, { id: module.id, slot: module.slot, foreign: module });
+  }
+  const knownIds = [...managed.keys()];
+  const unmanaged = foreign.filter(module => managed.get(module.id ?? '')?.foreign !== module);
+
+  /** The managed modules of a slot in display order. */
+  const ofSlot = (slot: Slot): Managed[] =>
+    orderIds(knownIds, settings.get_strv('module-order'))
+      .map(id => managed.get(id)!)
       .filter(module => module.slot === slot);
-  };
+
+  /** The row the keyboard focus returns to after the rows were built anew. */
+  let refocus: { slot: Slot; index: number } | null = null;
 
   const move = (slot: Slot, from: number, to: number): void => {
     const ids = ofSlot(slot).map(module => module.id);
     if (from === to || !ids[from] || to < 0 || to >= ids.length) return;
+    // The row is rebuilt; the focus goes to the row that takes its place.
+    refocus = { slot, index: to };
     settings.set_strv(
       'module-order',
-      moveWithin(KNOWN_IDS, settings.get_strv('module-order'), ids, from, to),
+      moveWithin(knownIds, settings.get_strv('module-order'), ids, from, to),
     );
   };
-
   const setEnabled = (id: string, enabled: boolean): void => {
     const disabled = settings.get_strv('disabled-modules');
     if (disabled.includes(id) !== enabled) return; // the switch only follows the setting
@@ -71,23 +91,29 @@ export function modulesPage(
 
   const fill = (): void => {
     const disabled = settings.get_strv('disabled-modules');
+    const actions: RowActions = { move, setEnabled, switches };
     switches.clear();
     for (const entry of groups) {
       for (const row of entry.rows) entry.group.remove(row);
       const modules = ofSlot(entry.slot);
       entry.rows = [
-        ...modules.map((module, index) =>
-          builtinRow(module, index, modules.length, !disabled.includes(module.id), {
-            move,
-            setEnabled,
-            switches,
-          }),
-        ),
-        ...foreign.filter(other => other.slot === entry.slot).map(foreignRow),
+        ...modules.map((module, index) => {
+          const row = module.builtin
+            ? builtinRow(module.builtin)
+            : foreignRow(module.foreign!, window);
+          const place = { slot: module.slot, index, count: modules.length };
+          addControls(row, module.id, place, !disabled.includes(module.id), actions);
+          return row;
+        }),
+        ...unmanaged
+          .filter(other => other.slot === entry.slot)
+          .map(other => foreignRow(other, window)),
       ];
       for (const row of entry.rows) entry.group.add(row);
       entry.group.visible = entry.rows.length > 0;
+      if (refocus?.slot === entry.slot) entry.rows[refocus.index]?.grab_focus();
     }
+    refocus = null;
   };
   fill();
 
@@ -116,25 +142,35 @@ interface RowActions {
   switches: Map<string, Gtk.Switch>;
 }
 
-function builtinRow(
-  module: ModuleInfo,
-  index: number,
-  count: number,
-  enabled: boolean,
-  actions: RowActions,
-): Adw.ActionRow {
+/** Where a row is among the rows of its slot. */
+interface Place {
+  slot: Slot;
+  index: number;
+  count: number;
+}
+
+function builtinRow(module: ModuleInfo): Adw.ActionRow {
   const row = new Adw.ActionRow({ title: _(module.name) });
   row.add_prefix(new Gtk.Image({ icon_name: module.icon }));
+  return row;
+}
 
+/** The switch, the menu and the drag handle of a module whose id the window knows. */
+function addControls(
+  row: Adw.ActionRow,
+  id: string,
+  place: Place,
+  enabled: boolean,
+  actions: RowActions,
+): void {
   const toggle = new Gtk.Switch({ active: enabled, valign: Gtk.Align.CENTER });
-  toggle.connect('notify::active', () => actions.setEnabled(module.id, toggle.active));
-  actions.switches.set(module.id, toggle);
+  toggle.connect('notify::active', () => actions.setEnabled(id, toggle.active));
+  actions.switches.set(id, toggle);
   row.add_suffix(toggle);
   row.activatable_widget = toggle;
 
-  row.add_suffix(reorderMenu(row, index, count, module.slot, actions.move));
-  addDragAndDrop(row, index, module.slot, actions.move);
-  return row;
+  row.add_suffix(reorderMenu(row, place.index, place.count, place.slot, actions.move));
+  addDragAndDrop(row, place.index, place.slot, actions.move);
 }
 
 /** A menu with "Move up" and "Move down" for people who do not drag. */
@@ -205,8 +241,8 @@ function addDragAndDrop(
   row.add_controller(target);
 }
 
-/** A module of another extension: only its own settings can be reached. */
-function foreignRow(module: ForeignModule): Adw.ActionRow {
+/** A module of another extension: its own settings can be reached; more when it names its id. */
+function foreignRow(module: ForeignModule, window: Adw.PreferencesWindow): Adw.ActionRow {
   let subtitle = module.description;
   if (module.incompatible) subtitle = _('Built for another version of Visor');
   else if (!module.enabled) subtitle = _('Turned off in the extensions');
@@ -224,7 +260,12 @@ function foreignRow(module: ForeignModule): Adw.ActionRow {
       valign: Gtk.Align.CENTER,
       css_classes: ['flat'],
     });
-    gear.connect('clicked', () => openExtensionPrefs(module.uuid));
+    gear.connect('clicked', () => {
+      // The shell shows the settings of one extension at a time and refuses a
+      // second window ("Already showing a prefs dialog"), so this one goes first.
+      window.close();
+      openExtensionPrefs(module.uuid);
+    });
     row.add_suffix(gear);
   }
   return row;

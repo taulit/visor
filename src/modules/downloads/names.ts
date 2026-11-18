@@ -55,12 +55,3 @@ export function formatBytes(bytes: number, locale?: string): string {
   const index = unitIndex(size);
   return `${formatScaled(size / 1000 ** (index + 1), locale)} ${UNITS[index]}`;
 }
-
-/** `1.4 / 2.2 GB` with a known total (both in the unit of the total), else just the size so far. */
-export function progressLabel(current: number, total: number | null, locale?: string): string {
-  if (total === null || !(total > 0)) return formatBytes(current, locale);
-  const index = unitIndex(total);
-  const scale = 1000 ** (index + 1);
-  const done = formatScaled(clean(current) / scale, locale);
-  return `${done} / ${formatScaled(total / scale, locale)} ${UNITS[index]}`;
-}

@@ -132,7 +132,7 @@ check 'Enter expands a row that has neither activate nor primary' \
 check 'Up goes back row by row and ends in the search entry' \
     '(async () => { const seen = []; for (let i = 0; i < 3; i++) { await T.key(Clutter.KEY_Up); seen.push(T.focus()); } return T.row("taulit").contains(seen[0]) && T.row("Midnight City").contains(seen[1]) && seen[2] === T.sheet.entry.clutter_text || seen.map(String).join(); })()'
 check 'Shift+Tab goes backwards, Tab forwards again' \
-    '(async () => { await T.key(Clutter.KEY_Tab); const dock = T.focus(); await T.shiftTab(); const back = T.focus(); await T.shiftTab(); const last = T.focus(); await T.key(Clutter.KEY_Tab); return dock.has_style_class_name("visor-dock-button") && back === T.sheet.entry.clutter_text && last.has_style_class_name("visor-button") && T.focus() === back || [dock, back, last, T.focus()].map(String).join(); })()'
+    '(async () => { await T.key(Clutter.KEY_Tab); const row = T.focus(); await T.shiftTab(); const back = T.focus(); await T.shiftTab(); const last = T.focus(); await T.key(Clutter.KEY_Tab); return T.row("Midnight City").contains(row) && back === T.sheet.entry.clutter_text && last.has_style_class_name("visor-dock-button") && T.focus() === back || [row, back, last, T.focus()].map(String).join(); })()'
 check 'Tab walks every interactive element' \
     '(async () => {
         T.sheet.entry.grab_key_focus();
@@ -147,7 +147,7 @@ check 'Tab walks every interactive element' \
         }
         const wanted = [...T.find("visor-row-main"), ...T.find("visor-button"), ...T.find("visor-icon-button"), ...T.find("visor-dock-button")].filter(a => a.mapped);
         const missed = wanted.filter(a => !seen.has(a));
-        return missed.length === 0 && ["visor-row-main", "visor-button", "visor-icon-button", "visor-dock-button"].every(k => kinds.has(k)) || `missed ${missed.length} of ${wanted.length}: ${missed.map(a => a.style_class)}`;
+        return missed.length === 0 && ["visor-row-main", "visor-button", "visor-icon-button", "visor-dock-button"].every(k => kinds.has(k)) || `missed ${missed.length} of ${wanted.length}: ${missed.map(a => a.style_class + " " + a.accessible_name)} after ${[...seen].length} stops`;
     })()'
 
 echo "# pointer"
@@ -177,7 +177,7 @@ echo "# escape"
 check 'Escape clears the search first' \
     '(() => { T.sheet.entry.set_text("abc"); return visor.content.handleEscape() === true && T.sheet.entry.get_text() === ""; })()'
 check 'the search text is reported 40 ms after a key' \
-    '(async () => { const got = []; visor.content.search.setQueryHandler(q => got.push(q)); T.sheet.entry.grab_key_focus(); await T.key(Clutter.KEY_a, Clutter.KEY_b); await T.wait(80); const typed = got.join("|"); visor.content.handleEscape(); visor.content.search.setQueryHandler(null); return typed === "a|ab" && got.join("|") === "a|ab|" || got.join("|"); })()'
+    '(async () => { const got = []; visor.content.sheet.setQueryHandler(q => got.push(q)); T.sheet.entry.grab_key_focus(); await T.key(Clutter.KEY_a, Clutter.KEY_b); await T.wait(80); const typed = got.join("|"); visor.content.handleEscape(); visor.content.sheet.setQueryHandler(null); return typed === "a|ab" && got.join("|") === "a|ab|" || got.join("|"); })()'
 check 'a dock icon opens the view of its module' \
     'T.click(T.find("visor-dock-button")[0]).then(() => T.sheet.view === "notes" && T.find("visor-view-title")[0].text === "Notes" && T.titles().join() === "Shopping list,Visor ideas" && visor.content.sheetWidth() === 960)'
 check 'Escape in a view clears a search text, then leaves the view, then is not used' \
@@ -229,7 +229,7 @@ check 'modules that throw are refused or left out, the others stay' \
             () => visor.api.register({ ...base, id: 'old-api', slot: 'now', enable() {} }, { uuid: 'old@example.org', metadata: { visor: { api: 2 } }, getSettings() { throw new Error('none'); }, gettext: s => s }),
         ].map(fn => { try { fn(); return false; } catch (e) { return e.message; } });
         const registry = T.content.registry;
-        return refused.every(Boolean) && /module API 2/.test(refused[4]) && T.content.incompatibleModules.map(m => m.id + m.api).join() === 'old-api2'
+        return refused.every(Boolean) && /module API 2/.test(refused[4])
             && !registry.get('bad-enable').active && registry.get('bad-enable').failed
             && !registry.get('bad-section').active && registry.get('bad-disable').active
             && registry.get('old-api') === null || JSON.stringify(refused);

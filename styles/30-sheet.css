@@ -41,7 +41,7 @@
   border-radius: 0;
   background-color: transparent;
   box-shadow: none !important;
-  font-size: 17px;
+  font-size: 12.75pt;
   font-weight: 500;
   caret-color: -st-accent-color;
   selection-background-color: st-transparentize(-st-accent-color, 0.6);
@@ -70,7 +70,7 @@
   height: 14px;
   padding: 0 4px;
   border-radius: 7px;
-  font-size: 9px;
+  font-size: 6.75pt;
   font-weight: 700;
   font-feature-settings: 'tnum';
   text-align: center;
@@ -99,7 +99,7 @@
   spacing: 10px;
 }
 .visor-view-title {
-  font-size: 14px;
+  font-size: 10.5pt;
   font-weight: 600;
 }
 .visor-view-actions {
@@ -112,7 +112,7 @@
   spacing: 24px;
 }
 .visor-modules-hint {
-  font-size: 11.5px;
+  font-size: 8.625pt;
   padding-bottom: 6px;
 }
 

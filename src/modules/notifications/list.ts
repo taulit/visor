@@ -9,7 +9,7 @@ const FLASH_MAX_CHARS = 40;
 /** About what fits on the line below the title, next to the time. */
 const ONE_LINE_CHARS = 44;
 
-export interface Listed {
+interface Listed {
   /** Name of the app or source the notification came from. */
   app: string;
   /** When it arrived or last changed, in milliseconds. */

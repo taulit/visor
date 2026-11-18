@@ -1,19 +1,15 @@
 // The content half of Visor: owns the registry, the sheet and the peek chips,
 // and talks to the notch only through the contract in types.ts.
+import type Clutter from 'gi://Clutter';
 import type Gio from 'gi://Gio';
 import type St from 'gi://St';
 
 import type { ModuleOwner, PeekChip, VisorApi } from '../api.js';
 import { disposeHttpSession } from '../lib/http.js';
 import { Peek } from './peek.js';
-import {
-  Registry,
-  type IncompatibleModule,
-  type ModuleEntry,
-  type RegistryListener,
-} from './registry.js';
+import { Registry, type ModuleEntry, type RegistryListener } from './registry.js';
 import { Search } from './search/controller.js';
-import { Sheet, type SearchMount } from './sheet.js';
+import { Sheet } from './sheet.js';
 import type { Attention, NotchContent, NotchHost, NotchState } from './types.js';
 
 export class Content implements NotchContent, RegistryListener {
@@ -29,6 +25,8 @@ export class Content implements NotchContent, RegistryListener {
   private attention: Attention = null;
   /** The view a module asked for with ctx.open(view), until the panel is open. */
   private pendingView: string | undefined;
+  /** The module whose chip was clicked, until the panel is open. */
+  private pendingMark: string | undefined;
   private syncing = false;
   private syncAgain = false;
 
@@ -42,7 +40,7 @@ export class Content implements NotchContent, RegistryListener {
       close: () => this.close(),
     });
     this.peek = new Peek(this.registry, {
-      activate: () => this.host?.open(),
+      activate: id => this.openAt(id),
       changed: () => this.host?.contentChanged(),
     });
     this.registry.setListener(this);
@@ -51,16 +49,6 @@ export class Content implements NotchContent, RegistryListener {
   setHost(host: NotchHost): void {
     this.host = host;
     host.setAttention(this.attention);
-  }
-
-  /** Where the search hooks into the sheet. */
-  get search(): SearchMount {
-    return this.sheet;
-  }
-
-  /** Modules that were refused because they need another version of the API. */
-  get incompatibleModules(): readonly IncompatibleModule[] {
-    return this.registry.incompatible;
   }
 
   // --- NotchContent ---
@@ -84,16 +72,26 @@ export class Content implements NotchContent, RegistryListener {
   stateChanged(state: NotchState, previous: NotchState): void {
     // A view asked for with ctx.open(view) is meant for the very next state, nothing later.
     const view = this.pendingView;
-    this.pendingView = undefined;
+    const mark = this.pendingMark;
+    this.pendingView = this.pendingMark = undefined;
     const open = state === 'open';
     if (open === (previous === 'open')) return;
     if (open) {
       this.sheet.opened(view);
+      if (mark) this.sheet.mark(mark);
     } else {
       this.sheet.closed();
       this.finder.closed();
     }
     this.registry.setOpen(open);
+  }
+
+  pressed(target: Clutter.Actor | null): void {
+    const id = this.peek.chipAt(target);
+    if (id === null) return;
+    // A dock module has no section in the main view; its view is the place.
+    if (this.registry.get(id)?.module.slot === 'dock') this.pendingView = id;
+    else this.pendingMark = id;
   }
 
   handleEscape(): boolean {
@@ -166,5 +164,20 @@ export class Content implements NotchContent, RegistryListener {
 
   close(): void {
     this.host?.close();
+  }
+
+  /** A chip was activated, with the keyboard: the panel opens on what the chip is about. */
+  private openAt(id: string): void {
+    if (!this.host) return;
+    const dock = this.registry.get(id)?.module.slot === 'dock';
+    // With the pointer the press has opened the panel already, see pressed().
+    if (this.host.state === 'open') {
+      if (dock) this.sheet.showView(id);
+      else this.sheet.mark(id);
+      return;
+    }
+    if (dock) this.pendingView = id;
+    else this.pendingMark = id;
+    this.host.open();
   }
 }

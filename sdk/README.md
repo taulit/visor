@@ -55,10 +55,12 @@ export default class MyModule extends Extension {
 - never throws when Visor is missing; logs one line when Visor refuses the module (for example another API version),
 - `disconnect()` unregisters the module (if Visor is still there) and removes the signal.
 
-`metadata.json` of the module names the API version it was built for and, by convention, the slot:
+`metadata.json` of the module names the API version it was built for and, by convention, the slot. With the
+optional `id`, the `id` the module registers with, the settings window of Visor can switch the module off
+and put it in order like a built-in one; without it the window only lists the module:
 
 ```json
-{ "visor": { "api": 1, "slot": "now" } }
+{ "visor": { "api": 1, "slot": "now", "id": "hello" } }
 ```
 
 Start the `description` with "Requires Visor." so the store page says so.

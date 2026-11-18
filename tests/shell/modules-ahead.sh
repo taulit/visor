@@ -7,13 +7,20 @@
 # Usage: tests/shell/modules-ahead.sh
 # The log ends up in .shell-test/modules-ahead.log.
 #
-# The calendar part asks for an event "in 5 minutes" to be today, so it can
-# fail when it runs in the last minutes before midnight.
+# The calendar part asks for an event "in 40 minutes" to be today. In the last
+# hour before midnight the sandbox therefore runs in a time zone where it is
+# about noon.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 if [[ "${1:-}" != --inside ]]; then
+    if [[ "$(TZ="${TZ:-Europe/Berlin}" date +%H)" == 23 ]]; then
+        offset=$(( (36 - 10#$(date -u +%H)) % 24 ))
+        (( offset > 12 )) && offset=$((offset - 24))
+        # POSIX names count the other way: Etc/GMT-5 is five hours ahead of UTC.
+        if (( offset >= 0 )); then export TZ="Etc/GMT-$offset"; else export TZ="Etc/GMT+$((-offset))"; fi
+    fi
     exec "$repo/scripts/nested.sh" --log "$repo/.shell-test/modules-ahead.log" -- \
         "$repo/tests/shell/modules-ahead.sh" --inside
 fi

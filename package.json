@@ -20,7 +20,9 @@
     "pot": "bash scripts/update-pot.sh",
     "sdk:gen": "bash scripts/gen-sdk.sh",
     "sdk:check": "bash scripts/gen-sdk.sh --check",
-    "template:check": "bash scripts/template-check.sh"
+    "template:check": "bash scripts/template-check.sh",
+    "readme": "node scripts/readme-modules.mjs",
+    "readme:check": "node scripts/readme-modules.mjs --check"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

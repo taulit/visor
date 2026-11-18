@@ -1,6 +1,6 @@
 // Pure logic: which chips the peek state shows, and in which order.
 
-export const MAX_CHIPS = 4;
+const MAX_CHIPS = 4;
 
 export interface ChipCandidate<C extends { priority: number }> {
   /** Id of the module the chip belongs to. */
@@ -16,11 +16,10 @@ export interface ChipCandidate<C extends { priority: number }> {
 /**
  * Chips to show: flashing ones first (newest first), then by priority, highest
  * first. Chips of equal priority keep the order of the candidates, which is the
- * order of the modules. At most `max` chips.
+ * order of the modules. At most four chips.
  */
 export function pickChips<C extends { priority: number }>(
   candidates: readonly ChipCandidate<C>[],
-  max = MAX_CHIPS,
 ): ChipCandidate<C>[] {
   const priority = (c: ChipCandidate<C>) =>
     Number.isFinite(c.chip.priority) ? c.chip.priority : 0;
@@ -32,6 +31,6 @@ export function pickChips<C extends { priority: number }>(
       if (flashA !== flashB) return flashB - flashA;
       return priority(b.candidate) - priority(a.candidate) || a.index - b.index;
     })
-    .slice(0, Math.max(0, max))
+    .slice(0, MAX_CHIPS)
     .map(entry => entry.candidate);
 }

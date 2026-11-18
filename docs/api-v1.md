@@ -34,11 +34,17 @@ The example shows one row in "Now".
   "description": "Requires Visor. Shows one row in Now.",
   "shell-version": ["50", "51"],
   "gettext-domain": "visor-hello",
-  "visor": { "api": 1, "slot": "now" }
+  "visor": { "api": 1, "slot": "now", "id": "hello" }
 }
 ```
 
-Visor reads only `visor.api` (see section 3). `slot` is not read by Visor.
+The shell reads only `visor.api` (see section 3). `slot` and `id` are for the settings window of Visor, which
+runs in its own process and cannot ask the module: it lists the extension under that slot, and with `id`,
+the `id` the module registers with, it offers the same switch and the same reordering as for the built-in
+modules (written to the settings `disabled-modules` and `module-order` of Visor under that id). `id` is
+optional and was added after API version 1 was published without changing it: a module without it works as
+before and is listed with nothing but the button to its own settings. An `id` that is not a valid module id
+(section 3), that another listed module has, or of an extension built for another API version is ignored.
 
 `extension.js`:
 
@@ -670,7 +676,7 @@ If every group is empty, "No results" is shown. Each new input starts a new gene
 ## 10. Stability
 
 - `API_VERSION` is `1`. It is raised only for changes that break modules. `VisorApi.version` has the same value.
-- `metadata.json` of a module names the version it was built for: `"visor": {"api": 1, …}`. Visor reads only `api`.
+- `metadata.json` of a module names the version it was built for: `"visor": {"api": 1, …}`. The shell reads only `api`; the settings window also reads the optional `slot` and `id` (section 2).
 - On `register(module, owner)` Visor compares `owner.metadata.visor.api` with its `API_VERSION`. It must be **equal**. A number that differs, or a value that is not a number, makes `register` throw (`was built for module API N, but this Visor has module API 1`) and the module is not enabled.
 - A module without a `visor.api` field is accepted, and so is a module registered without `owner`. Declare the field anyway.
 - Visor keeps a list of refused modules (id, name, UUID, requested version) for the settings to show. The settings do not list them yet; the error from `register` is the only message.

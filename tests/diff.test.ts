@@ -3,39 +3,25 @@ import { diffIds, uniqueById } from '../src/lib/diff.js';
 
 describe('diffIds', () => {
   it('reports no change for the same ids in the same order', () => {
-    const diff = diffIds(['a', 'b'], ['a', 'b']);
-    expect(diff.changed).toBe(false);
-    expect(diff.kept).toEqual(['a', 'b']);
-    expect(diff.added).toEqual([]);
-    expect(diff.removed).toEqual([]);
+    expect(diffIds(['a', 'b'], ['a', 'b'])).toEqual({ removed: [], changed: false });
   });
 
-  it('finds added and removed ids', () => {
-    const diff = diffIds(['a', 'b', 'c'], ['b', 'd']);
-    expect(diff.ids).toEqual(['b', 'd']);
-    expect(diff.added).toEqual(['d']);
-    expect(diff.removed).toEqual(['a', 'c']);
-    expect(diff.kept).toEqual(['b']);
-    expect(diff.changed).toBe(true);
+  it('finds removed ids', () => {
+    expect(diffIds(['a', 'b', 'c'], ['b', 'd'])).toEqual({ removed: ['a', 'c'], changed: true });
   });
 
   it('reports a change when only the order differs', () => {
-    const diff = diffIds(['a', 'b'], ['b', 'a']);
-    expect(diff.changed).toBe(true);
-    expect(diff.added).toEqual([]);
-    expect(diff.removed).toEqual([]);
+    expect(diffIds(['a', 'b'], ['b', 'a'])).toEqual({ removed: [], changed: true });
   });
 
   it('handles empty lists', () => {
-    expect(diffIds([], []).changed).toBe(false);
-    expect(diffIds([], ['a']).added).toEqual(['a']);
-    expect(diffIds(['a'], []).removed).toEqual(['a']);
+    expect(diffIds([], [])).toEqual({ removed: [], changed: false });
+    expect(diffIds([], ['a'])).toEqual({ removed: [], changed: true });
+    expect(diffIds(['a'], [])).toEqual({ removed: ['a'], changed: true });
   });
 
   it('counts a repeated id once, at its first place', () => {
-    const diff = diffIds(['a'], ['b', 'a', 'b']);
-    expect(diff.ids).toEqual(['b', 'a']);
-    expect(diff.added).toEqual(['b']);
+    expect(diffIds(['b', 'a'], ['b', 'a', 'b'])).toEqual({ removed: [], changed: false });
   });
 });
 

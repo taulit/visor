@@ -1,0 +1,663 @@
+# Polish translation for Visor.
+# This file is distributed under the same license as the Visor package.
+# Machine translated, improvements welcome.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: visor\n"
+"Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
+"POT-Creation-Date: 2026-11-17 23:18+0100\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: Visor contributors\n"
+"Language-Team: Polish\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2);\n"
+
+#: build/core/clock.js:59
+msgid "something waits for you"
+msgstr "coś czeka na odpowiedź"
+
+#: build/core/clock.js:61
+msgid "unread notifications"
+msgstr "nieprzeczytane powiadomienia"
+
+#: build/core/kit.js:354
+msgid "waits for you"
+msgstr "czeka na odpowiedź"
+
+#: build/core/kit.js:356
+msgid "done"
+msgstr "gotowe"
+
+#: build/core/kit.js:796
+#, javascript-format
+msgid "Hide details of %s"
+msgstr "Ukryj szczegóły: %s"
+
+#: build/core/kit.js:797
+#, javascript-format
+msgid "Show details of %s"
+msgstr "Pokaż szczegóły: %s"
+
+#: build/core/search/controller.js:114 build/core/search/controller.js:142
+msgid "Commands"
+msgstr "Polecenia"
+
+#: build/core/search/controller.js:122
+msgid "Calculate"
+msgstr "Oblicz"
+
+#: build/core/search/controller.js:123
+msgid "Apps"
+msgstr "Programy"
+
+#: build/core/search/controller.js:174
+msgid "No results"
+msgstr "Brak wyników"
+
+#: build/core/search/controller.js:275
+msgid "Enter completes"
+msgstr "Enter uzupełnia"
+
+#: build/core/search/controller.js:291 build/core/search/controller.js:316
+msgid "Enter copies"
+msgstr "Enter kopiuje"
+
+#: build/core/search/controller.js:301
+msgid "Currency rates are turned off"
+msgstr "Kursy walut są wyłączone"
+
+#: build/core/search/controller.js:304
+msgid "Rates are loading"
+msgstr "Wczytywanie kursów"
+
+#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
+msgid "Modules"
+msgstr "Moduły"
+
+#: build/core/sheet.js:331
+msgid "Search, calculate or run a command …"
+msgstr "Wyszukaj, oblicz lub uruchom polecenie …"
+
+#: build/core/sheet.js:332 build/prefs/general.js:75
+msgid "Search"
+msgstr "Wyszukaj"
+
+#: build/core/sheet.js:357 build/core/sheet.js:438
+#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
+msgid "Now"
+msgstr "Teraz"
+
+#: build/core/sheet.js:371
+msgid "Back"
+msgstr "Wstecz"
+
+#: build/core/sheet.js:438
+msgid "Shows up only while something is running."
+msgstr "Pojawia się tylko, gdy coś trwa."
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/core/sheet.js:439 build/modules/upcoming/module.js:28
+#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:8
+#: build/prefs/builtin-modules.js:19
+msgid "Up Next"
+msgstr "Następnie"
+
+#: build/core/sheet.js:439
+msgid "A short section next to “Now”."
+msgstr "Krótka sekcja obok „Teraz”."
+
+#: build/core/sheet.js:440 build/prefs/builtin-modules.js:20
+msgid "Dock"
+msgstr "Dock"
+
+#: build/core/sheet.js:440
+msgid "A view of its own behind an icon."
+msgstr "Własny widok za ikoną."
+
+#: build/core/sheet.js:638
+msgid "No modules"
+msgstr "Brak modułów"
+
+#: build/modules/downloads/module.js:15 build/prefs/builtin-modules.js:6
+msgid "Downloads"
+msgstr "Pobrane"
+
+#: build/modules/downloads/module.js:336 build/modules/t3/module.js:361
+#: build/modules/timers/module.js:229
+msgid "Done"
+msgstr "Gotowe"
+
+#: build/modules/downloads/module.js:342
+msgid "Show in folder"
+msgstr "Wyświetl w folderze"
+
+#: build/modules/downloads/module.js:349
+msgid "Open"
+msgstr "Otwórz"
+
+#: build/modules/media/module.js:20 build/prefs/builtin-modules.js:4
+msgid "Media"
+msgstr "Multimedia"
+
+#: build/modules/media/module.js:147
+msgid "Previous"
+msgstr "Poprzedni"
+
+#: build/modules/media/module.js:153 build/modules/timers/module.js:241
+msgid "Pause"
+msgstr "Wstrzymaj"
+
+#: build/modules/media/module.js:153
+msgid "Play"
+msgstr "Odtwórz"
+
+#: build/modules/media/module.js:160
+msgid "Next"
+msgstr "Następny"
+
+#. Needed before enable(), for the list of modules: there is no context yet.
+#: build/modules/notifications/module.js:19
+#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:13
+msgid "Notifications"
+msgstr "Powiadomienia"
+
+#: build/modules/notifications/module.js:94
+msgid "Do Not Disturb"
+msgstr "Nie przeszkadzać"
+
+#: build/modules/notifications/module.js:101
+msgid "No new notifications"
+msgstr "Brak nowych powiadomień"
+
+#: build/modules/notifications/module.js:298
+msgid "Show less"
+msgstr "Wyświetl mniej"
+
+#: build/modules/notifications/module.js:300
+#, javascript-format
+msgid "Show all %d"
+msgstr "Wyświetl wszystkie (%d)"
+
+#: build/modules/notifications/module.js:323
+msgid "Clear all"
+msgstr "Wyczyść wszystko"
+
+#: build/modules/notifications/module.js:345
+msgid "Dismiss"
+msgstr "Odrzuć"
+
+#: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
+#: build/prefs/t3.js:78
+msgid "T3 Code"
+msgstr "T3 Code"
+
+#: build/modules/t3/module.js:33
+msgid "t3 Fix the failing test"
+msgstr "t3 Napraw nieprzechodzący test"
+
+#: build/modules/t3/module.js:105 build/modules/t3/module.js:378
+msgid "Untitled thread"
+msgstr "Wątek bez tytułu"
+
+#: build/modules/t3/module.js:110
+#, javascript-format
+msgid "Send to %s"
+msgstr "Wyślij do: %s"
+
+#: build/modules/t3/module.js:119
+msgid "Start a new thread"
+msgstr "Rozpocznij nowy wątek"
+
+#: build/modules/t3/module.js:280
+#, javascript-format
+msgid "+ %d more"
+msgstr "+ %d więcej"
+
+#: build/modules/t3/module.js:333
+msgid "Agent"
+msgstr "Agent"
+
+#: build/modules/t3/module.js:336
+#, javascript-format
+msgid "%s is waiting"
+msgstr "%s czeka"
+
+#: build/modules/t3/module.js:345
+msgid "Starting"
+msgstr "Uruchamianie"
+
+#: build/modules/t3/module.js:348 build/modules/t3/module.js:349
+msgid "Working"
+msgstr "Pracuje"
+
+#: build/modules/t3/module.js:352
+msgid "Answer this request in T3 Code"
+msgstr "Odpowiedź na to żądanie w T3 Code"
+
+#: build/modules/t3/module.js:354
+msgid "Wants to run"
+msgstr "Chce uruchomić"
+
+#: build/modules/t3/module.js:356
+msgid "Wants to use a file"
+msgstr "Chce użyć pliku"
+
+#: build/modules/t3/module.js:357
+msgid "Asks for permission"
+msgstr "Prosi o zgodę"
+
+#: build/modules/t3/module.js:359
+msgid "Has a question"
+msgstr "Ma pytanie"
+
+#: build/modules/t3/module.js:363
+msgid "Failed"
+msgstr "Niepowodzenie"
+
+#: build/modules/t3/module.js:374
+msgid "Could not send"
+msgstr "Nie można wysłać"
+
+#: build/modules/t3/module.js:400 build/modules/t3/module.js:581
+msgid "Open in T3 Code"
+msgstr "Otwórz w T3 Code"
+
+#: build/modules/t3/module.js:412 build/modules/t3/module.js:504
+msgid "Deny"
+msgstr "Odmów"
+
+#: build/modules/t3/module.js:418 build/modules/t3/module.js:505
+msgid "Allow"
+msgstr "Zezwól"
+
+#: build/modules/t3/module.js:428
+msgid "Answer"
+msgstr "Odpowiedz"
+
+#: build/modules/t3/module.js:515
+msgid "Has characters that cannot be shown. Open T3 Code to read it"
+msgstr ""
+"Zawiera znaki, których nie można wyświetlić. Otwórz T3 Code, aby go "
+"przeczytać"
+
+#: build/modules/t3/module.js:516
+msgid "Open T3 Code to read all of it"
+msgstr "Otwórz T3 Code, aby przeczytać całość"
+
+#: build/modules/t3/module.js:554
+#, javascript-format
+msgid "Reply to %s"
+msgstr "Odpowiedź dla: %s"
+
+#: build/modules/t3/module.js:554 build/modules/t3/module.js:555
+msgid "Reply"
+msgstr "Odpowiedz"
+
+#: build/modules/t3/module.js:570 build/modules/timers/module.js:246
+msgid "Stop"
+msgstr "Zatrzymaj"
+
+#: build/modules/timers/module.js:19 build/prefs/builtin-modules.js:5
+msgid "Timers"
+msgstr "Minutniki"
+
+#: build/modules/timers/module.js:25
+msgid "timer 25m Pizza"
+msgstr "timer 25m Pizza"
+
+#: build/modules/timers/module.js:30
+msgid "stopwatch Research"
+msgstr "stopwatch Badania"
+
+#: build/modules/timers/module.js:92
+#, javascript-format
+msgid "Alarm at %s"
+msgstr "Budzik na %s"
+
+#: build/modules/timers/module.js:102
+#, javascript-format
+msgid "Start timer · %s"
+msgstr "Uruchom minutnik · %s"
+
+#: build/modules/timers/module.js:118
+msgid "Start stopwatch"
+msgstr "Uruchom stoper"
+
+#: build/modules/timers/module.js:205
+msgid "Stopwatch"
+msgstr "Stoper"
+
+#: build/modules/timers/module.js:206
+msgid "Alarm"
+msgstr "Budzik"
+
+#: build/modules/timers/module.js:206 build/modules/timers/module.js:321
+msgid "Timer"
+msgstr "Minutnik"
+
+#: build/modules/timers/module.js:230 build/modules/timers/module.js:341
+msgid "Restart"
+msgstr "Uruchom ponownie"
+
+#: build/modules/timers/module.js:236
+msgid "Resume"
+msgstr "Wznów"
+
+#: build/modules/timers/module.js:251
+msgid "+1 min"
+msgstr "+1 min"
+
+#: build/modules/timers/module.js:261 build/modules/timers/module.js:266
+msgid "Paused"
+msgstr "Wstrzymano"
+
+#: build/modules/timers/module.js:266 build/modules/timers/module.js:295
+#: build/modules/upcoming/plan.js:32
+#, javascript-format
+msgid "until %s"
+msgstr "do %s"
+
+#: build/modules/timers/module.js:301
+#, javascript-format
+msgid "%s done"
+msgstr "%s — gotowe"
+
+#: build/modules/timers/module.js:317
+msgid "Timer finished"
+msgstr "Minutnik zakończony"
+
+#: build/modules/timers/module.js:334
+#, javascript-format
+msgid "Ended at %s"
+msgstr "Zakończono o %s"
+
+#: build/modules/upcoming/module.js:111
+msgid "Nothing else today"
+msgstr "Na dziś nic więcej"
+
+#: build/modules/upcoming/module.js:194
+msgid "Join"
+msgstr "Dołącz"
+
+#: build/modules/upcoming/plan.js:21
+#, javascript-format
+msgid "in %d min"
+msgstr "za %d min"
+
+#: build/modules/upcoming/plan.js:23
+#, javascript-format
+msgid "in %d h"
+msgstr "za %d godz."
+
+#: build/modules/upcoming/plan.js:24
+#, javascript-format
+msgid "in %d h %d min"
+msgstr "za %d godz. %d min"
+
+#: build/modules/upcoming/plan.js:29
+msgid "all day"
+msgstr "cały dzień"
+
+#: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
+msgid "Today"
+msgstr "Dzisiaj"
+
+#: build/modules/upcoming/when.js:40
+msgid "Tomorrow"
+msgstr "Jutro"
+
+#: build/modules/upcoming/when.js:59
+msgid "now"
+msgstr "teraz"
+
+#: build/modules/upcoming/when.js:61
+#, javascript-format
+msgid "%d min ago"
+msgid_plural "%d min ago"
+msgstr[0] "%d min temu"
+msgstr[1] "%d min temu"
+msgstr[2] "%d min temu"
+
+#: build/modules/upcoming/when.js:66
+msgid "Yesterday"
+msgstr "Wczoraj"
+
+#: build/prefs/about.js:18
+msgid "About"
+msgstr "O programie"
+
+#: build/prefs/about.js:26
+msgid "Version"
+msgstr "Wersja"
+
+#: build/prefs/about.js:27
+msgid "License"
+msgstr "Licencja"
+
+#: build/prefs/about.js:29
+msgid "Links"
+msgstr "Odnośniki"
+
+#: build/prefs/about.js:30 build/prefs/discover.js:13
+msgid "Website"
+msgstr "Witryna"
+
+#: build/prefs/about.js:31
+msgid "Source code"
+msgstr "Kod źródłowy"
+
+#: build/prefs/about.js:32
+msgid "Report an issue"
+msgstr "Zgłoś problem"
+
+#: build/prefs/discover.js:8
+msgid "The catalog of modules arrives with a later version."
+msgstr "Katalog modułów pojawi się w jednej z kolejnych wersji."
+
+#: build/prefs/general.js:10
+msgid "Compact"
+msgstr "Zwarty"
+
+#: build/prefs/general.js:11
+msgid "Normal"
+msgstr "Zwykły"
+
+#: build/prefs/general.js:12
+msgid "Wide"
+msgstr "Szeroki"
+
+#: build/prefs/general.js:21
+msgid "Delay before the preview"
+msgstr "Opóźnienie przed podglądem"
+
+#: build/prefs/general.js:22
+msgid "In milliseconds"
+msgstr "W milisekundach"
+
+#: build/prefs/general.js:36
+msgid "Width"
+msgstr "Szerokość"
+
+#: build/prefs/general.js:37
+msgid "Of the open panel"
+msgstr "Otwartego panelu"
+
+#: build/prefs/general.js:56
+msgid "General"
+msgstr "Ogólne"
+
+#: build/prefs/general.js:59
+msgid "Shortcut"
+msgstr "Skrót klawiszowy"
+
+#: build/prefs/general.js:61
+msgid "Notification list"
+msgstr "Lista powiadomień"
+
+#: build/prefs/general.js:62
+msgid ""
+"The shortcut of the shell for the notification list, Super+V by default, "
+"always opens Visor. Change it in the keyboard settings."
+msgstr ""
+"Skrót klawiszowy powłoki dla listy powiadomień, domyślnie Super+V, zawsze "
+"otwiera Visor. Można go zmienić w ustawieniach klawiatury."
+
+#: build/prefs/general.js:66
+msgid "Behavior"
+msgstr "Zachowanie"
+
+#: build/prefs/general.js:67
+msgid "Preview on hover"
+msgstr "Podgląd po najechaniu"
+
+#: build/prefs/general.js:69
+msgid "Show briefly on events"
+msgstr "Krótko wyświetlaj przy zdarzeniach"
+
+#: build/prefs/general.js:70
+msgid "Show briefly when an agent is waiting"
+msgstr "Krótko wyświetlaj, gdy agent czeka"
+
+#: build/prefs/general.js:72
+msgid "Appearance"
+msgstr "Wygląd"
+
+#: build/prefs/general.js:76
+msgid "Load currency rates"
+msgstr "Wczytuj kursy walut"
+
+#: build/prefs/general.js:76
+msgid "The rates come from the European Central Bank, at most once a day."
+msgstr ""
+"Kursy pochodzą z Europejskiego Banku Centralnego, najwyżej raz dziennie."
+
+#: build/prefs/modules.js:96
+msgid "Discover"
+msgstr "Odkrywanie"
+
+#: build/prefs/modules.js:132
+msgid "Move up"
+msgstr "Przesuń w górę"
+
+#: build/prefs/modules.js:133
+msgid "Move down"
+msgstr "Przesuń w dół"
+
+#: build/prefs/modules.js:136
+msgid "Change the order"
+msgstr "Zmień kolejność"
+
+#: build/prefs/modules.js:146
+msgid "Drag to change the order"
+msgstr "Przeciągnij, aby zmienić kolejność"
+
+#: build/prefs/modules.js:173
+msgid "Built for another version of Visor"
+msgstr "Utworzono dla innej wersji Visora"
+
+#: build/prefs/modules.js:175
+msgid "Turned off in the extensions"
+msgstr "Wyłączone w rozszerzeniach"
+
+#: build/prefs/modules.js:185
+msgid "Settings of the module"
+msgstr "Ustawienia modułu"
+
+#: build/prefs/shortcut.js:14 build/prefs/shortcut.js:45
+msgid "Additional shortcut"
+msgstr "Dodatkowy skrót klawiszowy"
+
+#: build/prefs/shortcut.js:15
+msgid "Opens Visor as well."
+msgstr "Również otwiera Visor."
+
+#: build/prefs/shortcut.js:20
+msgid "None"
+msgstr "Brak"
+
+#: build/prefs/shortcut.js:25
+msgid "Remove the shortcut"
+msgstr "Usuń skrót klawiszowy"
+
+#: build/prefs/shortcut.js:46
+msgid ""
+"Press the keys you want to use. Esc cancels, Backspace removes the shortcut."
+msgstr ""
+"Naciśnij klawisze, których chcesz użyć. Esc anuluje, Backspace usuwa skrót "
+"klawiszowy."
+
+#: build/prefs/shortcut.js:48
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: build/prefs/t3.js:63
+msgid "This is not a pairing link"
+msgstr "To nie jest odnośnik parowania"
+
+#: build/prefs/t3.js:65 build/prefs/t3.js:206
+msgid "Use https for a server on another machine"
+msgstr "Dla serwera na innym komputerze należy użyć https"
+
+#: build/prefs/t3.js:67
+msgid "The link is wrong or has expired"
+msgstr "Odnośnik jest nieprawidłowy lub wygasł"
+
+#: build/prefs/t3.js:69
+msgid "This version of T3 Code does not fit Visor"
+msgstr "Ta wersja T3 Code nie jest zgodna z Visorem"
+
+#: build/prefs/t3.js:71
+msgid "The keyring is not available"
+msgstr "Pęk kluczy jest niedostępny"
+
+#: build/prefs/t3.js:73
+msgid "The server cannot be reached"
+msgstr "Nie można połączyć się z serwerem"
+
+#. --- not paired ---
+#: build/prefs/t3.js:83
+msgid "Pairing link or code"
+msgstr "Odnośnik lub kod parowania"
+
+#: build/prefs/t3.js:86
+msgid "Connect"
+msgstr "Połącz"
+
+#. --- paired ---
+#: build/prefs/t3.js:176
+msgid "Connected"
+msgstr "Połączono"
+
+#: build/prefs/t3.js:178
+msgid "Disconnect"
+msgstr "Rozłącz"
+
+#. --- the address ---
+#: build/prefs/t3.js:193
+msgid "Server address"
+msgstr "Adres serwera"
+
+#: build/prefs/t3.js:194
+msgid "Address, empty for this machine"
+msgstr "Adres, puste dla tego komputera"
+
+#: build/prefs/t3.js:207
+msgid "This is not a server address"
+msgstr "To nie jest adres serwera"
+
+#: build/prefs/t3.js:227
+msgid ""
+"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"here."
+msgstr ""
+"Utwórz odnośnik parowania w T3 Code w Settings → Connections i wklej go "
+"tutaj."
+
+#: build/prefs/t3.js:230 build/prefs/t3.js:231
+msgid "This machine"
+msgstr "Ten komputer"

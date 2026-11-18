@@ -1,0 +1,66 @@
+# Maintainer: <name and address, set before pushing to the AUR>
+pkgname=gnome-shell-extension-visor
+# The same as "version-name" in metadata.json and "version" in package.json
+# (prepare() checks the first).
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='A notch below the top bar of GNOME Shell: media, timers, calendar, notifications, search and agent sessions'
+arch=('any')
+url='https://github.com/taulit/visor'
+license=('GPL-2.0-or-later')
+depends=('gnome-shell>=50' 'gnome-shell<52')
+makedepends=('nodejs' 'pnpm' 'glib2' 'gettext')
+optdepends=(
+  'evolution-data-server: Join buttons for video calls in Up Next'
+  'gnome-calendar: open an event of Up Next in the calendar'
+)
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+# Set at the release: updpkgsums, once the tag exists and the tarball is final.
+sha256sums=('SKIP')
+
+_uuid='visor@taulit.github.io'
+
+prepare() {
+  cd "visor-$pkgver"
+
+  local declared
+  declared=$(node -p "require('./metadata.json')['version-name']")
+  if [[ $declared != "$pkgver" ]]; then
+    error "metadata.json says $declared, pkgver is $pkgver"
+    return 1
+  fi
+
+  # Needs the network: the tools of the build come from the npm registry.
+  # Nothing of them is installed.
+  pnpm install --frozen-lockfile --store-dir "$srcdir/.pnpm-store"
+}
+
+build() {
+  cd "visor-$pkgver"
+  pnpm run build
+}
+
+package() {
+  cd "visor-$pkgver"
+
+  local dest="$pkgdir/usr/share/gnome-shell/extensions/$_uuid"
+  install -d "$dest"
+  cp -r build/. "$dest"
+
+  # The schema and the translations go where a system extension finds them:
+  # without schemas/ and locale/ next to it, the shell looks in the system
+  # directories (extensions/sharedInternals.js of the shell).
+  rm -rf "$dest/schemas" "$dest/locale"
+  install -Dm644 schemas/org.gnome.shell.extensions.visor.gschema.xml \
+    -t "$pkgdir/usr/share/glib-2.0/schemas"
+
+  local mo
+  for mo in build/locale/*/LC_MESSAGES/visor.mo; do
+    install -Dm644 "$mo" "$pkgdir/usr/share/locale/${mo#build/locale/}"
+  done
+
+  find "$dest" -type d -exec chmod 755 {} +
+  find "$dest" -type f -exec chmod 644 {} +
+
+  install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"
+}

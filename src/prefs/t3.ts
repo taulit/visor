@@ -1,7 +1,8 @@
 // Pairing with T3 Code, see docs/t3-protocol.md §2: the user pastes a pairing
 // link, the window exchanges it for an access token and stores that in the
-// settings, where the module finds it. Neither the link nor the token is
-// ever logged.
+// keyring (modules/t3/keyring.ts), where the module finds it; the settings
+// only say which origin is paired. Neither the link nor the token is ever
+// logged.
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -10,10 +11,12 @@ import Soup from 'gi://Soup?version=3.0';
 
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
+import { fetchText, runtimePath } from '../modules/t3/fetch.js';
+import { clearToken, storeToken, unlockKeyring } from '../modules/t3/keyring.js';
 import {
   SERVER_KEY,
-  TOKEN_KEY,
   TOKEN_ORIGIN_KEY,
+  TOKEN_SERIAL_KEY,
   decodeAccessToken,
   exchangeError,
   isInsecurePairing,
@@ -38,11 +41,8 @@ const MAX_ANSWER_BYTES = 64 * 1024;
 
 /** The origin of the server running on this machine, from its runtime file, or null. */
 function localOrigin(): string | null {
-  const base = GLib.getenv('T3CODE_HOME') || GLib.build_filenamev([GLib.get_home_dir(), '.t3']);
   try {
-    const [, bytes] = GLib.file_get_contents(
-      GLib.build_filenamev([base, 'userdata', 'server-runtime.json']),
-    );
+    const [, bytes] = GLib.file_get_contents(runtimePath());
     return bytes.length <= MAX_ANSWER_BYTES
       ? decodeRuntimeState(new TextDecoder().decode(bytes))
       : null;
@@ -51,55 +51,28 @@ function localOrigin(): string | null {
   }
 }
 
-interface Answer {
-  /** 0 when there was no answer. */
-  status: number;
-  body: string;
-}
-
-function send(
-  http: Soup.Session,
-  message: Soup.Message,
-  cancellable: Gio.Cancellable,
-): Promise<Answer> {
-  return new Promise(resolve => {
-    http.send_and_read_async(message, GLib.PRIORITY_DEFAULT, cancellable, (_source, result) => {
-      try {
-        const data = http.send_and_read_finish(result).get_data();
-        const status = message.get_status();
-        // Only a plain 200 has a body worth reading; a redirect is not followed.
-        const fits = status === Soup.Status.OK && data !== null && data.length <= MAX_ANSWER_BYTES;
-        resolve({ status, body: fits ? new TextDecoder().decode(data) : '' });
-      } catch {
-        resolve({ status: 0, body: '' });
-      }
-    });
-  });
-}
-
 /**
  * Exchanges a one-time pairing code at the server for an access token.
- * Ends with 'unreachable' when `cancellable` is cancelled.
+ * Ends with 'unreachable' when `cancellable` is cancelled before the code is
+ * sent; once it is on its way the answer is awaited, bounded by the timeout
+ * of `http`, so that a token the server issued is not thrown away.
  */
-export async function exchangePairingCode(
+async function exchangePairingCode(
   http: Soup.Session,
   origin: string,
   code: string,
   cancellable: Gio.Cancellable,
 ): Promise<{ token: string } | { error: PairingError }> {
-  let about: Soup.Message;
-  let exchange: Soup.Message;
-  try {
-    about = Soup.Message.new('GET', descriptorUrl(origin));
-    exchange = Soup.Message.new('POST', tokenUrl(origin));
-  } catch {
-    return { error: 'unreachable' };
-  }
+  const about = Soup.Message.new('GET', descriptorUrl(origin));
+  const exchange = Soup.Message.new('POST', tokenUrl(origin));
+  if (!about || !exchange) return { error: 'unreachable' };
   // The code goes to the server the link names and is not carried along by a redirect.
   about.add_flags(Soup.MessageFlags.NO_REDIRECT);
   exchange.add_flags(Soup.MessageFlags.NO_REDIRECT);
   // The version first: a server that speaks another protocol keeps its code unused.
-  const descriptor = decodeDescriptor((await send(http, about, cancellable)).body);
+  const descriptor = decodeDescriptor(
+    (await fetchText(http, about, MAX_ANSWER_BYTES, cancellable)).body ?? '',
+  );
   if (!descriptor) return { error: 'unreachable' };
   if (!isCompatible(descriptor)) return { error: 'incompatible' };
 
@@ -108,9 +81,10 @@ export async function exchangePairingCode(
     'application/x-www-form-urlencoded',
     new GLib.Bytes(new TextEncoder().encode(tokenRequestBody(code, label))),
   );
-  const answer = await send(http, exchange, cancellable);
+  if (cancellable.is_cancelled()) return { error: 'unreachable' };
+  const answer = await fetchText(http, exchange, MAX_ANSWER_BYTES, new Gio.Cancellable());
   if (answer.status !== Soup.Status.OK) return { error: exchangeError(answer.status) };
-  const token = decodeAccessToken(answer.body);
+  const token = decodeAccessToken(answer.body ?? '');
   return token ? { token } : { error: 'rejected' };
 }
 
@@ -124,12 +98,14 @@ function errorText(error: PairingError): string {
       return _('The link is wrong or has expired');
     case 'incompatible':
       return _('This version of T3 Code does not fit Visor');
+    case 'keyring':
+      return _('The keyring is not available');
     default:
       return _('The server cannot be reached');
   }
 }
 
-/** The group "T3 Code" of the Modules page. Requests end when `window` closes. */
+/** The group "T3 Code" of the Modules page. A pairing that has not sent its code yet ends when `window` closes. */
 export function t3Group(
   settings: Gio.Settings,
   window: Adw.PreferencesWindow,
@@ -137,7 +113,7 @@ export function t3Group(
   const group = new Adw.PreferencesGroup({ title: _('T3 Code') });
   const http = new Soup.Session({ timeout: TIMEOUT_SECONDS });
   let cancellable: Gio.Cancellable | null = null;
-  let timeout = 0;
+  let closed = false;
 
   // --- not paired ---
   const title = _('Pairing link or code');
@@ -145,10 +121,20 @@ export function t3Group(
   const connect = new Gtk.Button({
     label: _('Connect'),
     valign: Gtk.Align.CENTER,
-    css_classes: ['suggested-action'],
+    css_classes: ['suggested-action', 'visor-t3-connect'],
   });
   entry.add_suffix(connect);
   group.add(entry);
+  // The class `error` of the row turns the accent of everything in it red,
+  // the button included. The error is about what was typed, so the button
+  // keeps the accent of the window. Removed again when the window closes.
+  const css = new Gtk.CssProvider();
+  css.load_from_string(
+    'row.entry.error button.visor-t3-connect {' +
+      ' --accent-bg-color: @accent_bg_color; --accent-fg-color: @accent_fg_color; }',
+  );
+  const display = window.get_display();
+  Gtk.StyleContext.add_provider_for_display(display, css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
   const showError = (error: PairingError | null): void => {
     entry.title = error ? errorText(error) : title;
@@ -156,10 +142,12 @@ export function t3Group(
     else entry.remove_css_class('error');
   };
   const finish = (): void => {
-    if (timeout) GLib.source_remove(timeout);
-    timeout = 0;
     cancellable = null;
     connect.sensitive = true;
+  };
+  /** Tells the module in the shell that the token in the keyring changed. */
+  const tokenChanged = (): void => {
+    settings.set_int(TOKEN_SERIAL_KEY, (settings.get_int(TOKEN_SERIAL_KEY) + 1) % 1_000_000);
   };
   const pair = async (): Promise<void> => {
     if (cancellable) return;
@@ -181,26 +169,32 @@ export function t3Group(
     showError(null);
     connect.sensitive = false;
     const mine = (cancellable = new Gio.Cancellable());
-    timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, TIMEOUT_SECONDS, () => {
-      timeout = 0;
-      mine.cancel();
-      return GLib.SOURCE_REMOVE;
-    });
-    const result = await exchangePairingCode(http, origin, pairing.code, mine);
+    // The keyring first, unlocked: the code is good once, so it is spent only
+    // when the token can be kept. The user may take their time with the
+    // password; the keyring has a limit of its own.
+    const usable = await unlockKeyring(mine);
     // The window closed meanwhile: its widgets are gone.
-    if (cancellable !== mine) return;
-    finish();
-    if ('error' in result) {
-      showError(result.error);
-      return;
+    if (closed) return;
+    const result = usable
+      ? await exchangePairingCode(http, origin, pairing.code, mine)
+      : { error: 'keyring' as const };
+    // Not tied to the window: the code is spent, so the token is kept even
+    // when the window closes now.
+    const stored =
+      'token' in result && (await storeToken(origin, result.token, new Gio.Cancellable()));
+    if (!closed) {
+      finish();
+      if (!stored) showError('error' in result ? result.error : 'keyring');
     }
+    if (!stored) return;
     if (pairing.origin) settings.set_string(SERVER_KEY, originToStore(pairing.origin, local));
     // The token is for this origin; the module sends it nowhere else.
     settings.set_string(TOKEN_ORIGIN_KEY, origin);
-    settings.set_string(TOKEN_KEY, result.token);
+    tokenChanged();
   };
   const start = (): void => {
     pair().catch(() => {
+      if (closed) return;
       finish();
       showError('unreachable');
     });
@@ -217,8 +211,12 @@ export function t3Group(
   const disconnect = new Gtk.Button({ label: _('Disconnect'), valign: Gtk.Align.CENTER });
   // The protocol lets no session revoke itself, so the token is only forgotten here.
   const forget = (): void => {
-    settings.set_string(TOKEN_KEY, '');
+    const origin = settings.get_string(TOKEN_ORIGIN_KEY);
     settings.set_string(TOKEN_ORIGIN_KEY, '');
+    tokenChanged();
+    // Not tied to the window: it may close before the keyring has answered.
+    // Without a keyring there is nothing to remove.
+    if (origin) void clearToken(origin, new Gio.Cancellable());
   };
   disconnect.connect('clicked', forget);
   paired.add_suffix(disconnect);
@@ -237,14 +235,14 @@ export function t3Group(
     const origin = text ? cleanOrigin(text) : '';
     if (origin === null) {
       addressEntry.add_css_class('error');
-      if (isInsecureOrigin(text))
-        addressEntry.title = _('Use https for a server on another machine');
+      addressEntry.title = isInsecureOrigin(text)
+        ? _('Use https for a server on another machine')
+        : _('This is not a server address');
       return;
     }
     // Another server: the token was not issued by it and must not reach it.
-    const hasToken = settings.get_string(TOKEN_KEY) !== '';
-    if (hasToken && !tokenFits(settings.get_string(TOKEN_ORIGIN_KEY), origin || localOrigin()))
-      forget();
+    const pairedOrigin = settings.get_string(TOKEN_ORIGIN_KEY);
+    if (pairedOrigin && !tokenFits(pairedOrigin, origin || localOrigin())) forget();
     settings.set_string(SERVER_KEY, origin);
   });
   addressEntry.connect('changed', () => {
@@ -255,7 +253,7 @@ export function t3Group(
   group.add(address);
 
   const sync = (): void => {
-    const isPaired = settings.get_string(TOKEN_KEY) !== '';
+    const isPaired = settings.get_string(TOKEN_ORIGIN_KEY) !== '';
     const server = settings.get_string(SERVER_KEY);
     group.description = isPaired
       ? ''
@@ -267,18 +265,17 @@ export function t3Group(
     if (addressEntry.text !== server) addressEntry.text = server;
   };
   const handlers = [
-    settings.connect(`changed::${TOKEN_KEY}`, sync),
+    settings.connect(`changed::${TOKEN_ORIGIN_KEY}`, sync),
     settings.connect(`changed::${SERVER_KEY}`, sync),
   ];
   sync();
 
   window.connect('close-request', () => {
+    closed = true;
     cancellable?.cancel();
     cancellable = null;
-    if (timeout) GLib.source_remove(timeout);
-    timeout = 0;
     for (const handler of handlers) settings.disconnect(handler);
-    http.abort();
+    Gtk.StyleContext.remove_provider_for_display(display, css);
     return false;
   });
   return group;

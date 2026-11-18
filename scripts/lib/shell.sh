@@ -24,6 +24,22 @@ shell_eval() {
 # shellcheck disable=SC2034  # used by the scripts that source this file
 SHELL_ACTOR_COUNT='(function n(a) { if (a === Main.panel.statusArea.quickSettings?.menu.actor) return 0; let c = 1; for (const k of a.get_children()) c += n(k); return c; })(global.stage)'
 
+# signals_grew BEFORE AFTER CYCLES: compares two results of visorSignalCounts()
+# (see tests/shell-helper) around CYCLES rounds of enabling and disabling and
+# prints every "object:signal" that gained a handler in at least every fifth
+# round. The shell connects and drops a handler of its own now and then (the
+# overview, objects that are collected), so one or two more or fewer say
+# nothing; what Visor leaves behind comes back in every round.
+signals_grew() {
+    python3 -c 'import json, sys
+before, after, least = json.loads(sys.argv[1]), json.loads(sys.argv[2]), max(2, int(sys.argv[3]) // 5)
+for key in sorted(after):
+    if after[key] - before.get(key, 0) >= least:
+        print(f"{key}: {before.get(key, 0)} -> {after[key]}")' "$1" "$2" "$3"
+}
+# signals_total COUNTS: the number of handlers in a result of visorSignalCounts().
+signals_total() { python3 -c 'import json, sys; print(sum(json.loads(sys.argv[1]).values()))' "$1"; }
+
 # shell_wait_for JS [timeout_seconds]: waits until JS evaluates to true.
 shell_wait_for() {
     local deadline=$((SECONDS + ${2:-10}))

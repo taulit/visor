@@ -4,7 +4,6 @@ import {
   finalName,
   formatBytes,
   isPartial,
-  progressLabel,
 } from '../src/modules/downloads/names.js';
 
 describe('PARTIAL_SUFFIXES', () => {
@@ -67,22 +66,5 @@ describe('formatBytes', () => {
     [NaN, 'en-US', '0 kB'],
   ])('%d bytes in %s is %s', (bytes, locale, expected) => {
     expect(formatBytes(bytes, locale)).toBe(expected);
-  });
-});
-
-describe('progressLabel', () => {
-  it.each([
-    [1_400_000_000, 2_200_000_000, 'en-US', '1.4 / 2.2 GB'],
-    [1_400_000_000, 2_200_000_000, 'de-DE', '1,4 / 2,2 GB'],
-    [14_000_000, 22_000_000, 'en-US', '14 / 22 MB'],
-    [5_000_000, 22_000_000, 'en-US', '5.0 / 22 MB'],
-    [3_000_000, 2_200_000_000, 'en-US', '0.0 / 2.2 GB'],
-    [0, 500_000, 'en-US', '0 / 500 kB'],
-    [1_400_000_000, null, 'en-US', '1.4 GB'],
-    [1_400_000_000, null, 'de-DE', '1,4 GB'],
-    [1_400_000_000, 0, 'en-US', '1.4 GB'],
-    [0, null, 'en-US', '0 kB'],
-  ])('%d of %s in %s is "%s"', (current, total, locale, expected) => {
-    expect(progressLabel(current, total, locale)).toBe(expected);
   });
 });

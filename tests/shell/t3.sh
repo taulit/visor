@@ -23,6 +23,7 @@ fi
 
 source "$repo/scripts/lib/shell.sh"
 source "$repo/scripts/scenarios/content-lib.sh"
+source "$repo/scripts/lib/keyring.sh"
 
 fail=0
 # check NAME JS: passes when JS evaluates to true.
@@ -114,8 +115,7 @@ wait_title='Spawn a subagent for the fixture'
 
 check 'without a token the module is empty and waits for nothing' \
     "A.rows().length === 0 && A.chip() === null && A.mod().client.retrySource === 0 && !A.mod().client.connecting"
-run "visor.getSettings().set_string('t3-token-origin', 'http://127.0.0.1:$port')"
-run "visor.getSettings().set_string('t3-access-token', 'mock-token')"
+t3_pair "http://127.0.0.1:$port" mock-token
 run 'A.wait(1500)'
 check 'without a server the module is empty' "A.rows().length === 0 && !A.mod().client.connected"
 check 'and it tries again later' "A.mod().client.retrySource !== 0"
@@ -338,6 +338,23 @@ sleep 0.5
 check 'the server sees no client' "$(mock_state "s['clients'] == 0")"
 run "visor.content.registry.setEnabled('t3', true)"
 wait_check 'enable connects again' "A.mod().client.connected && A.rows().length === 4" 8
+
+# --- where the token is ----------------------------------------------------------
+if dconf dump / | grep -q 'mock-token' || grep -qa 'mock-token' "$XDG_CONFIG_HOME/dconf/user" ||
+    grep -q 'mock-token' "$HOME/shell.log"; then
+    echo 'FAIL  the token is in dconf or in the log of the shell'
+    fail=1
+else
+    echo 'ok    the token is neither in dconf nor in the log of the shell'
+fi
+run "Main.extensionManager.disableExtension('visor@taulit.github.io')"
+shell_wait_for "Main.extensionManager.lookup('visor@taulit.github.io').state !== 1"
+if [[ "$(keyring_lookup "http://127.0.0.1:$port")" == mock-token ]]; then
+    echo 'ok    disabling the extension leaves the token in the keyring'
+else
+    echo 'FAIL  disabling the extension removed the token from the keyring'
+    fail=1
+fi
 
 noise="$(tail -n "+$((log_before + 1))" "$HOME/shell.log" | grep -E 'JS ERROR|WARNING|CRITICAL|has been already disposed' || true)"
 if [[ -z "$noise" ]]; then

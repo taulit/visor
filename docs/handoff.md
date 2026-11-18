@@ -14,27 +14,37 @@ other sessions: `docs/STATUS.md`, API facts: `docs/verified.md`, structure: `doc
 Branch `phase/v3-t3`, pull request https://github.com/taulit/visor/pull/5 against `main` (not stacked), waiting for the user to merge. Bug
 review done, 11 of 12 findings fixed. The private template repo `taulit/visor-module-template` exists.
 
+## State of V4
+
+Branch `phase/v4-hardening`, pull request https://github.com/taulit/visor/pull/6 against `main` (not stacked), waiting for the user to merge.
+Three reviews done and their findings applied. Nothing is running.
+
 ## Next
 
-1. After the merge: branch `phase/v4-hardening` from `main`.
-2. V4: budgets (`docs/performance.md`, GSettings `debug-metrics`), accessibility, translations (es, fr, pt_BR,
-   it, pl, ru, zh_CN, ja by a Sonnet agent, glossary in `docs/design/plan/04-design.md`), one
-   simplicity review and one spec review, `docs/ego-checklist.md`, AUR `build-aux/aur/PKGBUILD`, README with
-   module table, `docs/release-checklist.md`.
+1. After the merge the remaining work is manual and belongs to the maintainer: `docs/release-checklist.md`
+   (real session on GNOME 50, first real pairing with T3 Code, screen reader pass, one-hour memory run,
+   timings on a quiet machine, native-speaker check of the translations, version bump, store upload).
+2. The check "median enable() below 5 ms" in `tests/shell/notch-behaviour.sh` fails when the machine is under
+   load (2 ms on a quiet run, up to 5.7 ms loaded).
+3. The two workflows `release.yml` and `nightly.yml` have never run; expect fixes on their first run.
 
 ## Open items carried forward
 
 - T3 Code: nothing is verified against a real server (token exchange, ticket, socket, approve/deny/reply/stop).
-  The access token is stored as plain text in dconf; move it to the keyring (libsecret) in V4.
+  The access token is in the keyring (libsecret, `docs/t3-protocol.md`); a locked keyring was not
+  tested at runtime, the keyring of the sandbox is unlocked.
 - "Open in T3 Code" opens the thread in the browser; the desktop app has no deep link for threads.
 - API v1 has no kit element for body text or a text field; the T3 module builds both itself.
 
-- Peek chip click should mark and, if needed, expand the matching section (plan 01 §8); today it only opens.
-- Search: the frame showing local results came up to 30 ms after the debounce (list itself ≤ 14.6 ms); measure
-  again in V4.
+- Done in V4 (branch `t3/visor-performance-accessibility`): budgets measured (`docs/performance.md`,
+  `scripts/measure.sh`, GSettings `debug-metrics`), accessibility (`docs/accessibility.md`,
+  `tests/shell/a11y.sh`), a press on a peek chip marks the section of its module or opens the view of a dock
+  module. Still open from that work: no screen reader was run; the first open after enable costs about 25 ms
+  once (the sheet is built and styled then); a paired T3 Code server is pinged every 10 s also with the panel
+  closed.
 - Not looked at frame by frame: hint shape while growing, rounded corners during the peek animation.
 - Not exercised: scale factor ≠ 1, several monitors, real fullscreen window, touch, right-to-left, screen
-  readers, the timer sound, real GNOME search providers, Join links of recurring events.
+  readers (Orca), the timer sound, real GNOME search providers, Join links of recurring events.
 - `kit.ts`, `notch.ts`, `sheet.ts` are large; the simplicity review of V4 should start there.
 - Refused (incompatible) modules are remembered by the registry but shown nowhere yet (settings, V3).
 - UUID of the notes module (`sheaf-visor@…` vs. `visor-<name>@…`): the user decides.

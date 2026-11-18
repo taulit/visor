@@ -7,5 +7,5 @@
   "settings-schema": "org.gnome.shell.extensions.visor-example",
   "gettext-domain": "visor-example",
   "version-name": "1.0.0",
-  "visor": { "api": 1, "slot": "dock" }
+  "visor": { "api": 1, "slot": "dock", "id": "example-dock" }
 }

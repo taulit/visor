@@ -140,3 +140,57 @@ prefs_scroll() {
         return true;
     })()" >/dev/null
 }
+
+# --- reading the window ---------------------------------------------------------
+# The window is in another process, so its texts are read over the
+# accessibility bus. The sandbox runs that bus but not its registry (the bus
+# would start it through systemd); prefs_a11y starts it. Call it before
+# prefs_open: a GTK application looks for the registry once, when it starts.
+prefs_a11y() {
+    /usr/lib/at-spi2-registryd >"$HOME/a11y-registry.log" 2>&1 &
+    sleep 0.5
+}
+
+# prefs_texts: every text the window shows, one per line as "role | name".
+prefs_texts() { python3 "$VISOR_REPO/tests/shell/prefs-a11y.py" texts; }
+
+# prefs_shows TEXT: true when a widget with exactly that text shows.
+prefs_shows() { prefs_texts | sed 's/^[^|]*| //' | grep -qxF -- "$1"; }
+
+# prefs_where NAME [ROLE]: "x y" of the centre of that widget, for prefs_click.
+prefs_where() { python3 "$VISOR_REPO/tests/shell/prefs-a11y.py" where "$@"; }
+
+# prefs_click_on NAME [ROLE]: clicks the widget with that name.
+prefs_click_on() {
+    local at
+    at="$(prefs_where "$@")" || return 1
+    # shellcheck disable=SC2086  # two numbers
+    prefs_click $at
+}
+
+# prefs_focus: "role | name" of what has the keyboard focus.
+prefs_focus() { python3 "$VISOR_REPO/tests/shell/prefs-a11y.py" focus; }
+
+# prefs_key KEY...: presses the keys in this order and releases them in reverse,
+# e.g. prefs_key Control_L Alt_L j, prefs_key Escape. Names are those of Clutter.KEY_*.
+prefs_key() {
+    local keys
+    keys="$(printf 'Clutter.KEY_%s,' "$@")"
+    shell_eval "(async () => {
+        const fresh = !globalThis.visorPrefsKeyboard;
+        const keyboard = $PREFS_KEYBOARD;
+        const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
+        if (fresh) await wait(500);
+        const keys = [$keys];
+        for (const key of keys) {
+            keyboard.notify_keyval(GLib.get_monotonic_time(), key, Clutter.KeyState.PRESSED);
+            await wait(40);
+        }
+        for (const key of keys.reverse()) {
+            keyboard.notify_keyval(GLib.get_monotonic_time(), key, Clutter.KeyState.RELEASED);
+            await wait(40);
+        }
+        await wait(400);
+        return true;
+    })()" >/dev/null
+}

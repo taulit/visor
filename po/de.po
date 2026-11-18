@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 16:20+0100\n"
+"POT-Creation-Date: 2026-11-17 23:18+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -15,83 +15,109 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: build/core/search/controller.js:123 build/core/search/controller.js:146
+#: build/core/clock.js:59
+msgid "something waits for you"
+msgstr "etwas wartet auf dich"
+
+#: build/core/clock.js:61
+msgid "unread notifications"
+msgstr "ungelesene Mitteilungen"
+
+#: build/core/kit.js:354
+msgid "waits for you"
+msgstr "wartet auf dich"
+
+#: build/core/kit.js:356
+msgid "done"
+msgstr "fertig"
+
+#: build/core/kit.js:796
+#, javascript-format
+msgid "Hide details of %s"
+msgstr "Details zu %s ausblenden"
+
+#: build/core/kit.js:797
+#, javascript-format
+msgid "Show details of %s"
+msgstr "Details zu %s anzeigen"
+
+#: build/core/search/controller.js:114 build/core/search/controller.js:142
 msgid "Commands"
 msgstr "Befehle"
 
-#: build/core/search/controller.js:131
+#: build/core/search/controller.js:122
 msgid "Calculate"
 msgstr "Rechnen"
 
-#: build/core/search/controller.js:132
+#: build/core/search/controller.js:123
 msgid "Apps"
 msgstr "Apps"
 
-#: build/core/search/controller.js:178
+#: build/core/search/controller.js:174
 msgid "No results"
 msgstr "Keine Ergebnisse"
 
-#: build/core/search/controller.js:279
+#: build/core/search/controller.js:275
 msgid "Enter completes"
 msgstr "Enter ergänzt"
 
-#: build/core/search/controller.js:295 build/core/search/controller.js:320
+#: build/core/search/controller.js:291 build/core/search/controller.js:316
 msgid "Enter copies"
 msgstr "Enter kopiert"
 
-#: build/core/search/controller.js:305
+#: build/core/search/controller.js:301
 msgid "Currency rates are turned off"
 msgstr "Wechselkurse sind ausgeschaltet"
 
-#: build/core/search/controller.js:308
+#: build/core/search/controller.js:304
 msgid "Rates are loading"
 msgstr "Kurse werden geladen"
 
-#: build/core/sheet.js:156 build/core/sheet.js:519 build/prefs/modules.js:19
+#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
 msgid "Modules"
 msgstr "Module"
 
-#: build/core/sheet.js:287
+#: build/core/sheet.js:331
 msgid "Search, calculate or run a command …"
 msgstr "Suchen, rechnen oder Befehl ausführen …"
 
-#: build/core/sheet.js:288 build/prefs/general.js:75
+#: build/core/sheet.js:332 build/prefs/general.js:75
 msgid "Search"
 msgstr "Suchen"
 
-#: build/core/sheet.js:313 build/core/sheet.js:390
+#: build/core/sheet.js:357 build/core/sheet.js:438
 #: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
 msgid "Now"
 msgstr "Jetzt"
 
-#: build/core/sheet.js:327
+#: build/core/sheet.js:371
 msgid "Back"
 msgstr "Zurück"
 
-#: build/core/sheet.js:390
+#: build/core/sheet.js:438
 msgid "Shows up only while something is running."
 msgstr "Zeigt sich nur, solange etwas läuft."
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:391 build/modules/upcoming/module.js:28
-#: build/modules/upcoming/module.js:99 build/prefs/builtin-modules.js:8
+#: build/core/sheet.js:439 build/modules/upcoming/module.js:28
+#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:8
 #: build/prefs/builtin-modules.js:19
 msgid "Up Next"
 msgstr "Als Nächstes"
 
-#: build/core/sheet.js:391
+#: build/core/sheet.js:439
 msgid "A short section next to “Now”."
 msgstr "Kurzer Abschnitt neben „Jetzt“."
 
-#: build/core/sheet.js:392 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:440 build/prefs/builtin-modules.js:20
 msgid "Dock"
 msgstr "Dock"
 
-#: build/core/sheet.js:392
+#: build/core/sheet.js:440
 msgid "A view of its own behind an icon."
 msgstr "Eigene Ansicht hinter einem Symbol."
 
-#: build/core/sheet.js:590
+#: build/core/sheet.js:638
 msgid "No modules"
 msgstr "Keine Module"
 
@@ -99,7 +125,7 @@ msgstr "Keine Module"
 msgid "Downloads"
 msgstr "Downloads"
 
-#: build/modules/downloads/module.js:336 build/modules/t3/module.js:367
+#: build/modules/downloads/module.js:336 build/modules/t3/module.js:361
 #: build/modules/timers/module.js:229
 msgid "Done"
 msgstr "Fertig"
@@ -164,7 +190,7 @@ msgid "Dismiss"
 msgstr "Entfernen"
 
 #: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:91
+#: build/prefs/t3.js:78
 msgid "T3 Code"
 msgstr "T3 Code"
 
@@ -172,7 +198,7 @@ msgstr "T3 Code"
 msgid "t3 Fix the failing test"
 msgstr "t3 Behebe den fehlschlagenden Test"
 
-#: build/modules/t3/module.js:105 build/modules/t3/module.js:384
+#: build/modules/t3/module.js:105 build/modules/t3/module.js:378
 msgid "Untitled thread"
 msgstr "Unbenannter Thread"
 
@@ -190,85 +216,87 @@ msgstr "Neuen Thread starten"
 msgid "+ %d more"
 msgstr "+ %d weitere"
 
-#: build/modules/t3/module.js:339
+#: build/modules/t3/module.js:333
 msgid "Agent"
 msgstr "Agent"
 
-#: build/modules/t3/module.js:342
+#: build/modules/t3/module.js:336
 #, javascript-format
 msgid "%s is waiting"
 msgstr "%s wartet"
 
-#: build/modules/t3/module.js:351
+#: build/modules/t3/module.js:345
 msgid "Starting"
 msgstr "Startet"
 
-#: build/modules/t3/module.js:354 build/modules/t3/module.js:355
+#: build/modules/t3/module.js:348 build/modules/t3/module.js:349
 msgid "Working"
 msgstr "Arbeitet"
 
-#: build/modules/t3/module.js:358
+#: build/modules/t3/module.js:352
 msgid "Answer this request in T3 Code"
 msgstr "Beantworte diese Anfrage in T3 Code"
 
-#: build/modules/t3/module.js:360
+#: build/modules/t3/module.js:354
 msgid "Wants to run"
 msgstr "Möchte ausführen"
 
-#: build/modules/t3/module.js:362
+#: build/modules/t3/module.js:356
 msgid "Wants to use a file"
 msgstr "Möchte eine Datei verwenden"
 
-#: build/modules/t3/module.js:363
+#: build/modules/t3/module.js:357
 msgid "Asks for permission"
 msgstr "Bittet um Erlaubnis"
 
-#: build/modules/t3/module.js:365
+#: build/modules/t3/module.js:359
 msgid "Has a question"
 msgstr "Hat eine Frage"
 
-#: build/modules/t3/module.js:369
+#: build/modules/t3/module.js:363
 msgid "Failed"
 msgstr "Fehlgeschlagen"
 
-#: build/modules/t3/module.js:380
+#: build/modules/t3/module.js:374
 msgid "Could not send"
 msgstr "Senden nicht möglich"
 
-#: build/modules/t3/module.js:406 build/modules/t3/module.js:587
+#: build/modules/t3/module.js:400 build/modules/t3/module.js:581
 msgid "Open in T3 Code"
 msgstr "In T3 Code öffnen"
 
-#: build/modules/t3/module.js:418 build/modules/t3/module.js:510
+#: build/modules/t3/module.js:412 build/modules/t3/module.js:504
 msgid "Deny"
 msgstr "Ablehnen"
 
-#: build/modules/t3/module.js:424 build/modules/t3/module.js:511
+#: build/modules/t3/module.js:418 build/modules/t3/module.js:505
 msgid "Allow"
 msgstr "Erlauben"
 
-#: build/modules/t3/module.js:434
+#: build/modules/t3/module.js:428
 msgid "Answer"
 msgstr "Antworten"
 
-#: build/modules/t3/module.js:521
+#: build/modules/t3/module.js:515
 msgid "Has characters that cannot be shown. Open T3 Code to read it"
-msgstr "Enthält Zeichen, die sich nicht anzeigen lassen. Öffne T3 Code, um ihn zu lesen"
+msgstr ""
+"Enthält Zeichen, die sich nicht anzeigen lassen. Öffne T3 Code, um ihn zu "
+"lesen"
 
-#: build/modules/t3/module.js:522
+#: build/modules/t3/module.js:516
 msgid "Open T3 Code to read all of it"
 msgstr "Öffne T3 Code, um alles zu lesen"
 
-#: build/modules/t3/module.js:560
+#: build/modules/t3/module.js:554
 #, javascript-format
 msgid "Reply to %s"
 msgstr "Antwort an %s"
 
-#: build/modules/t3/module.js:560 build/modules/t3/module.js:561
+#: build/modules/t3/module.js:554 build/modules/t3/module.js:555
 msgid "Reply"
 msgstr "Antworten"
 
-#: build/modules/t3/module.js:576 build/modules/timers/module.js:246
+#: build/modules/t3/module.js:570 build/modules/timers/module.js:246
 msgid "Stop"
 msgstr "Stoppen"
 
@@ -346,11 +374,11 @@ msgstr "Timer abgelaufen"
 msgid "Ended at %s"
 msgstr "Beendet um %s"
 
-#: build/modules/upcoming/module.js:100
+#: build/modules/upcoming/module.js:111
 msgid "Nothing else today"
 msgstr "Heute nichts mehr"
 
-#: build/modules/upcoming/module.js:182
+#: build/modules/upcoming/module.js:194
 msgid "Join"
 msgstr "Beitreten"
 
@@ -505,35 +533,35 @@ msgid "The rates come from the European Central Bank, at most once a day."
 msgstr ""
 "Die Kurse kommen von der Europäischen Zentralbank, höchstens einmal am Tag."
 
-#: build/prefs/modules.js:77
+#: build/prefs/modules.js:96
 msgid "Discover"
 msgstr "Entdecken"
 
-#: build/prefs/modules.js:110
+#: build/prefs/modules.js:132
 msgid "Move up"
 msgstr "Nach oben"
 
-#: build/prefs/modules.js:111
+#: build/prefs/modules.js:133
 msgid "Move down"
 msgstr "Nach unten"
 
-#: build/prefs/modules.js:114
+#: build/prefs/modules.js:136
 msgid "Change the order"
 msgstr "Reihenfolge ändern"
 
-#: build/prefs/modules.js:124
+#: build/prefs/modules.js:146
 msgid "Drag to change the order"
 msgstr "Ziehen, um die Reihenfolge zu ändern"
 
-#: build/prefs/modules.js:151
+#: build/prefs/modules.js:173
 msgid "Built for another version of Visor"
 msgstr "Für eine andere Version von Visor gebaut"
 
-#: build/prefs/modules.js:153
+#: build/prefs/modules.js:175
 msgid "Turned off in the extensions"
 msgstr "In den Erweiterungen ausgeschaltet"
 
-#: build/prefs/modules.js:163
+#: build/prefs/modules.js:185
 msgid "Settings of the module"
 msgstr "Einstellungen des Moduls"
 
@@ -564,54 +592,62 @@ msgstr ""
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: build/prefs/t3.js:78
+#: build/prefs/t3.js:63
 msgid "This is not a pairing link"
 msgstr "Das ist kein Kopplungslink"
 
-#: build/prefs/t3.js:80 build/prefs/t3.js:197
+#: build/prefs/t3.js:65 build/prefs/t3.js:206
 msgid "Use https for a server on another machine"
 msgstr "Für einen Server auf einem anderen Rechner https verwenden"
 
-#: build/prefs/t3.js:82
+#: build/prefs/t3.js:67
 msgid "The link is wrong or has expired"
 msgstr "Der Link ist falsch oder abgelaufen"
 
-#: build/prefs/t3.js:84
+#: build/prefs/t3.js:69
 msgid "This version of T3 Code does not fit Visor"
 msgstr "Diese Version von T3 Code passt nicht zu Visor"
 
-#: build/prefs/t3.js:86
+#: build/prefs/t3.js:71
+msgid "The keyring is not available"
+msgstr "Der Schlüsselbund ist nicht verfügbar"
+
+#: build/prefs/t3.js:73
 msgid "The server cannot be reached"
 msgstr "Der Server ist nicht erreichbar"
 
 #. --- not paired ---
-#: build/prefs/t3.js:96
+#: build/prefs/t3.js:83
 msgid "Pairing link or code"
 msgstr "Kopplungslink oder Code"
 
-#: build/prefs/t3.js:99
+#: build/prefs/t3.js:86
 msgid "Connect"
 msgstr "Verbinden"
 
 #. --- paired ---
-#: build/prefs/t3.js:172
+#: build/prefs/t3.js:176
 msgid "Connected"
 msgstr "Verbunden"
 
-#: build/prefs/t3.js:174
+#: build/prefs/t3.js:178
 msgid "Disconnect"
 msgstr "Trennen"
 
 #. --- the address ---
-#: build/prefs/t3.js:184
+#: build/prefs/t3.js:193
 msgid "Server address"
 msgstr "Serveradresse"
 
-#: build/prefs/t3.js:185
+#: build/prefs/t3.js:194
 msgid "Address, empty for this machine"
 msgstr "Adresse, leer für diesen Rechner"
 
-#: build/prefs/t3.js:217
+#: build/prefs/t3.js:207
+msgid "This is not a server address"
+msgstr "Das ist keine Serveradresse"
+
+#: build/prefs/t3.js:227
 msgid ""
 "Create a pairing link in T3 Code under Settings → Connections and paste it "
 "here."
@@ -619,6 +655,6 @@ msgstr ""
 "Erstelle in T3 Code unter Settings → Connections einen Kopplungslink und "
 "füge ihn hier ein."
 
-#: build/prefs/t3.js:220 build/prefs/t3.js:221
+#: build/prefs/t3.js:230 build/prefs/t3.js:231
 msgid "This machine"
 msgstr "Dieser Rechner"

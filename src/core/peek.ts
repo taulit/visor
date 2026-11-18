@@ -1,4 +1,5 @@
 // The peek state: one row of chips, the most important things at a glance.
+import type Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import St from 'gi://St';
 
@@ -16,9 +17,9 @@ interface Flash {
   timeout: number;
 }
 
-export interface PeekCallbacks {
-  /** A chip was clicked. */
-  activate(): void;
+interface PeekCallbacks {
+  /** The chip of this module was clicked. */
+  activate(id: string): void;
   /** The chips changed: their number, their order or what they say. */
   changed(): void;
 }
@@ -45,6 +46,13 @@ export class Peek {
       this.render(this.pick());
     }
     return this.actor;
+  }
+
+  /** The module whose chip `actor` is, or is part of. */
+  chipAt(actor: Clutter.Actor | null): string | null {
+    if (!actor) return null;
+    for (const [id, chip] of this.chips) if (chip.actor.contains(actor)) return id;
+    return null;
   }
 
   /** Chips or modules changed: bring the row up to date. */
@@ -121,12 +129,14 @@ export class Peek {
     let index = 0;
     for (const { id, chip } of picked) {
       let widget = this.chips.get(id);
+      const owner = this.registry.get(id)?.module.name ?? '';
       try {
         if (widget) {
-          widget.update(chip);
+          widget.update(chip, chip.tone, owner);
         } else {
           widget = new Chip(chip, true);
-          widget.actor.connect('clicked', () => this.callbacks.activate());
+          widget.update(chip, chip.tone, owner);
+          widget.actor.connect('clicked', () => this.callbacks.activate(id));
           this.chips.set(id, widget);
           actor.add_child(widget.actor);
         }
