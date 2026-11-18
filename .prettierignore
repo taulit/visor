@@ -7,3 +7,10 @@ po
 node_modules
 LICENSE
 data/emoji.json
+site/dist
+site/.astro
+site/pnpm-lock.yaml
+site/src/content/docs/modules/api-v1.md
+marketing/video/out
+marketing/video/public
+marketing/video/pnpm-lock.yaml

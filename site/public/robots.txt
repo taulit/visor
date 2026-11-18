@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://taulit.github.io/visor/sitemap-index.xml
