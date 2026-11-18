@@ -703,9 +703,9 @@ msgstr "这不是服务器地址"
 
 #: build/prefs/t3.js:227
 msgid ""
-"Create a pairing link in T3 Code under Settings → Connections and paste it "
+"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
 "here."
-msgstr "在 T3 Code 的 Settings → Connections 中创建配对链接，并粘贴到此处。"
+msgstr "在 T3 Code 的 Settings → Sharing & access 中创建配对链接，并粘贴到此处。"
 
 #: build/prefs/t3.js:230 build/prefs/t3.js:231
 msgid "This machine"

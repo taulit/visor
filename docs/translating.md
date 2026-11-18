@@ -31,7 +31,7 @@ Modules outside Visor use the same steps in their own `po/` folder. The template
 - **GNOME terms:** use the word GNOME's own translation uses for desktop concepts, see the table below. When unsure, look
   the word up in GNOME Shell, Settings, Clocks or Files in your language.
 - **Do not translate** `Visor`, `T3 Code`, `GNOME`, currency codes, the keywords that are typed into the search (`timer`,
-  `stopwatch`, `t3`), and the T3 Code menu path `Settings → Connections`. In the example hints (`timer 25m Pizza`,
+  `stopwatch`, `t3`), and the T3 Code menu path `Settings → Sharing & access`. In the example hints (`timer 25m Pizza`,
   `stopwatch Research`, `t3 Fix the failing test`) keep the keyword and the duration, translate only the free text.
   The timer keyword comes from the code, not from gettext, so a translated keyword would not work.
 - **Placeholders:** keep every `%s` and `%d` exactly and **in the same order**. The code fills them one after the other

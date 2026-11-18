@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-18 12:44+0100\n"
+"POT-Creation-Date: 2026-11-18 14:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -704,8 +704,8 @@ msgstr ""
 
 #: build/prefs/t3.js:227
 msgid ""
-"Create a pairing link in T3 Code under Settings → Connections and paste it "
-"here."
+"Create a pairing link in T3 Code under Settings → Sharing & access and paste "
+"it here."
 msgstr ""
 
 #: build/prefs/t3.js:230 build/prefs/t3.js:231
