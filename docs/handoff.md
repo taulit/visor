@@ -21,9 +21,19 @@ The maintainer wants "a store with extensions". Order of work, each step a pull 
    `t3`). Visor's side is the branch `refactor/extract-t3`. It deletes what pull request #10
    (`fix/t3-open-in-app`) changes, and `visor-t3` was started from the code of #10, so **#10 is closed, not
    merged**, once the extraction is merged.
-2. Template and SDK: what the extraction showed is missing (list below).
-3. Catalog `taulit/visor-modules` (plan 11.1 to 11.3) and "Discover" in the settings (`src/prefs/discover.ts`,
-   a link so far).
+2. Template and SDK: pull request #12 (`feat/template-tests`, independent of #11): a smoke test in the
+   sandbox for modules, `stylesheet.css` in the build, docs. After its merge the template is mirrored to
+   `taulit/visor-module-template`.
+3. Catalog: the repository `taulit/visor-modules` exists (private, local `~/development/visor-modules`):
+   schema, the entry of Visor: T3 Code, `scripts/build-catalog.ts` (checks and `catalog.json`),
+   `src/catalog-search.ts` with tests, submission form, `REVIEW.md`, workflow. Not done: "Discover" in the
+   settings (`src/prefs/discover.ts`, a link so far). It waits for #11 (same page of the settings) and for
+   the decision where `catalog.json` is served from. Plan for it: vendor `catalog-search.ts` into
+   `src/lib/` (checked like the SDK copy), ship a snapshot of `catalog.json` in the extension, refresh it
+   from the network in the settings window, install through
+   `org.gnome.Shell.Extensions.InstallRemoteExtension`. An entry with `ego_id: null` is not in the store
+   yet and gets no Install button. The notes module has no entry yet: its screenshots are 1280×800, the
+   catalog wants 1600×1000.
 4. Website in `site/` (plan 11.4).
 5. More modules as repositories of their own (`docs/module-ideas.md`, and from Quick Launcher: passwords
    through `rbw`/`op`, Clockify).
@@ -32,9 +42,7 @@ The maintainer wants "a store with extensions". Order of work, each step a pull 
 
 - A module can be tested next to Visor with the sandbox of this repository:
   `scripts/nested.sh --extension <module>/build -- <test>`. `visor-t3/tests/shell/lib.sh` is the pattern
-  (`VISOR_REPO`, default `../visor`). The template has nothing like it yet.
-- The template's `scripts/build.sh` does not copy a `stylesheet.css`; it has no unit test setup (Vitest) and
-  no shell test.
+  (`VISOR_REPO`, default `../visor`). Pull request #12 gives the template the same.
 - **API gap, not decided:** v1 has no kit element for body text and none for a text field. Both `visor-t3`
   and the notes module of Sheaf build them from `St.Label` and `St.Entry` and style them through the classes
   `.visor-dark`, `.visor-light` and `.visor-hc` that Visor sets on its root. Those classes are not part of
