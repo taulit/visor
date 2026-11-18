@@ -107,7 +107,7 @@ A module is a GNOME extension of its own that calls `connectVisor()` and hands V
 
 - The contract: [docs/api-v1.md](docs/api-v1.md). It is frozen as version 1.
 - Types and the `connectVisor()` helper: [sdk/](sdk/README.md), published as `@taulit/visor-module` (after release).
-- Start from the template: [taulit/visor-module-template](https://github.com/taulit/visor-module-template) ("Use this template", public after release). The same files are in [examples/module-template](examples/module-template/README.md).
+- Start from the template in [examples/module-template](examples/module-template/README.md): copy the folder into a new repository.
 - Ideas that are not built yet: [docs/module-ideas.md](docs/module-ideas.md).
 
 ## Development
