@@ -2,11 +2,12 @@
 # This file is distributed under the same license as the Visor package.
 # Machine translated, improvements welcome.
 #
+#: build/prefs/discover.js:102
 msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-18 14:51+0100\n"
+"POT-Creation-Date: 2026-11-18 16:21+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: French\n"
@@ -384,7 +385,7 @@ msgstr "À propos"
 msgid "Version"
 msgstr "Version"
 
-#: build/prefs/about.js:27
+#: build/prefs/about.js:27 build/prefs/discover.js:229
 msgid "License"
 msgstr "Licence"
 
@@ -392,11 +393,11 @@ msgstr "Licence"
 msgid "Links"
 msgstr "Liens"
 
-#: build/prefs/about.js:30 build/prefs/discover.js:13
+#: build/prefs/about.js:30
 msgid "Website"
 msgstr "Site web"
 
-#: build/prefs/about.js:31
+#: build/prefs/about.js:31 build/prefs/discover.js:224
 msgid "Source code"
 msgstr "Code source"
 
@@ -404,9 +405,72 @@ msgstr "Code source"
 msgid "Report an issue"
 msgstr "Signaler un problème"
 
-#: build/prefs/discover.js:8
-msgid "The catalog of modules arrives with a later version."
-msgstr "Le catalogue de modules arrivera dans une version ultérieure."
+#: build/prefs/discover.js:77
+msgid "Installed"
+msgstr "Installé"
+
+#: build/prefs/discover.js:79
+msgid "Install"
+msgstr "Installer"
+
+#: build/prefs/discover.js:80
+msgid "Not in the store yet"
+msgstr "Pas encore dans la boutique"
+
+#: build/prefs/discover.js:117
+msgid "By the makers of Visor"
+msgstr "Par les créateurs de Visor"
+
+#: build/prefs/discover.js:199
+msgid "What it shows"
+msgstr "Ce qu’il affiche"
+
+#: build/prefs/discover.js:200
+msgid "When it appears"
+msgstr "Quand il apparaît"
+
+#: build/prefs/discover.js:223
+msgid "Author"
+msgstr "Auteur"
+
+#: build/prefs/discover.js:227
+msgid "GNOME extension store"
+msgstr "Boutique d’extensions GNOME"
+
+#: build/prefs/discover.js:254
+msgid "Discover"
+msgstr "Découvrir"
+
+#: build/prefs/discover.js:255
+msgid "Modules from the GNOME extension store that add to Visor."
+msgstr "Modules de la boutique d’extensions GNOME qui complètent Visor."
+
+#: build/prefs/discover.js:258 build/prefs/discover.js:261
+msgid "Search modules"
+msgstr "Rechercher des modules"
+
+#: build/prefs/discover.js:259
+msgid "All places"
+msgstr "Tous les emplacements"
+
+#: build/prefs/discover.js:262
+msgid "Place"
+msgstr "Emplacement"
+
+#: build/prefs/discover.js:277
+msgid "No modules found"
+msgstr "Aucun module trouvé"
+
+#: build/prefs/discover.js:315
+msgid "Update the catalog from the network"
+msgstr "Mettre à jour le catalogue depuis le réseau"
+
+#: build/prefs/discover.js:316
+msgid ""
+"At most once a day, when this page is opened. Pictures are loaded with it."
+msgstr ""
+"Au plus une fois par jour, à l’ouverture de cette page. Les images sont "
+"chargées en même temps."
 
 #: build/prefs/general.js:10
 msgid "Compact"
@@ -482,35 +546,31 @@ msgstr ""
 "Les taux proviennent de la Banque centrale européenne, au plus une fois par "
 "jour."
 
-#: build/prefs/modules.js:94
-msgid "Discover"
-msgstr "Découvrir"
-
-#: build/prefs/modules.js:130
+#: build/prefs/modules.js:128
 msgid "Move up"
 msgstr "Monter"
 
-#: build/prefs/modules.js:131
+#: build/prefs/modules.js:129
 msgid "Move down"
 msgstr "Descendre"
 
-#: build/prefs/modules.js:134
+#: build/prefs/modules.js:132
 msgid "Change the order"
 msgstr "Modifier l’ordre"
 
-#: build/prefs/modules.js:144
+#: build/prefs/modules.js:142
 msgid "Drag to change the order"
 msgstr "Glisser pour modifier l’ordre"
 
-#: build/prefs/modules.js:171
+#: build/prefs/modules.js:169
 msgid "Built for another version of Visor"
 msgstr "Conçu pour une autre version de Visor"
 
-#: build/prefs/modules.js:173
+#: build/prefs/modules.js:171
 msgid "Turned off in the extensions"
 msgstr "Désactivé dans les extensions"
 
-#: build/prefs/modules.js:183
+#: build/prefs/modules.js:181
 msgid "Settings of the module"
 msgstr "Paramètres du module"
 

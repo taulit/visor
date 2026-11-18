@@ -69,3 +69,45 @@ export function openExtensionPrefs(uuid: string): void {
     console.warn(`Visor: cannot open the settings of ${uuid}: ${error}`),
   );
 }
+
+/** The UUIDs of all installed extensions, enabled or not. Empty when the shell does not answer. */
+export async function listInstalledUuids(): Promise<Set<string>> {
+  try {
+    const reply = await call('ListExtensions', null);
+    const [extensions] = reply.recursiveUnpack() as [Record<string, unknown>];
+    return new Set(Object.keys(extensions));
+  } catch {
+    return new Set();
+  }
+}
+
+/**
+ * Asks the shell to install an extension from the GNOME extension store. The
+ * shell shows its own dialog and downloads from extensions.gnome.org; Visor
+ * loads nothing itself. True when it was installed, false when the user
+ * declined or the store does not have it.
+ */
+export function installExtension(uuid: string): Promise<boolean> {
+  return new Promise(resolve => {
+    Gio.DBus.session.call(
+      BUS_NAME,
+      OBJECT_PATH,
+      INTERFACE,
+      'InstallRemoteExtension',
+      new GLib.Variant('(s)', [uuid]),
+      null,
+      Gio.DBusCallFlags.NONE,
+      // The answer comes when the user has answered the dialog.
+      10 * 60 * 1000,
+      null,
+      (connection, result) => {
+        try {
+          const [answer] = connection!.call_finish(result).recursiveUnpack() as [string];
+          resolve(answer === 'successful');
+        } catch {
+          resolve(false);
+        }
+      },
+    );
+  });
+}

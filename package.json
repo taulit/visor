@@ -21,6 +21,7 @@
     "sdk:gen": "bash scripts/gen-sdk.sh",
     "sdk:check": "bash scripts/gen-sdk.sh --check",
     "template:check": "bash scripts/template-check.sh",
+    "catalog:sync": "bash scripts/catalog-sync.sh",
     "readme": "node scripts/readme-modules.mjs",
     "readme:check": "node scripts/readme-modules.mjs --check"
   },
