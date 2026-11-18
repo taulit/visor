@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-18 12:34+0100\n"
+"POT-Creation-Date: 2026-11-18 14:51+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Japanese\n"
@@ -137,7 +137,7 @@ msgstr "夜間モードをオフにする"
 msgid "Turn On Night Light"
 msgstr "夜間モードをオンにする"
 
-#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
+#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:17
 msgid "Modules"
 msgstr "モジュール"
 
@@ -145,12 +145,12 @@ msgstr "モジュール"
 msgid "Search, calculate or run a command …"
 msgstr "検索、計算、コマンドの実行 …"
 
-#: build/core/sheet.js:332 build/prefs/general.js:75
+#: build/core/sheet.js:332 build/prefs/general.js:74
 msgid "Search"
 msgstr "検索"
 
 #: build/core/sheet.js:357 build/core/sheet.js:438
-#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
+#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:17
 msgid "Now"
 msgstr "現在"
 
@@ -164,8 +164,8 @@ msgstr "実行中のときだけ表示されます。"
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/core/sheet.js:439 build/modules/upcoming/module.js:28
-#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:8
-#: build/prefs/builtin-modules.js:19
+#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:7
+#: build/prefs/builtin-modules.js:18
 msgid "Up Next"
 msgstr "この後"
 
@@ -173,7 +173,7 @@ msgstr "この後"
 msgid "A short section next to “Now”."
 msgstr "「現在」の隣にある短いセクションです。"
 
-#: build/core/sheet.js:440 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:440 build/prefs/builtin-modules.js:19
 msgid "Dock"
 msgstr "Dock"
 
@@ -189,8 +189,7 @@ msgstr "モジュールなし"
 msgid "Downloads"
 msgstr "ダウンロード"
 
-#: build/modules/downloads/module.js:336 build/modules/t3/module.js:361
-#: build/modules/timers/module.js:229
+#: build/modules/downloads/module.js:336 build/modules/timers/module.js:229
 msgid "Done"
 msgstr "完了"
 
@@ -224,7 +223,7 @@ msgstr "次へ"
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/modules/notifications/module.js:19
-#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:13
+#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:12
 msgid "Notifications"
 msgstr "通知"
 
@@ -252,115 +251,6 @@ msgstr "すべてクリア"
 #: build/modules/notifications/module.js:345
 msgid "Dismiss"
 msgstr "閉じる"
-
-#: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:78
-msgid "T3 Code"
-msgstr "T3 Code"
-
-#: build/modules/t3/module.js:33
-msgid "t3 Fix the failing test"
-msgstr "t3 失敗しているテストを直して"
-
-#: build/modules/t3/module.js:105 build/modules/t3/module.js:378
-msgid "Untitled thread"
-msgstr "無題のスレッド"
-
-#: build/modules/t3/module.js:110
-#, javascript-format
-msgid "Send to %s"
-msgstr "%s に送信"
-
-#: build/modules/t3/module.js:119
-msgid "Start a new thread"
-msgstr "新しいスレッドを開始"
-
-#: build/modules/t3/module.js:280
-#, javascript-format
-msgid "+ %d more"
-msgstr "ほか %d 件"
-
-#: build/modules/t3/module.js:333
-msgid "Agent"
-msgstr "エージェント"
-
-#: build/modules/t3/module.js:336
-#, javascript-format
-msgid "%s is waiting"
-msgstr "%s が待機中です"
-
-#: build/modules/t3/module.js:345
-msgid "Starting"
-msgstr "開始中"
-
-#: build/modules/t3/module.js:348 build/modules/t3/module.js:349
-msgid "Working"
-msgstr "作業中"
-
-#: build/modules/t3/module.js:352
-msgid "Answer this request in T3 Code"
-msgstr "この要求には T3 Code で回答してください"
-
-#: build/modules/t3/module.js:354
-msgid "Wants to run"
-msgstr "実行を求めています"
-
-#: build/modules/t3/module.js:356
-msgid "Wants to use a file"
-msgstr "ファイルの使用を求めています"
-
-#: build/modules/t3/module.js:357
-msgid "Asks for permission"
-msgstr "許可を求めています"
-
-#: build/modules/t3/module.js:359
-msgid "Has a question"
-msgstr "質問があります"
-
-#: build/modules/t3/module.js:363
-msgid "Failed"
-msgstr "失敗"
-
-#: build/modules/t3/module.js:374
-msgid "Could not send"
-msgstr "送信できませんでした"
-
-#: build/modules/t3/module.js:400 build/modules/t3/module.js:581
-msgid "Open in T3 Code"
-msgstr "T3 Code で開く"
-
-#: build/modules/t3/module.js:412 build/modules/t3/module.js:504
-msgid "Deny"
-msgstr "拒否"
-
-#: build/modules/t3/module.js:418 build/modules/t3/module.js:505
-msgid "Allow"
-msgstr "許可"
-
-#: build/modules/t3/module.js:428
-msgid "Answer"
-msgstr "回答"
-
-#: build/modules/t3/module.js:515
-msgid "Has characters that cannot be shown. Open T3 Code to read it"
-msgstr "表示できない文字が含まれています。T3 Code で確認してください"
-
-#: build/modules/t3/module.js:516
-msgid "Open T3 Code to read all of it"
-msgstr "T3 Code で全文を確認してください"
-
-#: build/modules/t3/module.js:554
-#, javascript-format
-msgid "Reply to %s"
-msgstr "%s への返信"
-
-#: build/modules/t3/module.js:554 build/modules/t3/module.js:555
-msgid "Reply"
-msgstr "返信"
-
-#: build/modules/t3/module.js:570 build/modules/timers/module.js:246
-msgid "Stop"
-msgstr "停止"
 
 #: build/modules/timers/module.js:19 build/prefs/builtin-modules.js:5
 msgid "Timers"
@@ -403,6 +293,10 @@ msgstr "タイマー"
 #: build/modules/timers/module.js:236
 msgid "Resume"
 msgstr "再開"
+
+#: build/modules/timers/module.js:246
+msgid "Stop"
+msgstr "停止"
 
 #: build/modules/timers/module.js:251
 msgid "+1 min"
@@ -573,51 +467,47 @@ msgstr "ホバーでプレビュー"
 msgid "Show briefly on events"
 msgstr "イベント時に短く表示"
 
-#: build/prefs/general.js:70
-msgid "Show briefly when an agent is waiting"
-msgstr "エージェントの待機時に短く表示"
-
-#: build/prefs/general.js:72
+#: build/prefs/general.js:71
 msgid "Appearance"
 msgstr "外観"
 
-#: build/prefs/general.js:76
+#: build/prefs/general.js:75
 msgid "Load currency rates"
 msgstr "為替レートを読み込む"
 
-#: build/prefs/general.js:76
+#: build/prefs/general.js:75
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr "レートは欧州中央銀行から取得し、1 日 1 回までです。"
 
-#: build/prefs/modules.js:96
+#: build/prefs/modules.js:94
 msgid "Discover"
 msgstr "見つける"
 
-#: build/prefs/modules.js:132
+#: build/prefs/modules.js:130
 msgid "Move up"
 msgstr "上へ移動"
 
-#: build/prefs/modules.js:133
+#: build/prefs/modules.js:131
 msgid "Move down"
 msgstr "下へ移動"
 
-#: build/prefs/modules.js:136
+#: build/prefs/modules.js:134
 msgid "Change the order"
 msgstr "順序を変更"
 
-#: build/prefs/modules.js:146
+#: build/prefs/modules.js:144
 msgid "Drag to change the order"
 msgstr "ドラッグして順序を変更"
 
-#: build/prefs/modules.js:173
+#: build/prefs/modules.js:171
 msgid "Built for another version of Visor"
 msgstr "別のバージョンの Visor 用に作られています"
 
-#: build/prefs/modules.js:175
+#: build/prefs/modules.js:173
 msgid "Turned off in the extensions"
 msgstr "拡張機能でオフになっています"
 
-#: build/prefs/modules.js:185
+#: build/prefs/modules.js:183
 msgid "Settings of the module"
 msgstr "モジュールの設定"
 
@@ -647,70 +537,3 @@ msgstr ""
 #: build/prefs/shortcut.js:48
 msgid "Cancel"
 msgstr "キャンセル"
-
-#: build/prefs/t3.js:63
-msgid "This is not a pairing link"
-msgstr "ペアリングリンクではありません"
-
-#: build/prefs/t3.js:65 build/prefs/t3.js:206
-msgid "Use https for a server on another machine"
-msgstr "別のマシンのサーバーには https を使用してください"
-
-#: build/prefs/t3.js:67
-msgid "The link is wrong or has expired"
-msgstr "リンクが正しくないか、期限が切れています"
-
-#: build/prefs/t3.js:69
-msgid "This version of T3 Code does not fit Visor"
-msgstr "このバージョンの T3 Code は Visor に対応していません"
-
-#: build/prefs/t3.js:71
-msgid "The keyring is not available"
-msgstr "キーリングを利用できません"
-
-#: build/prefs/t3.js:73
-msgid "The server cannot be reached"
-msgstr "サーバーに接続できません"
-
-#. --- not paired ---
-#: build/prefs/t3.js:83
-msgid "Pairing link or code"
-msgstr "ペアリングリンクまたはコード"
-
-#: build/prefs/t3.js:86
-msgid "Connect"
-msgstr "接続"
-
-#. --- paired ---
-#: build/prefs/t3.js:176
-msgid "Connected"
-msgstr "接続済み"
-
-#: build/prefs/t3.js:178
-msgid "Disconnect"
-msgstr "切断"
-
-#. --- the address ---
-#: build/prefs/t3.js:193
-msgid "Server address"
-msgstr "サーバーのアドレス"
-
-#: build/prefs/t3.js:194
-msgid "Address, empty for this machine"
-msgstr "アドレス（空欄でこのマシン）"
-
-#: build/prefs/t3.js:207
-msgid "This is not a server address"
-msgstr "サーバーのアドレスではありません"
-
-#: build/prefs/t3.js:227
-msgid ""
-"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
-"here."
-msgstr ""
-"T3 Code の Settings → Sharing & access でペアリングリンクを作成し、ここに貼り付け"
-"てください。"
-
-#: build/prefs/t3.js:230 build/prefs/t3.js:231
-msgid "This machine"
-msgstr "このマシン"

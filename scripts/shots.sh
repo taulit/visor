@@ -28,7 +28,6 @@ shots=(
     "search-date=search-date"
     "ahead=modules-ahead"
     "open-real=open-real"
-    "t3=t3"
     "a11y-high-contrast=a11y-high-contrast"
     "a11y-large-text=a11y-large-text"
     "prefs-general=prefs-general"

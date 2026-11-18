@@ -87,9 +87,6 @@ export function generalPage(
   behavior.add(switchRow(settings, 'hover-preview', _('Preview on hover')));
   behavior.add(delayRow(settings));
   behavior.add(switchRow(settings, 'flash-on-events', _('Show briefly on events')));
-  behavior.add(
-    switchRow(settings, 'flash-on-waiting-agents', _('Show briefly when an agent is waiting')),
-  );
   page.add(behavior);
 
   const appearance = new Adw.PreferencesGroup({ title: _('Appearance') });

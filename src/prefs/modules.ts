@@ -15,7 +15,6 @@ import { BUILTIN_MODULES, SLOTS, type ModuleInfo } from './builtin-modules.js';
 import { buildDiscover } from './discover.js';
 import type { ForeignModule } from './foreign.js';
 import { openExtensionPrefs } from './shell-extensions.js';
-import { t3Group } from './t3.js';
 
 /** A module the window can switch off and put in order: it knows its id. */
 interface Managed {
@@ -126,8 +125,6 @@ export function modulesPage(
   settings.connect('changed::module-order', () =>
     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => (fill(), GLib.SOURCE_REMOVE)),
   );
-
-  page.add(t3Group(settings, window));
 
   const discover = new Adw.PreferencesGroup({ title: _('Discover') });
   buildDiscover(discover);

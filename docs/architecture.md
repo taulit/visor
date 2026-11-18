@@ -28,7 +28,6 @@ src/
 │   └── kit.ts          UI building blocks handed to modules
 ├── prefs.ts            settings window (Adw): General, Modules, About; the pages are in prefs/
 ├── prefs/              runs in its own GTK process: never imports St, Clutter, Shell or shell UI modules
-│                       (pure files of a module, such as modules/t3/pairing.ts, are fine)
 ├── modules/            built-in modules, using only api.ts
 └── lib/                small helpers
 styles/                 joined into one stylesheet.css by the build

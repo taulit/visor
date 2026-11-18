@@ -1,12 +1,12 @@
 # Visor
 
-A Dynamic Island and notch for GNOME Shell: media, timers, downloads, calendar, notifications, search and AI agent approvals in one panel below the top bar.
+A Dynamic Island and notch for GNOME Shell: media, timers, downloads, calendar, notifications and search in one panel below the top bar, open to modules from other extensions.
 
 ![Visor opened below the top bar of GNOME Shell, dark panel](docs/screenshots/open-real-dark.png)
 
-|                                        Peek                                        |                                   Search                                    |                             T3 Code                             |
-| :--------------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :-------------------------------------------------------------: |
-| ![The notch with a row of chips below the top bar](docs/screenshots/peek-dark.png) | ![A calculation and an app in the search](docs/screenshots/search-dark.png) | ![A waiting agent session in Now](docs/screenshots/t3-dark.png) |
+|                                        Peek                                        |                                   Search                                    |                             Now                              |
+| :--------------------------------------------------------------------------------: | :-------------------------------------------------------------------------: | :----------------------------------------------------------: |
+| ![The notch with a row of chips below the top bar](docs/screenshots/peek-dark.png) | ![A calculation and an app in the search](docs/screenshots/search-dark.png) | ![Rows of the modules in Now](docs/screenshots/now-dark.png) |
 
 Visor replaces the date menu in the middle of the top bar with a notch. It rests as the clock, grows a little when something happens, and opens into a panel with what is going on right now, what is coming next, and a search field. Other GNOME extensions can add their own rows, sections and icons to it as modules.
 
@@ -16,7 +16,6 @@ While Visor is enabled, the date menu, with its calendar and notification list, 
 
 - GNOME Shell 50 or 51 (`shell-version` in `metadata.json`). Other versions are not supported.
 - The Join button of Up Next needs the typelibs of Evolution Data Server (`ECal`, `EDataServer`). Without them the button is missing and nothing else changes.
-- The T3 Code module needs a running [T3 Code](https://github.com/pingdotgg/t3code) server. Without one it stays empty.
 
 ## Install
 
@@ -42,7 +41,7 @@ The settings are in the Extensions app or with `gnome-extensions prefs visor@tau
 ## Features
 
 - A notch below the top bar with four states: the clock at rest, a small hint, a row of chips that peek out, and the open panel.
-- **Now**: what plays, what runs and what waits, such as players, timers, downloads and AI agent sessions.
+- **Now**: what plays, what runs and what waits, such as players, timers and downloads.
 - **Up Next**: the next calendar events and the notifications of the shell.
 - One search field for commands, calculations, currency conversion, apps and the search providers of GNOME.
 - The colours follow the top bar and the accent colour of the system, light or dark. Animations are off when the animations of GNOME are off.
@@ -59,7 +58,6 @@ The settings are in the Extensions app or with `gnome-extensions prefs visor@tau
 | Media         | Now     | Players that report through MPRIS: cover, title, artist, the controls and a progress line.                 |
 | Timers        | Now     | Timers, alarms and stopwatches started from the search, with a notification when one ends.                 |
 | Downloads     | Now     | Running downloads, found through the partial files browsers write, then Open and Show in folder.           |
-| T3 Code       | Now     | Agent sessions of the T3 Code server, with approvals you can answer in the row.                            |
 | Up Next       | Up Next | The next events of the calendars GNOME knows, with a Join button for video calls shortly before the start. |
 | Notifications | Up Next | The notifications of the shell, newest first, with Do Not Disturb and Clear all.                           |
 
@@ -74,7 +72,6 @@ Type in the field of the open panel. Arrow keys choose, Enter runs, Ctrl+Enter r
 | `timer 25m Pizza`, `timer 1h30 Laundry`, `timer 90s`                                                              | Starts a countdown with an optional name.                                                    |
 | `timer 18:30 Meeting`, `timer 6:30 pm`                                                                            | Starts an alarm for the next time the clock shows that time.                                 |
 | `stopwatch Research` (also `stoppuhr`)                                                                            | Starts a stopwatch.                                                                          |
-| `t3 Please add a test`                                                                                            | Sends the text to the thread of T3 Code that was active last, or starts a new thread.        |
 | `1+1`, `sqrt(16)`, `2 ^ 3`, `20% of 80`, `pi*2`                                                                   | Calculates. Enter copies the result.                                                         |
 | `100 usd in eur`, `50 chf`, `100$ €`                                                                              | Converts with the daily rates of the European Central Bank. Enter copies the result.         |
 | `10ft in m`, `100 km/h in mph`, `1 GiB in MB`, `20 c in f`, `2 tage in stunden`                                   | Converts units: length, area, volume, mass, time, speed, temperature, data, energy and more. |
@@ -94,16 +91,14 @@ Units, dates and time zones are answered by the evaluators of [Quick Launcher](h
 
 Visor has no account, no telemetry and no server of its own. These are all the requests it can make:
 
-| Request                                                                                                       | When                                                                                                                                                                                                                                                                   | Turn it off                                                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml`, the daily rates of the European Central Bank | Only when you type a currency conversion, and at most once a day. The answer is kept in `~/.cache/visor/rates.json`.                                                                                                                                                   | The switch "Load currency rates" in the settings (General, Search), or `gsettings set org.gnome.shell.extensions.visor currency-rates false`. The search then says that rates are off. |
-| The cover picture a player names in `mpris:artUrl`, when it is an `http` or `https` address                   | When a player reports one. Pictures are limited to 8 MB and kept in `~/.cache/visor`. `file://` covers are read from disk, not downloaded.                                                                                                                             | Turn off the Media module in the settings, or `gsettings set org.gnome.shell.extensions.visor disabled-modules "['media']"`.                                                           |
-| The T3 Code server: HTTP and a WebSocket                                                                      | Only after you paired Visor in the settings (an access token is stored). Without a `t3-server-url` Visor reads the address of the server on this machine from `server-runtime.json` below `~/.t3` (or `$T3CODE_HOME`). Plain `http` is accepted for this machine only. | Turn off the T3 Code module, or press Disconnect in the settings. With no token Visor makes no request. See [docs/t3-protocol.md](docs/t3-protocol.md).                                |
-| The same server, from the settings window                                                                     | Only when you press Connect: a request for the server descriptor and the exchange of the pairing code for a token.                                                                                                                                                     | Do not pair.                                                                                                                                                                           |
+| Request                                                                                                       | When                                                                                                                                       | Turn it off                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml`, the daily rates of the European Central Bank | Only when you type a currency conversion, and at most once a day. The answer is kept in `~/.cache/visor/rates.json`.                       | The switch "Load currency rates" in the settings (General, Search), or `gsettings set org.gnome.shell.extensions.visor currency-rates false`. The search then says that rates are off. |
+| The cover picture a player names in `mpris:artUrl`, when it is an `http` or `https` address                   | When a player reports one. Pictures are limited to 8 MB and kept in `~/.cache/visor`. `file://` covers are read from disk, not downloaded. | Turn off the Media module in the settings, or `gsettings set org.gnome.shell.extensions.visor disabled-modules "['media']"`.                                                           |
 
-What else Visor stores: the timers (setting `timers`), the module order and the list of turned-off modules, all in GSettings. The T3 Code access token is kept in the system keyring (libsecret), not in GSettings.
+What else Visor stores: the timers (setting `timers`), the module order and the list of turned-off modules, all in GSettings.
 
-Disconnect only forgets the token on this machine; the protocol lets a session not revoke itself, so revoke it in T3 Code if you want it invalid. The Discover group of the settings shows a link to the website and fetches nothing. A catalogue of modules is planned, not part of this version.
+Modules of other extensions, such as [Visor: T3 Code](https://github.com/taulit/visor-t3) for the agent sessions of T3 Code, make their own requests and say so on their own pages. The Discover group of the settings shows a link to the website and fetches nothing. A catalogue of modules is planned, not part of this version.
 
 ## Write a module
 

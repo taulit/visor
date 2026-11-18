@@ -18,7 +18,6 @@ export const BUILTIN_MODULES: readonly ModuleInfo[] = [
   { id: 'media', slot: 'now', icon: 'emblem-music-symbolic', name: N_('Media') },
   { id: 'timers', slot: 'now', icon: 'alarm-symbolic', name: N_('Timers') },
   { id: 'downloads', slot: 'now', icon: 'folder-download-symbolic', name: N_('Downloads') },
-  { id: 't3', slot: 'now', icon: 'utilities-terminal-symbolic', name: N_('T3 Code') },
   { id: 'upcoming', slot: 'ahead', icon: 'x-office-calendar-symbolic', name: N_('Up Next') },
   {
     id: 'notifications',

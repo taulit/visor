@@ -12,14 +12,12 @@ cd "$repo"
 # name|command
 tests=(
     "prefs|tests/shell/prefs.sh"
-    "prefs-t3|tests/shell/prefs-t3.sh"
     "content-shell|tests/shell/content-shell.sh"
     "search|tests/shell/search.sh"
     "a11y|tests/shell/a11y.sh"
     "modules-now|tests/shell/modules-now.sh"
     "modules-ahead|tests/shell/modules-ahead.sh"
     "template|tests/shell/template.sh"
-    "t3|tests/shell/t3.sh"
     "disable-restores|tests/shell/disable-restores.sh"
     "e2e-timer|tests/shell/e2e-timer.sh"
     "e2e-notification|tests/shell/e2e-notification.sh"
@@ -29,7 +27,6 @@ tests=(
     "notch-leak-after-use|scripts/nested.sh --animations -- tests/shell/notch-leak-after-use.sh"
     "content-leak|tests/shell/content-leak.sh 20"
     "leak-test|scripts/leak-test.sh 50"
-    "leak-test-t3|scripts/leak-test.sh 50 --t3"
 )
 
 for wanted in "$@"; do

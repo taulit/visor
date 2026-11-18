@@ -41,14 +41,32 @@ pnpm build      # build/ is an installable extension directory
 pnpm pack:zip   # dist/<uuid>.shell-extension.zip, the file for extensions.gnome.org
 ```
 
-| Script           | Purpose                                                         |
-| ---------------- | --------------------------------------------------------------- |
-| `pnpm build`     | Compile TypeScript and assemble `build/`                        |
-| `pnpm pack:zip`  | Build and create the store ZIP                                  |
-| `pnpm lint`      | ESLint and `prettier --check`                                   |
-| `pnpm typecheck` | Type-check with `tsc --noEmit`                                  |
-| `pnpm pot`       | Regenerate `po/<domain>.pot` and merge it into `po/*.po`        |
-| `pnpm sync:sdk`  | Update `src/visor/` from the npm package `@taulit/visor-module` |
+| Script                | Purpose                                                          |
+| --------------------- | ---------------------------------------------------------------- |
+| `pnpm build`          | Compile TypeScript and assemble `build/`                         |
+| `pnpm pack:zip`       | Build and create the store ZIP                                   |
+| `pnpm lint`           | ESLint and `prettier --check`                                    |
+| `pnpm typecheck`      | Type-check with `tsc --noEmit`                                   |
+| `pnpm pot`            | Regenerate `po/<domain>.pot` and merge it into `po/*.po`         |
+| `pnpm run test:shell` | Run the module next to Visor in a sandboxed headless GNOME Shell |
+| `pnpm sync:sdk`       | Update `src/visor/` from the npm package `@taulit/visor-module`  |
+
+## Test
+
+Never try a module in the session you are logged in to while you work on it: a mistake there can take the shell down. `pnpm run test:shell` builds the module and runs `tests/shell/smoke.sh` against a **sandboxed headless GNOME Shell** with Visor and your module in it. The sandbox comes from the Visor repository, so you need a checkout of it with `pnpm install && pnpm build` done, at `../visor` or where `VISOR_REPO` points:
+
+```sh
+git clone https://github.com/taulit/visor ../visor && (cd ../visor && pnpm install && pnpm build)
+pnpm run test:shell
+```
+
+It needs GNOME Shell 50 or newer on the machine, `gdbus`, `python3` and `gnome-keyring`. The test checks that the module registers, survives Visor going and coming back, leaves nothing behind when its extension is disabled, and that the shell logs no warning. Add checks of what your module shows to `tests/shell/smoke.sh`; `tests/shell/lib.sh` explains the helpers. To look at the module instead, take a screenshot in the same sandbox:
+
+```sh
+../visor/scripts/nested.sh --extension build -- bash -c 'source ../visor/scripts/lib/shell.sh; shell_eval "visor.notch.open()"; sleep 1; shell_shot shot.png'
+```
+
+A module may ship a `stylesheet.css` next to `metadata.json`; the build copies it. Use it for layout only (spacing, sizes) and keep to the kit for everything that has a colour.
 
 `src/visor/` holds copies of `connect.js` and the types of `@taulit/visor-module`: a GNOME extension has no `node_modules` at run time and no bundler.
 

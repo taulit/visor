@@ -10,13 +10,13 @@ Session 1 (Visor). Other sessions read only this file. Plan: [design/plan](desig
 
 ## Phases
 
-| Phase | Content                                                                                      | State     | PR                                                                                         |
-| ----- | -------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
-| V0    | Tooling, repo, CI, `docs/verified.md`, headless shell and screenshots                        | merged    | [#1](https://github.com/taulit/visor/pull/1)                                               |
-| V1    | Core: panel integration, states, spring, theme, clock, shortcuts, registry, kit, empty sheet | merged    | [#2](https://github.com/taulit/visor/pull/2), [#3](https://github.com/taulit/visor/pull/3) |
-| V2    | Modules: notifications, up next, media, timers, downloads. Search. Freeze API                | merged    | [#4](https://github.com/taulit/visor/pull/4)                                               |
-| V3    | T3 Code, peek chips, settings, SDK, `visor-module-template`                                  | merged    | [#5](https://github.com/taulit/visor/pull/5)                                               |
-| V4    | Hardening: budgets, accessibility, translations, reviews, EGO checklist, packages, README    | in review | [#6](https://github.com/taulit/visor/pull/6)                                               |
+| Phase | Content                                                                                      | State  | PR                                                                                         |
+| ----- | -------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------ |
+| V0    | Tooling, repo, CI, `docs/verified.md`, headless shell and screenshots                        | merged | [#1](https://github.com/taulit/visor/pull/1)                                               |
+| V1    | Core: panel integration, states, spring, theme, clock, shortcuts, registry, kit, empty sheet | merged | [#2](https://github.com/taulit/visor/pull/2), [#3](https://github.com/taulit/visor/pull/3) |
+| V2    | Modules: notifications, up next, media, timers, downloads. Search. Freeze API                | merged | [#4](https://github.com/taulit/visor/pull/4)                                               |
+| V3    | T3 Code, peek chips, settings, SDK, `visor-module-template`                                  | merged | [#5](https://github.com/taulit/visor/pull/5)                                               |
+| V4    | Hardening: budgets, accessibility, translations, reviews, EGO checklist, packages, README    | merged | [#6](https://github.com/taulit/visor/pull/6)                                               |
 
 ## Done
 
@@ -37,11 +37,16 @@ Session 1 (Visor). Other sessions read only this file. Plan: [design/plan](desig
 - UUID of the notes module: plan 03 says `sheaf-visor@taulit.github.io`, plan 01 the convention
   `visor-<name>@<domain>`. Visor accepts either; the maintainer decides.
 
+## Modules in repositories of their own
+
+- T3 Code is no longer built in: `taulit/visor-t3` (UUID `visor-t3@taulit.github.io`, module id `t3`).
+- Notes: `sheaf/visor-module` in `taulit/sheaf`.
+
 ## Open
 
-- Session 4 (catalogue, website) starts after `api-v1`.
+- Catalogue (`taulit/visor-modules`) and website (`site/`): see [handoff.md](handoff.md).
 
 ## Not done by this session (needs the maintainer)
 
 Making repos public, uploading to extensions.gnome.org, publishing to npm and AUR, installing Visor into
-the logged-in session, real T3 Code approvals.
+the logged-in session.

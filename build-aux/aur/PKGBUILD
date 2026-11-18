@@ -4,7 +4,7 @@ pkgname=gnome-shell-extension-visor
 # (prepare() checks the first).
 pkgver=1.0.0
 pkgrel=1
-pkgdesc='A notch below the top bar of GNOME Shell: media, timers, calendar, notifications, search and agent sessions'
+pkgdesc='A notch below the top bar of GNOME Shell: media, timers, calendar, notifications and search'
 arch=('any')
 url='https://github.com/taulit/visor'
 license=('GPL-2.0-or-later')

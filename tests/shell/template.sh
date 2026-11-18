@@ -9,7 +9,8 @@
 # Dock example opens and works; disabling Visor leaves no error and enabling it
 # registers the modules again; disabling a module extension removes its module;
 # a module extension enabled while Visor is off waits for Visor; and a second
-# shell without Visor at all: the template loads and logs nothing.
+# shell without Visor at all: the template loads and logs nothing. The smoke
+# test of the template itself (its tests/shell/smoke.sh) runs as well.
 #
 # Usage: tests/shell/template.sh
 # The logs end up in .shell-test/template.log and .shell-test/template-alone.log.
@@ -46,6 +47,8 @@ if [[ "${1:-}" != --inside && "${1:-}" != --inside-alone ]]; then
     "$repo/scripts/nested.sh" --log "$repo/.shell-test/template.log" \
         --extension "$work/template/build" --extension "$work/now" --extension "$work/ahead" --extension "$work/future" -- \
         "$repo/tests/shell/template.sh" --inside
+    # The smoke test the template ships, run as someone who used the template would.
+    VISOR_REPO="$repo" bash "$work/template/tests/shell/smoke.sh"
     # No Visor installed at all.
     "$repo/scripts/nested.sh" --no-visor --log "$repo/.shell-test/template-alone.log" \
         --extension "$work/template/build" -- \

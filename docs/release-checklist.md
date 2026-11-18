@@ -10,7 +10,7 @@ Tick a step only after its "Verify" lines hold.
    - Verify: `git log --oneline main` shows them, CI of the last commit is green.
 2. Work through [ego-checklist.md](ego-checklist.md): every "maintainer" row has a decision.
    - Verify: each row of the file is "ok", "fixed" with the line re-checked, or has a written decision.
-3. Bring the texts up to date with the code: the "Privacy and network" table of [README.md](../README.md) and the `description` of `metadata.json` must say what the code does at the release (for example where the T3 Code token is stored, if that changed).
+3. Bring the texts up to date with the code: the "Privacy and network" table of [README.md](../README.md) and the `description` of `metadata.json` must say what the code does at the release.
    - Verify: read both against `grep -rn "Soup\.\|St.Clipboard" src`.
 4. Set the version everywhere, in one commit: `version-name` in `metadata.json`, `version` in `package.json`, the entry in [CHANGELOG.md](../CHANGELOG.md) (replace "unreleased" with the date), `pkgver` in [build-aux/aur/PKGBUILD](../build-aux/aur/PKGBUILD). `sdk/package.json` has its own version.
    - Verify: `node -p "[require('./metadata.json')['version-name'], require('./package.json').version].join(' ')"` prints the same number twice; `grep ^pkgver build-aux/aur/PKGBUILD` agrees.
@@ -32,8 +32,7 @@ Visor has only ever run in the sandbox (docs/STATUS.md). These are the checks th
    - Verify: `journalctl --user -b | grep -i visor` shows no error; disabling Visor gives the date menu back.
 2. Run it on **GNOME Shell 50** in the real session, and on **GNOME Shell 51**, or take `"51"` out of `shell-version` in `metadata.json` before the release (the README and the AUR `depends` name the same range; keep them in step).
    - Verify: no error in the journal on each version you keep listed; the notch opens, the date menu comes back on disable.
-3. Pair with a real T3 Code server for the first time: pairing from the settings window, the peek for a waiting agent, approve and deny once, reply, stop (never tried against a real server; the mock server is `tests/t3-mock`).
-   - Verify: the approval reaches T3 Code and the row goes back to "running".
+3. T3 Code is a module of its own now (https://github.com/taulit/visor-t3); its first real approval is on the checklist there.
 4. Go through it with a screen reader (Orca): what is announced, in which order, and whether the selected search result is read. The list of what to listen for is in [accessibility.md](accessibility.md); no screen reader has been run so far.
    - Verify: the open items of accessibility.md are answered, and fixed or written down.
 5. Run it for one hour with real use and compare the memory of the shell with and without Visor (plan 05: below 15 MB more after one hour). `scripts/measure.sh memory` covers 200 cycles in the sandbox, not one hour of use.

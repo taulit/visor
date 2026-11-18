@@ -65,6 +65,16 @@ and put it in order like a built-in one; without it the window only lists the mo
 
 Start the `description` with "Requires Visor." so the store page says so.
 
+## Test a module
+
+Do not try a module in the session you are logged in to while you work on it. The Visor repository has a sandboxed headless GNOME Shell (`scripts/nested.sh`: own HOME, session bus, settings and keyring) that loads Visor and any other extension:
+
+```sh
+scripts/nested.sh --extension /path/to/your-module/build -- your-test.sh
+```
+
+Inside, `scripts/lib/shell.sh` offers `shell_eval` (JavaScript in the shell, with `visor` in scope), `shell_wait_for` and `shell_shot` (a screenshot). The template has a smoke test built on it (`pnpm run test:shell`, `tests/shell/`).
+
 ## Rules for modules
 
 - **Only what happens now.** One place (slot) per module.

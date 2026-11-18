@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-18 14:17+0100\n"
+"POT-Creation-Date: 2026-11-18 14:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,7 +139,7 @@ msgstr ""
 msgid "Turn On Night Light"
 msgstr ""
 
-#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
+#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:17
 msgid "Modules"
 msgstr ""
 
@@ -147,12 +147,12 @@ msgstr ""
 msgid "Search, calculate or run a command …"
 msgstr ""
 
-#: build/core/sheet.js:332 build/prefs/general.js:75
+#: build/core/sheet.js:332 build/prefs/general.js:74
 msgid "Search"
 msgstr ""
 
 #: build/core/sheet.js:357 build/core/sheet.js:438
-#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
+#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:17
 msgid "Now"
 msgstr ""
 
@@ -166,8 +166,8 @@ msgstr ""
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/core/sheet.js:439 build/modules/upcoming/module.js:28
-#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:8
-#: build/prefs/builtin-modules.js:19
+#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:7
+#: build/prefs/builtin-modules.js:18
 msgid "Up Next"
 msgstr ""
 
@@ -175,7 +175,7 @@ msgstr ""
 msgid "A short section next to “Now”."
 msgstr ""
 
-#: build/core/sheet.js:440 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:440 build/prefs/builtin-modules.js:19
 msgid "Dock"
 msgstr ""
 
@@ -191,8 +191,7 @@ msgstr ""
 msgid "Downloads"
 msgstr ""
 
-#: build/modules/downloads/module.js:336 build/modules/t3/module.js:361
-#: build/modules/timers/module.js:229
+#: build/modules/downloads/module.js:336 build/modules/timers/module.js:229
 msgid "Done"
 msgstr ""
 
@@ -226,7 +225,7 @@ msgstr ""
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/modules/notifications/module.js:19
-#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:13
+#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:12
 msgid "Notifications"
 msgstr ""
 
@@ -253,115 +252,6 @@ msgstr ""
 
 #: build/modules/notifications/module.js:345
 msgid "Dismiss"
-msgstr ""
-
-#: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:78
-msgid "T3 Code"
-msgstr ""
-
-#: build/modules/t3/module.js:33
-msgid "t3 Fix the failing test"
-msgstr ""
-
-#: build/modules/t3/module.js:105 build/modules/t3/module.js:378
-msgid "Untitled thread"
-msgstr ""
-
-#: build/modules/t3/module.js:110
-#, javascript-format
-msgid "Send to %s"
-msgstr ""
-
-#: build/modules/t3/module.js:119
-msgid "Start a new thread"
-msgstr ""
-
-#: build/modules/t3/module.js:280
-#, javascript-format
-msgid "+ %d more"
-msgstr ""
-
-#: build/modules/t3/module.js:333
-msgid "Agent"
-msgstr ""
-
-#: build/modules/t3/module.js:336
-#, javascript-format
-msgid "%s is waiting"
-msgstr ""
-
-#: build/modules/t3/module.js:345
-msgid "Starting"
-msgstr ""
-
-#: build/modules/t3/module.js:348 build/modules/t3/module.js:349
-msgid "Working"
-msgstr ""
-
-#: build/modules/t3/module.js:352
-msgid "Answer this request in T3 Code"
-msgstr ""
-
-#: build/modules/t3/module.js:354
-msgid "Wants to run"
-msgstr ""
-
-#: build/modules/t3/module.js:356
-msgid "Wants to use a file"
-msgstr ""
-
-#: build/modules/t3/module.js:357
-msgid "Asks for permission"
-msgstr ""
-
-#: build/modules/t3/module.js:359
-msgid "Has a question"
-msgstr ""
-
-#: build/modules/t3/module.js:363
-msgid "Failed"
-msgstr ""
-
-#: build/modules/t3/module.js:374
-msgid "Could not send"
-msgstr ""
-
-#: build/modules/t3/module.js:400 build/modules/t3/module.js:581
-msgid "Open in T3 Code"
-msgstr ""
-
-#: build/modules/t3/module.js:412 build/modules/t3/module.js:504
-msgid "Deny"
-msgstr ""
-
-#: build/modules/t3/module.js:418 build/modules/t3/module.js:505
-msgid "Allow"
-msgstr ""
-
-#: build/modules/t3/module.js:428
-msgid "Answer"
-msgstr ""
-
-#: build/modules/t3/module.js:515
-msgid "Has characters that cannot be shown. Open T3 Code to read it"
-msgstr ""
-
-#: build/modules/t3/module.js:516
-msgid "Open T3 Code to read all of it"
-msgstr ""
-
-#: build/modules/t3/module.js:554
-#, javascript-format
-msgid "Reply to %s"
-msgstr ""
-
-#: build/modules/t3/module.js:554 build/modules/t3/module.js:555
-msgid "Reply"
-msgstr ""
-
-#: build/modules/t3/module.js:570 build/modules/timers/module.js:246
-msgid "Stop"
 msgstr ""
 
 #: build/modules/timers/module.js:19 build/prefs/builtin-modules.js:5
@@ -404,6 +294,10 @@ msgstr ""
 
 #: build/modules/timers/module.js:236
 msgid "Resume"
+msgstr ""
+
+#: build/modules/timers/module.js:246
+msgid "Stop"
 msgstr ""
 
 #: build/modules/timers/module.js:251
@@ -574,51 +468,47 @@ msgstr ""
 msgid "Show briefly on events"
 msgstr ""
 
-#: build/prefs/general.js:70
-msgid "Show briefly when an agent is waiting"
-msgstr ""
-
-#: build/prefs/general.js:72
+#: build/prefs/general.js:71
 msgid "Appearance"
 msgstr ""
 
-#: build/prefs/general.js:76
+#: build/prefs/general.js:75
 msgid "Load currency rates"
 msgstr ""
 
-#: build/prefs/general.js:76
+#: build/prefs/general.js:75
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr ""
 
-#: build/prefs/modules.js:96
+#: build/prefs/modules.js:94
 msgid "Discover"
 msgstr ""
 
-#: build/prefs/modules.js:132
+#: build/prefs/modules.js:130
 msgid "Move up"
 msgstr ""
 
-#: build/prefs/modules.js:133
+#: build/prefs/modules.js:131
 msgid "Move down"
 msgstr ""
 
-#: build/prefs/modules.js:136
+#: build/prefs/modules.js:134
 msgid "Change the order"
 msgstr ""
 
-#: build/prefs/modules.js:146
+#: build/prefs/modules.js:144
 msgid "Drag to change the order"
 msgstr ""
 
-#: build/prefs/modules.js:173
+#: build/prefs/modules.js:171
 msgid "Built for another version of Visor"
 msgstr ""
 
-#: build/prefs/modules.js:175
+#: build/prefs/modules.js:173
 msgid "Turned off in the extensions"
 msgstr ""
 
-#: build/prefs/modules.js:185
+#: build/prefs/modules.js:183
 msgid "Settings of the module"
 msgstr ""
 
@@ -645,69 +535,4 @@ msgstr ""
 
 #: build/prefs/shortcut.js:48
 msgid "Cancel"
-msgstr ""
-
-#: build/prefs/t3.js:63
-msgid "This is not a pairing link"
-msgstr ""
-
-#: build/prefs/t3.js:65 build/prefs/t3.js:206
-msgid "Use https for a server on another machine"
-msgstr ""
-
-#: build/prefs/t3.js:67
-msgid "The link is wrong or has expired"
-msgstr ""
-
-#: build/prefs/t3.js:69
-msgid "This version of T3 Code does not fit Visor"
-msgstr ""
-
-#: build/prefs/t3.js:71
-msgid "The keyring is not available"
-msgstr ""
-
-#: build/prefs/t3.js:73
-msgid "The server cannot be reached"
-msgstr ""
-
-#. --- not paired ---
-#: build/prefs/t3.js:83
-msgid "Pairing link or code"
-msgstr ""
-
-#: build/prefs/t3.js:86
-msgid "Connect"
-msgstr ""
-
-#. --- paired ---
-#: build/prefs/t3.js:176
-msgid "Connected"
-msgstr ""
-
-#: build/prefs/t3.js:178
-msgid "Disconnect"
-msgstr ""
-
-#. --- the address ---
-#: build/prefs/t3.js:193
-msgid "Server address"
-msgstr ""
-
-#: build/prefs/t3.js:194
-msgid "Address, empty for this machine"
-msgstr ""
-
-#: build/prefs/t3.js:207
-msgid "This is not a server address"
-msgstr ""
-
-#: build/prefs/t3.js:227
-msgid ""
-"Create a pairing link in T3 Code under Settings → Sharing & access and paste "
-"it here."
-msgstr ""
-
-#: build/prefs/t3.js:230 build/prefs/t3.js:231
-msgid "This machine"
 msgstr ""

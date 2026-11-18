@@ -101,8 +101,8 @@ Only reasoned about, not run:
 
 - a screen reader (Orca): what is announced, in which order, and whether the selected search result is read;
 - reaching the neck with Ctrl+Alt+Tab (it is a focusable button in the panel like the stock clock);
-- the built-in modules with real data and the T3 Code views: the test walks the demo content, which uses the
-  same kit, but a module that builds widgets of its own (the reply field of T3 Code has a name) is not walked;
+- the built-in modules with real data: the test walks the demo content, which uses the same kit, but a
+  module that builds widgets of its own (such as the reply field of Visor: T3 Code) is not walked;
 - contrast ratios were looked at in the screenshots, not computed;
 - the light scheme in high contrast and with large text (the rules are the same; only dark was shot);
 - right-to-left, a scale factor other than 1, touch.

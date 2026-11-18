@@ -19,7 +19,6 @@ const SHOWS = {
     'Timers, alarms and stopwatches started from the search, with a notification when one ends.',
   downloads:
     'Running downloads, found through the partial files browsers write, then Open and Show in folder.',
-  t3: 'Agent sessions of the T3 Code server, with approvals you can answer in the row.',
   upcoming:
     'The next events of the calendars GNOME knows, with a Join button for video calls shortly before the start.',
   notifications: 'The notifications of the shell, newest first, with Do Not Disturb and Clear all.',
