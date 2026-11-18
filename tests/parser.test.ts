@@ -14,6 +14,7 @@ describe('parseQuery', () => {
         command: null,
         calc: null,
         currency: null,
+        quick: null,
       });
     }
   });

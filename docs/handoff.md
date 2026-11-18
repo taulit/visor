@@ -19,6 +19,24 @@ review done, 11 of 12 findings fixed. The private template repo `taulit/visor-mo
 Branch `phase/v4-hardening`, pull request https://github.com/taulit/visor/pull/6 against `main` (not stacked), waiting for the user to merge.
 Three reviews done and their findings applied. Nothing is running.
 
+## After V4 (2026-11-18)
+
+V3 and V4 are merged (PRs #5, #6). Two pull requests against `main`, independent of each other (not
+stacked), wait for the user:
+
+- https://github.com/taulit/visor/pull/7, branch `perf/smooth-notch`: the shadow below the open panel is
+  gone, and the sheet is built ahead of the first open (`warmUp()` in `src/core/notch.ts`).
+- Branch `feat/quick-answers`: the search answers what Quick Launcher
+  (https://github.com/julianullrich99/quick-launcher) answers without an account: units, dates, time
+  zones (`src/core/search/quick/`, taken from there, MIT), emoji (`:name`, `data/emoji.json`) and system
+  actions. Date phrases are also read in the eight other languages (`quick/phrases.ts`, word lists not
+  checked by native speakers).
+
+Not taken over from Quick Launcher, open for the user to decide: passwords (Bitwarden through `rbw`,
+1Password through `op`, typing into windows, a pinentry bridge) and time tracking (Clockify, custom
+server, indicator in the top bar). The plan (`01-visor.md`, "Weitere Module") puts such integrations
+into module repositories of their own; a module can add results to the search through API v1.
+
 ## Next
 
 1. After the merge the remaining work is manual and belongs to the maintainer: `docs/release-checklist.md`

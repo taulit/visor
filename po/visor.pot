@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 23:18+0100\n"
+"POT-Creation-Date: 2026-11-18 12:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,36 +44,99 @@ msgstr ""
 msgid "Show details of %s"
 msgstr ""
 
-#: build/core/search/controller.js:114 build/core/search/controller.js:142
+#: build/core/search/controller.js:116
+#, javascript-format
+msgid "Week %d"
+msgstr ""
+
+#: build/core/search/controller.js:126 build/core/search/controller.js:165
 msgid "Commands"
 msgstr ""
 
-#: build/core/search/controller.js:122
+#: build/core/search/controller.js:137
+msgid "Emoji"
+msgstr ""
+
+#: build/core/search/controller.js:140
 msgid "Calculate"
 msgstr ""
 
-#: build/core/search/controller.js:123
+#: build/core/search/controller.js:141
 msgid "Apps"
 msgstr ""
 
-#: build/core/search/controller.js:174
+#: build/core/search/controller.js:144 build/core/search/system.js:35
+msgid "System"
+msgstr ""
+
+#: build/core/search/controller.js:199
 msgid "No results"
 msgstr ""
 
-#: build/core/search/controller.js:275
+#: build/core/search/controller.js:302
 msgid "Enter completes"
 msgstr ""
 
-#: build/core/search/controller.js:291 build/core/search/controller.js:316
+#: build/core/search/controller.js:318 build/core/search/controller.js:332
+#: build/core/search/controller.js:357 build/core/search/controller.js:369
 msgid "Enter copies"
 msgstr ""
 
-#: build/core/search/controller.js:301
+#: build/core/search/controller.js:342
 msgid "Currency rates are turned off"
 msgstr ""
 
-#: build/core/search/controller.js:304
+#: build/core/search/controller.js:345
 msgid "Rates are loading"
+msgstr ""
+
+#: build/core/search/system.js:54
+msgid "Lock Screen"
+msgstr ""
+
+#: build/core/search/system.js:61
+msgid "Suspend"
+msgstr ""
+
+#: build/core/search/system.js:68
+msgid "Log Out"
+msgstr ""
+
+#: build/core/search/system.js:75 build/modules/timers/module.js:230
+#: build/modules/timers/module.js:341
+msgid "Restart"
+msgstr ""
+
+#: build/core/search/system.js:82
+msgid "Power Off"
+msgstr ""
+
+#: build/core/search/system.js:89
+msgid "Take Screenshot"
+msgstr ""
+
+#: build/core/search/system.js:96
+msgid "Turn Off Dark Style"
+msgstr ""
+
+#: build/core/search/system.js:96
+msgid "Turn On Dark Style"
+msgstr ""
+
+#: build/core/search/system.js:103
+msgid "Turn Off Do Not Disturb"
+msgstr ""
+
+#: build/core/search/system.js:103
+msgid "Turn On Do Not Disturb"
+msgstr ""
+
+#: build/core/search/system.js:112
+msgid "Turn Off Night Light"
+msgstr ""
+
+#: build/core/search/system.js:112
+msgid "Turn On Night Light"
 msgstr ""
 
 #: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
@@ -337,10 +400,6 @@ msgstr ""
 
 #: build/modules/timers/module.js:206 build/modules/timers/module.js:321
 msgid "Timer"
-msgstr ""
-
-#: build/modules/timers/module.js:230 build/modules/timers/module.js:341
-msgid "Restart"
 msgstr ""
 
 #: build/modules/timers/module.js:236

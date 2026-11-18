@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-17 23:18+0100\n"
+"POT-Creation-Date: 2026-11-18 12:34+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Simplified Chinese\n"
@@ -42,37 +42,100 @@ msgstr "隐藏 %s 的详情"
 msgid "Show details of %s"
 msgstr "显示 %s 的详情"
 
-#: build/core/search/controller.js:114 build/core/search/controller.js:142
+#: build/core/search/controller.js:116
+#, javascript-format
+msgid "Week %d"
+msgstr "第 %d 周"
+
+#: build/core/search/controller.js:126 build/core/search/controller.js:165
 msgid "Commands"
 msgstr "命令"
 
-#: build/core/search/controller.js:122
+#: build/core/search/controller.js:137
+msgid "Emoji"
+msgstr "表情符号"
+
+#: build/core/search/controller.js:140
 msgid "Calculate"
 msgstr "计算"
 
-#: build/core/search/controller.js:123
+#: build/core/search/controller.js:141
 msgid "Apps"
 msgstr "应用"
 
-#: build/core/search/controller.js:174
+#: build/core/search/controller.js:144 build/core/search/system.js:35
+msgid "System"
+msgstr "系统"
+
+#: build/core/search/controller.js:199
 msgid "No results"
 msgstr "无结果"
 
-#: build/core/search/controller.js:275
+#: build/core/search/controller.js:302
 msgid "Enter completes"
 msgstr "回车补全"
 
-#: build/core/search/controller.js:291 build/core/search/controller.js:316
+#: build/core/search/controller.js:318 build/core/search/controller.js:332
+#: build/core/search/controller.js:357 build/core/search/controller.js:369
 msgid "Enter copies"
 msgstr "回车复制"
 
-#: build/core/search/controller.js:301
+#: build/core/search/controller.js:342
 msgid "Currency rates are turned off"
 msgstr "汇率已关闭"
 
-#: build/core/search/controller.js:304
+#: build/core/search/controller.js:345
 msgid "Rates are loading"
 msgstr "正在加载汇率"
+
+#: build/core/search/system.js:54
+msgid "Lock Screen"
+msgstr "锁定屏幕"
+
+#: build/core/search/system.js:61
+msgid "Suspend"
+msgstr "挂起"
+
+#: build/core/search/system.js:68
+msgid "Log Out"
+msgstr "注销"
+
+#: build/core/search/system.js:75 build/modules/timers/module.js:230
+#: build/modules/timers/module.js:341
+msgid "Restart"
+msgstr "重启"
+
+#: build/core/search/system.js:82
+msgid "Power Off"
+msgstr "关机"
+
+#: build/core/search/system.js:89
+msgid "Take Screenshot"
+msgstr "截图"
+
+#: build/core/search/system.js:96
+msgid "Turn Off Dark Style"
+msgstr "关闭深色风格"
+
+#: build/core/search/system.js:96
+msgid "Turn On Dark Style"
+msgstr "开启深色风格"
+
+#: build/core/search/system.js:103
+msgid "Turn Off Do Not Disturb"
+msgstr "关闭勿扰模式"
+
+#: build/core/search/system.js:103
+msgid "Turn On Do Not Disturb"
+msgstr "开启勿扰模式"
+
+#: build/core/search/system.js:112
+msgid "Turn Off Night Light"
+msgstr "关闭夜灯"
+
+#: build/core/search/system.js:112
+msgid "Turn On Night Light"
+msgstr "开启夜灯"
 
 #: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
 msgid "Modules"
@@ -336,10 +399,6 @@ msgstr "闹钟"
 #: build/modules/timers/module.js:206 build/modules/timers/module.js:321
 msgid "Timer"
 msgstr "计时器"
-
-#: build/modules/timers/module.js:230 build/modules/timers/module.js:341
-msgid "Restart"
-msgstr "重新开始"
 
 #: build/modules/timers/module.js:236
 msgid "Resume"

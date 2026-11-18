@@ -10,6 +10,10 @@ cp metadata.json build/
 # The shell loads exactly one stylesheet per extension, so the parts are joined.
 cat styles/*.css >build/stylesheet.css
 
+# The emoji names, read when the search first asks for them.
+mkdir -p build/data
+cp data/emoji.json build/data/
+
 mkdir -p build/schemas
 cp schemas/*.gschema.xml build/schemas/
 glib-compile-schemas --strict build/schemas

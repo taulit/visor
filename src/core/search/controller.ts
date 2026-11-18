@@ -14,6 +14,7 @@ import type { ModuleEntry, Registry, SearchParts } from '../registry.js';
 import type { SearchMount } from '../sheet.js';
 import { formatResult } from './calc.js';
 import { RatesStore } from './currency.js';
+import { emojiQuery, EmojiStore } from './emoji.js';
 import { completions, localeOf, rateLine } from './model.js';
 import { parseQuery, type Query } from './parser.js';
 import {
@@ -27,6 +28,7 @@ import {
 } from './providers.js';
 import { convert, formatMoney, homeCurrencyForRegion } from './rates.js';
 import { Results, type Group, type Item } from './results.js';
+import { SystemCommands } from './system.js';
 
 /** A command can offer more than one thing to do; more than this is not a command any more. */
 const MAX_PER_COMMAND = 5;
@@ -55,6 +57,8 @@ export class Search {
 
   private results: Results | null = null;
   private rates: RatesStore | null = null;
+  private emoji: EmojiStore | null = null;
+  private system: SystemCommands | null = null;
   private remote = new RemoteProviders();
   private locale: string | undefined;
   private homeCurrency = 'EUR';
@@ -109,6 +113,10 @@ export class Search {
     this.mount.setKeyHandler(null);
     this.rates?.destroy();
     this.rates = null;
+    this.emoji?.destroy();
+    this.emoji = null;
+    this.system?.destroy();
+    this.system = null;
     this.remote.destroy();
     this.results?.destroy();
     this.results = null;
@@ -134,6 +142,10 @@ export class Search {
       commands: parts.commands.map(({ command }) => command.keyword),
       locale: this.locale,
       homeCurrency: this.homeCurrency,
+      quick: {
+        timeZone: GLib.TimeZone.new_local().get_identifier(),
+        weekLabel: week => _('Week %d').replace('%d', String(week)),
+      },
     }));
     // As typed, the way the shell hands them to apps and providers.
     const terms = query.text.split(/\s+/);
@@ -148,11 +160,21 @@ export class Search {
     });
     // A recognised command is the whole answer: 'timer' neither launches an app from a
     // group further down nor asks anybody else.
-    const recognised = query.command !== null && parts.commands[query.command.index] !== undefined;
+    const command = query.command !== null && parts.commands[query.command.index] !== undefined;
+    // So is a colon: ':rocket' asks for emoji and nothing else.
+    const emoji = command ? null : emojiQuery(query.text);
+    const recognised = command || emoji !== null;
     const sources = recognised ? [] : parts.sources;
-    if (!recognised) {
+    if (emoji !== null) {
+      groups.push({ id: 'emoji', label: _('Emoji'), items: this.emojiItems(emoji) });
+    } else if (!recognised) {
       groups.push({ id: 'calc', label: _('Calculate'), items: this.calcItems(query) });
       groups.push({ id: 'apps', label: _('Apps'), items: searchApps(terms) });
+      groups.push({
+        id: 'system',
+        label: _('System'),
+        items: this.system?.search(query.text) ?? [],
+      });
     }
     for (const { entry, source } of sources) {
       const id = `source:${entry.module.id}`;
@@ -198,6 +220,8 @@ export class Search {
     const _ = this.gettext;
     this.results = new Results({ activate: item => this.choose(item, false) });
     this.rates = new RatesStore(this.settings, () => this.ratesChanged());
+    this.emoji = new EmojiStore(() => this.emojiChanged());
+    this.system = new SystemCommands(_);
     const { locale, region } = localeOf(GLib.get_language_names());
     this.locale = locale;
     this.homeCurrency = region ? homeCurrencyForRegion(region) : 'EUR';
@@ -215,6 +239,8 @@ export class Search {
     this.start();
     const query = parseQuery('1+1', { commands: [], locale: this.locale, homeCurrency: 'EUR' });
     if (query.calc) formatResult(query.calc.value, this.locale);
+    // The tables of units and of words in other languages are built on first use.
+    parseQuery('a b', { commands: [], locale: this.locale, homeCurrency: 'EUR' });
     searchApps(['a']);
   }
 
@@ -337,6 +363,20 @@ export class Search {
         },
       ];
     }
+    if (query.quick) {
+      const { display, copy, expression } = query.quick;
+      return [
+        {
+          id: 'quick',
+          title: display,
+          subtitle: expression,
+          icon: CALC_ICON,
+          large: true,
+          hint: _('Enter copies'),
+          activate: () => this.copy(copy),
+        },
+      ];
+    }
     const { currency } = query;
     const store = this.rates;
     if (!currency || !store) return [];
@@ -357,6 +397,24 @@ export class Search {
         activate: () => this.copy(value),
       },
     ];
+  }
+
+  /** `:rocket`: the emoji the words are found in; Enter copies one. */
+  private emojiItems(words: string): Item[] {
+    const _ = this.gettext;
+    const matches = this.emoji?.search(words, this.locale?.startsWith('de') ?? false);
+    return (matches ?? []).map(({ emoji, name }) => ({
+      id: `emoji:${emoji}`,
+      title: `${emoji}  ${name}`,
+      hint: _('Enter copies'),
+      activate: () => this.copy(emoji),
+    }));
+  }
+
+  /** The names of the emoji were read while a query waits for them. */
+  private emojiChanged(): void {
+    const words = this.query ? emojiQuery(this.query.text) : null;
+    if (words !== null) this.update('emoji', this.emojiItems(words), this.generation);
   }
 
   /** Rates arrived, or the setting was switched, while a conversion is on screen. */

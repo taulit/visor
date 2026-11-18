@@ -25,6 +25,7 @@ shots=(
     "empty=content-empty"
     "search=search-results"
     "search-convert=search-convert"
+    "search-date=search-date"
     "ahead=modules-ahead"
     "open-real=open-real"
     "t3=t3"
