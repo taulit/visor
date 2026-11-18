@@ -31,6 +31,7 @@ import {
   requestFrame,
   socketUrl,
   subscribeShellPayload,
+  threadAppLink,
   threadLink,
   ticketUrl,
   type Descriptor,
@@ -163,6 +164,11 @@ export class T3Client {
   }
 
   /** The address that opens a thread in T3 Code. */
+  /** The link for the desktop app, which need not be installed. */
+  appLink(threadId: string): string | null {
+    return this.descriptor ? threadAppLink(this.descriptor.environmentId, threadId) : null;
+  }
+
   link(threadId: string): string | null {
     return this.origin && this.descriptor
       ? threadLink(this.origin, this.descriptor.environmentId, threadId)

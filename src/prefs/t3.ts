@@ -257,7 +257,13 @@ export function t3Group(
     const server = settings.get_string(SERVER_KEY);
     group.description = isPaired
       ? ''
-      : _('Create a pairing link in T3 Code under Settings → Sharing & access and paste it here.');
+      : // The description of a group is Pango markup, and the text has an ampersand.
+        GLib.markup_escape_text(
+          _(
+            'Create a pairing link in T3 Code under Settings → Sharing & access and paste it here.',
+          ),
+          -1,
+        );
     entry.visible = !isPaired;
     paired.visible = isPaired;
     paired.subtitle = server || _('This machine');

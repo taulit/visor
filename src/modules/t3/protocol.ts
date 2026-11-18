@@ -155,7 +155,14 @@ export function socketUrl(origin: string, ticket: string): string {
   return `${base}/ws?orchestrationProtocol=${PROTOCOL_VERSION}&wsTicket=${encodeURIComponent(ticket)}`;
 }
 
-/** The address that opens a thread in T3 Code. */
+/** The scheme the desktop app of T3 Code registers for its links. */
+export const APP_SCHEME = 't3code';
+
+/** The link that opens a thread in the desktop app (`promptLinkAppPath` in `packages/shared`). */
+export const threadAppLink = (environmentId: string, threadId: string): string =>
+  `${APP_SCHEME}://threads/${encodeURIComponent(environmentId)}/${encodeURIComponent(threadId)}`;
+
+/** The address that opens a thread of T3 Code in the browser. */
 export const threadLink = (origin: string, environmentId: string, threadId: string): string =>
   `${origin}/threads/${encodeURIComponent(environmentId)}/${encodeURIComponent(threadId)}`;
 

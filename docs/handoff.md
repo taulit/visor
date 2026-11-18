@@ -51,7 +51,9 @@ into module repositories of their own; a module can add results to the search th
 - T3 Code: nothing is verified against a real server (token exchange, ticket, socket, approve/deny/reply/stop).
   The access token is in the keyring (libsecret, `docs/t3-protocol.md`); a locked keyring was not
   tested at runtime, the keyring of the sandbox is unlocked.
-- "Open in T3 Code" opens the thread in the browser; the desktop app has no deep link for threads.
+- "Open in T3 Code" opens `t3code://threads/…` in the desktop app when the scheme is registered, else the
+  browser. Not tried against the real app by the agent.
+- First real pairing worked for the user on 2026-11-18 (T3 Code 0.1.10 nightly): sessions are shown.
 - API v1 has no kit element for body text or a text field; the T3 module builds both itself.
 
 - Done in V4 (branch `t3/visor-performance-accessibility`): budgets measured (`docs/performance.md`,

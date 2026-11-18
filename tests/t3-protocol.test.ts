@@ -38,6 +38,7 @@ import {
   socketUrl,
   stopCommand,
   subscribeShellPayload,
+  threadAppLink,
   threadLink,
   visibleSessions,
   type ShellState,
@@ -100,6 +101,7 @@ describe('finding the server', () => {
     expect(threadLink('http://h:1', 'env/1', 'thread 1')).toBe(
       'http://h:1/threads/env%2F1/thread%201',
     );
+    expect(threadAppLink('env/1', 'thread 1')).toBe('t3code://threads/env%2F1/thread%201');
   });
 });
 
