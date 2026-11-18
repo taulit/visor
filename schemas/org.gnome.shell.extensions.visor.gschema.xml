@@ -52,6 +52,16 @@
       <summary>Currency rates</summary>
       <description>Fetch exchange rates online for the unit and currency converter.</description>
     </key>
+    <key name="catalog-updates" type="b">
+      <default>true</default>
+      <summary>Update the module catalog</summary>
+      <description>Let the settings window fetch the current catalog of modules and its pictures when the Modules page is opened, at most once a day. Off: the catalog that came with this version is shown, without pictures that are not cached.</description>
+    </key>
+    <key name="catalog-url" type="s">
+      <default>'https://visor.taulit.com/catalog'</default>
+      <summary>Address of the module catalog</summary>
+      <description>Where catalog.json and the pictures below modules/ are fetched from. Must be https, or http for this machine.</description>
+    </key>
     <key name="debug-metrics" type="b">
       <default>false</default>
       <summary>Debug metrics</summary>

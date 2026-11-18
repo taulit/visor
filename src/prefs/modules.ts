@@ -12,7 +12,7 @@ import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensio
 import type { Slot } from '../api.js';
 import { moveWithin, orderIds } from '../lib/modules.js';
 import { BUILTIN_MODULES, SLOTS, type ModuleInfo } from './builtin-modules.js';
-import { buildDiscover } from './discover.js';
+import { addDiscover } from './discover.js';
 import type { ForeignModule } from './foreign.js';
 import { openExtensionPrefs } from './shell-extensions.js';
 
@@ -35,6 +35,7 @@ export function modulesPage(
   settings: Gio.Settings,
   foreign: readonly ForeignModule[],
   window: Adw.PreferencesWindow,
+  extensionPath: string,
 ): Adw.PreferencesPage {
   const page = new Adw.PreferencesPage({
     name: 'modules',
@@ -126,9 +127,7 @@ export function modulesPage(
     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => (fill(), GLib.SOURCE_REMOVE)),
   );
 
-  const discover = new Adw.PreferencesGroup({ title: _('Discover') });
-  buildDiscover(discover);
-  page.add(discover);
+  addDiscover(page, settings, window, extensionPath);
   return page;
 }
 

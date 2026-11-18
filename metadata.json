@@ -1,7 +1,7 @@
 {
   "uuid": "visor@taulit.github.io",
   "name": "Visor",
-  "description": "Visor puts a notch below the top bar of GNOME Shell. It shows media, timers, downloads, calendar events, notifications, and has a search field for commands, calculations and apps. Other extensions can add modules to it.\n\nWhile enabled, Visor replaces the date menu in the top bar; disabling it brings the date menu back.\n\nClipboard: the result of a calculation or conversion is copied when you press Enter. Visor never reads the clipboard.\nNetwork: daily exchange rates of the European Central Bank (can be turned off), and cover pictures that media players name. Modules of other extensions make their own requests. No telemetry.",
+  "description": "Visor puts a notch below the top bar of GNOME Shell. It shows media, timers, downloads, calendar events, notifications, and has a search field for commands, calculations and apps. Other extensions can add modules to it.\n\nWhile enabled, Visor replaces the date menu in the top bar; disabling it brings the date menu back.\n\nClipboard: the result of a calculation or conversion is copied when you press Enter. Visor never reads the clipboard.\nNetwork: daily exchange rates of the European Central Bank (can be turned off), cover pictures that media players name, and in the settings window the catalog of modules with its pictures (can be turned off). Modules of other extensions make their own requests. No telemetry.",
   "shell-version": ["50", "51"],
   "url": "https://github.com/taulit/visor",
   "settings-schema": "org.gnome.shell.extensions.visor",

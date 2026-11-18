@@ -7,3 +7,4 @@ po
 node_modules
 LICENSE
 data/emoji.json
+data/catalog.json

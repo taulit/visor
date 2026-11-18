@@ -23,14 +23,26 @@ The maintainer wants "a store with extensions". Order of work, each step a pull 
    Still to do: mirror the template to `taulit/visor-module-template`.
 3. Catalog: the repository `taulit/visor-modules` exists (private, local `~/development/visor-modules`):
    schema, the entry of Visor: T3 Code, `scripts/build-catalog.ts` (checks and `catalog.json`),
-   `src/catalog-search.ts` with tests, submission form, `REVIEW.md`, workflow. Not done: "Discover" in the
-   settings (`src/prefs/discover.ts`, a link so far). It waits for
-   the decision where `catalog.json` is served from. Plan for it: vendor `catalog-search.ts` into
-   `src/lib/` (checked like the SDK copy), ship a snapshot of `catalog.json` in the extension, refresh it
-   from the network in the settings window, install through
-   `org.gnome.Shell.Extensions.InstallRemoteExtension`. An entry with `ego_id: null` is not in the store
-   yet and gets no Install button. The notes module has no entry yet: its screenshots are 1280×800, the
-   catalog wants 1600×1000.
+   `src/catalog-search.ts` with tests, submission form, `REVIEW.md`, workflow. "Discover" in the settings
+   is the branch `feat/discover`: `src/prefs/discover.ts` (cards, search, filter by place, page per
+   module), `catalog-model.ts` (reads a catalog it does not trust), `catalog-store.ts` (snapshot
+   `data/catalog.json`, cache `~/.cache/visor/catalog`, network at most once a day, switch
+   `catalog-updates`). `scripts/catalog-sync.sh` copies the search and the snapshot from a checkout of
+   the catalog; nothing checks in CI that the copies are current (the catalog is private).
+   - The address is the setting `catalog-url`, default `https://visor.taulit.com/catalog`. **Nothing is
+     served there yet**; the maintainer has not decided between that domain and GitHub Pages. Whoever
+     serves it has to publish `catalog.json` and the folder `modules/` of the catalog repository below
+     that address. Until then the snapshot shows, without pictures.
+   - Not built: filter by tags, "by the makers of Visor" and sorting (the search can do all three; the
+     website gets them), the icon of a module on its card, pictures that change under the same name
+     (the cache keeps the first), a refresh of "Installed" when an extension is removed while the window
+     is open.
+   - Not tried: Install itself (`InstallRemoteExtension` would ask the real store), the filter by place
+     in the shell test.
+   - An entry with `ego_id: null` is not in the store yet and gets no Install button. The notes module
+     has no entry yet: its screenshots are 1280×800, the catalog wants 1600×1000.
+   - The sandbox turns `catalog-updates` off (`scripts/lib/nested-session.sh`), so no test asks a server
+     unless it points `catalog-url` at one of its own (`tests/shell/prefs-discover.sh`).
 4. Website in `site/` (plan 11.4).
 5. More modules as repositories of their own (`docs/module-ideas.md`, and from Quick Launcher: passwords
    through `rbw`/`op`, Clockify).

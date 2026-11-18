@@ -2,11 +2,12 @@
 # This file is distributed under the same license as the Visor package.
 # Machine translated, improvements welcome.
 #
+#: build/prefs/discover.js:102
 msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-18 14:51+0100\n"
+"POT-Creation-Date: 2026-11-18 16:21+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Japanese\n"
@@ -383,7 +384,7 @@ msgstr "このアプリについて"
 msgid "Version"
 msgstr "バージョン"
 
-#: build/prefs/about.js:27
+#: build/prefs/about.js:27 build/prefs/discover.js:229
 msgid "License"
 msgstr "ライセンス"
 
@@ -391,11 +392,11 @@ msgstr "ライセンス"
 msgid "Links"
 msgstr "リンク"
 
-#: build/prefs/about.js:30 build/prefs/discover.js:13
+#: build/prefs/about.js:30
 msgid "Website"
 msgstr "ウェブサイト"
 
-#: build/prefs/about.js:31
+#: build/prefs/about.js:31 build/prefs/discover.js:224
 msgid "Source code"
 msgstr "ソースコード"
 
@@ -403,9 +404,71 @@ msgstr "ソースコード"
 msgid "Report an issue"
 msgstr "問題を報告"
 
-#: build/prefs/discover.js:8
-msgid "The catalog of modules arrives with a later version."
-msgstr "モジュールのカタログは今後のバージョンで追加されます。"
+#: build/prefs/discover.js:77
+msgid "Installed"
+msgstr "インストール済み"
+
+#: build/prefs/discover.js:79
+msgid "Install"
+msgstr "インストール"
+
+#: build/prefs/discover.js:80
+msgid "Not in the store yet"
+msgstr "ストアには未公開です"
+
+#: build/prefs/discover.js:117
+msgid "By the makers of Visor"
+msgstr "Visor の開発元によるモジュール"
+
+#: build/prefs/discover.js:199
+msgid "What it shows"
+msgstr "表示する内容"
+
+#: build/prefs/discover.js:200
+msgid "When it appears"
+msgstr "表示されるタイミング"
+
+#: build/prefs/discover.js:223
+msgid "Author"
+msgstr "作者"
+
+#: build/prefs/discover.js:227
+msgid "GNOME extension store"
+msgstr "GNOME 拡張機能ストア"
+
+#: build/prefs/discover.js:254
+msgid "Discover"
+msgstr "見つける"
+
+#: build/prefs/discover.js:255
+msgid "Modules from the GNOME extension store that add to Visor."
+msgstr "Visor に機能を追加する、GNOME 拡張機能ストアのモジュールです。"
+
+#: build/prefs/discover.js:258 build/prefs/discover.js:261
+msgid "Search modules"
+msgstr "モジュールを検索"
+
+#: build/prefs/discover.js:259
+msgid "All places"
+msgstr "すべての場所"
+
+#: build/prefs/discover.js:262
+msgid "Place"
+msgstr "場所"
+
+#: build/prefs/discover.js:277
+msgid "No modules found"
+msgstr "モジュールが見つかりません"
+
+#: build/prefs/discover.js:315
+msgid "Update the catalog from the network"
+msgstr "ネットワークからカタログを更新する"
+
+#: build/prefs/discover.js:316
+msgid ""
+"At most once a day, when this page is opened. Pictures are loaded with it."
+msgstr ""
+"このページを開いたときに、1 日 1 回まで更新します。画像も一緒に読み込みます。"
 
 #: build/prefs/general.js:10
 msgid "Compact"
@@ -479,35 +542,31 @@ msgstr "為替レートを読み込む"
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr "レートは欧州中央銀行から取得し、1 日 1 回までです。"
 
-#: build/prefs/modules.js:94
-msgid "Discover"
-msgstr "見つける"
-
-#: build/prefs/modules.js:130
+#: build/prefs/modules.js:128
 msgid "Move up"
 msgstr "上へ移動"
 
-#: build/prefs/modules.js:131
+#: build/prefs/modules.js:129
 msgid "Move down"
 msgstr "下へ移動"
 
-#: build/prefs/modules.js:134
+#: build/prefs/modules.js:132
 msgid "Change the order"
 msgstr "順序を変更"
 
-#: build/prefs/modules.js:144
+#: build/prefs/modules.js:142
 msgid "Drag to change the order"
 msgstr "ドラッグして順序を変更"
 
-#: build/prefs/modules.js:171
+#: build/prefs/modules.js:169
 msgid "Built for another version of Visor"
 msgstr "別のバージョンの Visor 用に作られています"
 
-#: build/prefs/modules.js:173
+#: build/prefs/modules.js:171
 msgid "Turned off in the extensions"
 msgstr "拡張機能でオフになっています"
 
-#: build/prefs/modules.js:183
+#: build/prefs/modules.js:181
 msgid "Settings of the module"
 msgstr "モジュールの設定"
 

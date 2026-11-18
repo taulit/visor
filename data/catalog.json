@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "pictures": "modules/",
+  "modules": [
+    {
+      "uuid": "visor-t3@taulit.github.io",
+      "name": "T3 Code",
+      "summary": {
+        "en": "Your T3 Code agents in the notch: what works, what is done and what waits for you.",
+        "de": "Deine T3-Code-Agenten in der Notch: was läuft, was fertig ist und was auf dich wartet."
+      },
+      "description": {
+        "en": "Shows the agent sessions of T3 Code as rows in Now. A session that waits for an approval turns amber and shows itself briefly; Allow and Deny are right in the row, as long as the whole command is on screen. Expand a row to read the last message, reply, stop the run or open the thread in T3 Code. The command \"t3\" in the search sends a message to the thread that was active last.",
+        "de": "Zeigt die Agenten-Sitzungen von T3 Code als Zeilen in „Jetzt“. Eine Sitzung, die auf eine Freigabe wartet, wird bernsteinfarben und zeigt sich kurz; Erlauben und Ablehnen sitzen direkt in der Zeile, solange der ganze Befehl zu sehen ist. Aufgeklappt zeigt die Zeile die letzte Nachricht, ein Antwortfeld, Stopp und den Weg zu T3 Code. Der Befehl „t3“ in der Suche schickt eine Nachricht an den zuletzt aktiven Thread."
+      },
+      "shows": {
+        "en": "One row per session that works, waits or has just finished, a chip in the peek row and a dot next to the clock while an agent waits.",
+        "de": "Eine Zeile je Sitzung, die arbeitet, wartet oder gerade fertig wurde, dazu ein Chip in der Vorschau und ein Punkt neben der Uhr, solange ein Agent wartet."
+      },
+      "appears": {
+        "en": "Only after you paired it with a T3 Code server in its settings. Finished sessions leave after two minutes; without sessions it shows nothing.",
+        "de": "Erst nachdem du es in seinen Einstellungen mit einem T3-Code-Server gekoppelt hast. Fertige Sitzungen verschwinden nach zwei Minuten; ohne Sitzungen zeigt es nichts."
+      },
+      "slot": "now",
+      "author": {
+        "name": "taulit",
+        "url": "https://github.com/taulit"
+      },
+      "repo": "https://github.com/taulit/visor-t3",
+      "ego_id": null,
+      "license": "GPL-2.0-or-later",
+      "api": 1,
+      "tags": [
+        "development",
+        "ai"
+      ],
+      "icon": "visor-t3@taulit.github.io/icon.svg",
+      "screenshots": [
+        "visor-t3@taulit.github.io/screenshot-1.png",
+        "visor-t3@taulit.github.io/screenshot-2.png"
+      ],
+      "status": "listed",
+      "verified": true,
+      "added": "2026-11-18",
+      "index": {
+        "name": [
+          "t3",
+          "code"
+        ],
+        "tags": [
+          "development",
+          "ai"
+        ],
+        "summary": [
+          "your",
+          "t3",
+          "code",
+          "agents",
+          "in",
+          "the",
+          "notch",
+          "what",
+          "works",
+          "is",
+          "done",
+          "and",
+          "waits",
+          "for",
+          "you",
+          "deine",
+          "agenten",
+          "der",
+          "was",
+          "lauft",
+          "fertig",
+          "ist",
+          "und",
+          "auf",
+          "dich",
+          "wartet"
+        ],
+        "author": [
+          "taulit"
+        ]
+      }
+    }
+  ]
+}

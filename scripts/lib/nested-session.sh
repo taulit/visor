@@ -7,6 +7,9 @@ source "$VISOR_REPO/scripts/lib/shell.sh"
 if [[ "$VISOR_SCHEME" == light ]]; then scheme=prefer-light; else scheme=prefer-dark; fi
 gsettings set org.gnome.shell enabled-extensions "$VISOR_ENABLED"
 gsettings set org.gnome.shell disable-user-extensions false
+# The settings window of Visor asks no server for the module catalog here; a
+# test that wants that turns it on and points it at a server of its own.
+dconf write /org/gnome/shell/extensions/visor/catalog-updates false
 gsettings set org.gnome.shell welcome-dialog-last-shown-version '999'
 gsettings set org.gnome.desktop.interface color-scheme "$scheme"
 gsettings set org.gnome.desktop.interface accent-color "$VISOR_ACCENT"

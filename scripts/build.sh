@@ -13,6 +13,9 @@ cat styles/*.css >build/stylesheet.css
 # The emoji names, read when the search first asks for them.
 mkdir -p build/data
 cp data/emoji.json build/data/
+# The module catalog as it was when this version was made; the settings window
+# shows it until it has a newer one.
+cp data/catalog.json build/data/
 
 mkdir -p build/schemas
 cp schemas/*.gschema.xml build/schemas/

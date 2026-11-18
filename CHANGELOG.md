@@ -14,6 +14,7 @@ First release. Nothing has been published yet: the date is set when the tag `v1.
 - **Peek chips.** A row of up to four chips for what needs attention: waiting agents, ended timers, events, running timers, media, downloads and unread notifications.
 - **Modules.** Media (MPRIS players with cover, controls and progress), Timers (countdowns, alarms and stopwatches, kept over a restart), Downloads (running downloads next to the browser's partial files), Up Next (calendar events with Join buttons for Meet, Teams, Zoom and Jitsi) and Notifications (the shell's message tray with Do Not Disturb and Clear all).
 - **Search.** One field for commands (`timer`, `stopwatch`/`stoppuhr`), a calculator without `eval` (locale aware, percentages), currency conversion with the daily rates of the European Central Bank, apps, module results and GNOME search providers. Units, percentages, number bases, dates and times moved by any unit, countdowns, calendar weeks, Unix timestamps and time zones, with date phrases in ten languages; emoji with `:name`; the actions of the system (lock, suspend, log out, restart, power off, screenshot) and the switches for the dark style, Do Not Disturb and Night Light.
+- **Discover.** The Modules page of the settings shows the catalog of modules ([taulit/visor-modules](https://github.com/taulit/visor-modules)) as cards with a picture, a search that forgives typos, a filter by place and a page per module. Install asks GNOME Shell to install the extension from extensions.gnome.org; Visor loads no code. A snapshot of the catalog ships with Visor and is refreshed from the network at most once a day (switch on the page).
 - **Settings window.** General (shortcut, hover preview and delay, flashes, width), Modules (switch and order per module, modules of other extensions) and About.
 - **Module API v1 and SDK.** A frozen API for modules that are extensions of their own, the npm package `@taulit/visor-module` with `connectVisor()` and generated types (`sdk/`, not yet published), and a module template (`examples/module-template/`).
 - **Translations.** German, Spanish, French, Brazilian Portuguese, Italian, Polish, Russian, Simplified Chinese and Japanese. All but German are machine translated. See [docs/translating.md](docs/translating.md).
@@ -26,7 +27,7 @@ First release. Nothing has been published yet: the date is set when the tag `v1.
 
 ### Network and privacy
 
-- No telemetry. Requests: the daily ECB rates (only when a conversion is typed, switch `currency-rates`), and cover pictures named by media players. Details in the README.
+- No telemetry. Requests: the daily ECB rates (only when a conversion is typed, switch `currency-rates`), cover pictures named by media players, and the module catalog with its pictures in the settings window (switch `catalog-updates`). Details in the README.
 
 ### Known limits
 
