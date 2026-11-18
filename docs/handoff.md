@@ -1,74 +1,82 @@
-# Handoff (session 1, Visor)
+# Handoff (Visor)
 
-Written 2026-11-17 for whoever continues without the chat context. Plan: `docs/design/plan/`, status for
+Written 2026-11-18 for whoever continues without the chat context. Plan: `docs/design/plan/`, status for
 other sessions: `docs/STATUS.md`, API facts: `docs/verified.md`, structure: `docs/architecture.md`.
 
 ## Done
 
-- V0, V1, V2 are merged to `main` (PRs #1, #2/#3, #4). Tag `api-v1` is set; contract in `docs/api-v1.md`.
-- Gate checks: `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pot`,
-  `pnpm run test:shell` (sandboxed headless shell), `scripts/shots.sh` (screenshots in `docs/screenshots/`).
+- V0 to V4 are merged to `main` (PRs #1 to #9). Tag `api-v1` is set; contract in `docs/api-v1.md`.
+- Gate before every pull request: `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pot`,
+  `pnpm sdk:check`, `pnpm run template:check`, `pnpm run readme:check` and `pnpm run test:shell`
+  (sandboxed headless shell, about ten minutes; one test with `pnpm run test:shell <name>`). Changes of
+  texts in the settings window need the shell tests too: descriptions of Adw are markup.
 
-## State of V3
+## The store of modules (session of 2026-11-18)
 
-Branch `phase/v3-t3`, pull request https://github.com/taulit/visor/pull/5 against `main` (not stacked), waiting for the user to merge. Bug
-review done, 11 of 12 findings fixed. The private template repo `taulit/visor-module-template` exists.
+The maintainer wants "a store with extensions". Order of work, each step a pull request of its own against
+`main`, nothing stacked:
 
-## State of V4
+1. **T3 Code moved out of Visor** into the module repository `taulit/visor-t3` (private, local
+   `~/development/visor-t3`, UUID `visor-t3@taulit.github.io`, store name "Visor: T3 Code", module id
+   `t3`). Visor's side is the branch `refactor/extract-t3`. It deletes what pull request #10
+   (`fix/t3-open-in-app`) changes, and `visor-t3` was started from the code of #10, so **#10 is closed, not
+   merged**, once the extraction is merged.
+2. Template and SDK: what the extraction showed is missing (list below).
+3. Catalog `taulit/visor-modules` (plan 11.1 to 11.3) and "Discover" in the settings (`src/prefs/discover.ts`,
+   a link so far).
+4. Website in `site/` (plan 11.4).
+5. More modules as repositories of their own (`docs/module-ideas.md`, and from Quick Launcher: passwords
+   through `rbw`/`op`, Clockify).
 
-Branch `phase/v4-hardening`, pull request https://github.com/taulit/visor/pull/6 against `main` (not stacked), waiting for the user to merge.
-Three reviews done and their findings applied. Nothing is running.
+### What the extraction showed
 
-## After V4 (2026-11-18)
+- A module can be tested next to Visor with the sandbox of this repository:
+  `scripts/nested.sh --extension <module>/build -- <test>`. `visor-t3/tests/shell/lib.sh` is the pattern
+  (`VISOR_REPO`, default `../visor`). The template has nothing like it yet.
+- The template's `scripts/build.sh` does not copy a `stylesheet.css`; it has no unit test setup (Vitest) and
+  no shell test.
+- **API gap, not decided:** v1 has no kit element for body text and none for a text field. Both `visor-t3`
+  and the notes module of Sheaf build them from `St.Label` and `St.Entry` and style them through the classes
+  `.visor-dark`, `.visor-light` and `.visor-hc` that Visor sets on its root. Those classes are not part of
+  the contract. Proposal to the maintainer: add `kit.text()` and `kit.entry()` (additive, v1 stays), or at
+  least write the three classes into `docs/api-v1.md`. The API is frozen: nothing changes without the
+  maintainer.
+- A leak test of a module has to open the panel once before it counts actors: Visor builds its sheet three
+  seconds after `enable()` or at the first open (`visor-t3/tests/shell/leak.sh`, `warm`).
+- `scripts/lib/keyring.sh` keeps the keyring of the sandbox (guard, start, lock); what stores a token of T3
+  Code moved to `visor-t3`.
 
-V3 and V4 are merged (PRs #5, #6). Two pull requests against `main`, independent of each other (not
-stacked), wait for the user:
+### Open decisions of the maintainer
 
-- https://github.com/taulit/visor/pull/7, branch `perf/smooth-notch`: the shadow below the open panel is
-  gone, and the sheet is built ahead of the first open (`warmUp()` in `src/core/notch.ts`).
-- Branch `feat/quick-answers`: the search answers what Quick Launcher
-  (https://github.com/julianullrich99/quick-launcher) answers without an account: units, dates, time
-  zones (`src/core/search/quick/`, taken from there, MIT), emoji (`:name`, `data/emoji.json`) and system
-  actions. Date phrases are also read in the eight other languages (`quick/phrases.ts`, word lists not
-  checked by native speakers).
+- Name and UUID of the T3 module (in use: `visor-t3`).
+- UUID of the notes module: `sheaf-visor@…` (plan 03, in use) or `visor-notes@…` (convention of plan 01).
+- The API addition above.
+- Website: stack (plan recommends Astro static + Tailwind) and address (`taulit.github.io/visor` needs a
+  public repository or a paid plan).
+- Which modules come first.
 
-Not taken over from Quick Launcher, open for the user to decide: passwords (Bitwarden through `rbw`,
-1Password through `op`, typing into windows, a pinentry bridge) and time tracking (Clockify, custom
-server, indicator in the top bar). The plan (`01-visor.md`, "Weitere Module") puts such integrations
-into module repositories of their own; a module can add results to the search through API v1.
+## Next (maintainer, by hand)
 
-## Next
-
-1. After the merge the remaining work is manual and belongs to the maintainer: `docs/release-checklist.md`
-   (real session on GNOME 50, first real pairing with T3 Code, screen reader pass, one-hour memory run,
-   timings on a quiet machine, native-speaker check of the translations, version bump, store upload).
+1. `docs/release-checklist.md` (real session on GNOME 50, screen reader pass, one-hour memory run, timings
+   on a quiet machine, native-speaker check of the translations, version bump, store upload).
 2. The check "median enable() below 5 ms" in `tests/shell/notch-behaviour.sh` fails when the machine is under
    load (2 ms on a quiet run, up to 5.7 ms loaded).
 3. The two workflows `release.yml` and `nightly.yml` have never run; expect fixes on their first run.
 
 ## Open items carried forward
 
-- T3 Code: nothing is verified against a real server (token exchange, ticket, socket, approve/deny/reply/stop).
-  The access token is in the keyring (libsecret, `docs/t3-protocol.md`); a locked keyring was not
-  tested at runtime, the keyring of the sandbox is unlocked.
-- "Open in T3 Code" opens the thread in the browser; the desktop app has no deep link for threads.
-- API v1 has no kit element for body text or a text field; the T3 module builds both itself.
-
-- Done in V4 (branch `t3/visor-performance-accessibility`): budgets measured (`docs/performance.md`,
-  `scripts/measure.sh`, GSettings `debug-metrics`), accessibility (`docs/accessibility.md`,
-  `tests/shell/a11y.sh`), a press on a peek chip marks the section of its module or opens the view of a dock
-  module. Still open from that work: no screen reader was run; the first open after enable costs about 25 ms
-  once (the sheet is built and styled then); a paired T3 Code server is pinged every 10 s also with the panel
-  closed.
+- The plan (`docs/design/plan/01-visor.md`) still describes T3 Code as a built-in module; the plan is kept as
+  it was written.
+- The four pictures `docs/screenshots/search-date-*.png` still show the shadow that was removed; make them
+  again with `scripts/shots.sh search-date`.
+- Still open from V4: no screen reader was run; the first open after enable costs about 25 ms once.
 - Not looked at frame by frame: hint shape while growing, rounded corners during the peek animation.
 - Not exercised: scale factor ≠ 1, several monitors, real fullscreen window, touch, right-to-left, screen
   readers (Orca), the timer sound, real GNOME search providers, Join links of recurring events.
-- `kit.ts`, `notch.ts`, `sheet.ts` are large; the simplicity review of V4 should start there.
-- Refused (incompatible) modules are remembered by the registry but shown nowhere yet (settings, V3).
-- UUID of the notes module (`sheaf-visor@…` vs. `visor-<name>@…`): the user decides.
-- Session 4 (catalog, website) can start; it reads `docs/STATUS.md` and `docs/api-v1.md`.
+- `kit.ts`, `notch.ts`, `sheet.ts` are large; a simplicity review should start there.
+- Refused (incompatible) modules are remembered by the registry but shown nowhere yet.
 
 ## Never without the user
 
-Making repos public, store upload, npm/AUR publishing, installing Visor into the logged-in session, real
-T3 Code approvals. Tests run only through `scripts/nested.sh`.
+Making repos public, store upload, npm/AUR publishing, tags and releases, GitHub Pages, installing Visor
+into the logged-in session. Tests run only through `scripts/nested.sh`. Only the maintainer merges.

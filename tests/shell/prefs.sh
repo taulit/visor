@@ -5,7 +5,7 @@
 # driven with a virtual pointer and keyboard and read over the accessibility
 # bus (scripts/lib/prefs.sh): the dialog that captures the shortcut, the menu
 # of a row by keyboard, modules of other extensions with and without
-# `visor.id`, the button to their settings, the server address of T3 Code.
+# `visor.id`, the button to their settings.
 #
 # Usage: tests/shell/prefs.sh
 # The log ends up in .shell-test/prefs.log, the output of the window in .shell-test/prefs.window.
@@ -38,7 +38,6 @@ fi
 
 source "$repo/tests/shell/lib.sh"
 source "$repo/scripts/lib/prefs.sh"
-source "$repo/scripts/lib/keyring.sh"
 uuid='visor@taulit.github.io'
 window_titles="global.get_window_actors().map(a => a.meta_window.title)"
 
@@ -120,14 +119,14 @@ expect_focus 'Tab reaches the menu of the first row' 'toggle button | Change the
 prefs_key Return
 prefs_key Return
 expect_setting 'Enter opens it and Enter on Move down moves the row' module-order \
-    "['timers', 'media', 'downloads', 't3', 'upcoming', 'notifications', 'world-clock']"
+    "['timers', 'media', 'downloads', 'upcoming', 'notifications', 'world-clock']"
 expect_focus 'the focus is on the row that moved' 'list item | Media'
 prefs_key Tab
 prefs_key Tab
 prefs_key Return
 prefs_key Return
 expect_setting 'and Move up, the first entry of its menu now, moves it back' module-order \
-    "['media', 'timers', 'downloads', 't3', 'upcoming', 'notifications', 'world-clock']"
+    "['media', 'timers', 'downloads', 'upcoming', 'notifications', 'world-clock']"
 expect_focus 'the focus follows again' 'list item | Media'
 gs module-order '[]'
 sleep 0.5
@@ -138,10 +137,10 @@ sleep 0.5
 prefs_click 555 137
 prefs_click 552 221
 expect_setting 'Move down in the menu of the first row moves it down' module-order \
-    "['timers', 'media', 'downloads', 't3', 'upcoming', 'notifications', 'world-clock']"
+    "['timers', 'media', 'downloads', 'upcoming', 'notifications', 'world-clock']"
 prefs_drag 76 137 76 247
 expect_setting 'dragging the first row onto the third moves it there' module-order \
-    "['media', 'downloads', 'timers', 't3', 'upcoming', 'notifications', 'world-clock']"
+    "['media', 'downloads', 'timers', 'upcoming', 'notifications', 'world-clock']"
 prefs_click 520 247
 expect_setting 'the switch of the third module turns it off' disabled-modules "['timers']"
 prefs_click 520 247
@@ -165,44 +164,14 @@ read -r _ clock_y <<<"$(prefs_where 'World Clock' switch)"
 prefs_click 555 "$clock_y"
 prefs_key Return
 expect_setting 'Move up in its menu moves it among the built-in modules' module-order \
-    "['media', 'downloads', 'timers', 'world-clock', 'upcoming', 'notifications', 't3']"
+    "['media', 'downloads', 'world-clock', 'upcoming', 'notifications', 'timers']"
 sleep 0.5
-rows="$(prefs_texts | awk '!seen[$0]++' | grep -x 'list item | \(Timers\|World Clock\|T3 Code\)' | tr '\n' ';')"
-if [[ "$rows" == 'list item | Timers;list item | World Clock;list item | T3 Code;' ]]; then
-    echo 'ok    and the rows of Now show it before T3 Code'
+rows="$(prefs_texts | awk '!seen[$0]++' | grep -x 'list item | \(Downloads\|World Clock\|Timers\)' | tr '\n' ';')"
+if [[ "$rows" == 'list item | Downloads;list item | World Clock;list item | Timers;' ]]; then
+    echo 'ok    and the rows of Now show it before Timers'
 else
     echo "FAIL  the rows of Now are $rows"; failures=$((failures + 1))
 fi
-
-# --- T3 Code: the server address ----------------------------------------------------
-# No server is asked here: the addresses are refused or have nothing behind them.
-prefs_click 20 400
-prefs_scroll 600
-prefs_click_on 'Server address' 'list item'
-prefs_click_on 'Address, empty for this machine' text
-prefs_type 'ftp://files'
-prefs_enter
-expect_shows 'an address that is none is refused with a text' 'This is not a server address'
-expect_setting 'and not stored' t3-server-url "''"
-prefs_key Control_L a
-prefs_type 'http://example.org:3773'
-prefs_enter
-expect_shows 'http to another machine is refused with a text' 'Use https for a server on another machine'
-expect_setting 'and not stored' t3-server-url "''"
-# Paired with one origin, then another address is entered.
-keyring_store 'http://127.0.0.1:9' 'address-test-token'
-gs t3-token-origin 'http://127.0.0.1:9'
-sleep 0.5
-expect_shows 'paired by hand: the window says Connected' 'Connected'
-prefs_key Control_L a
-prefs_type 'http://127.0.0.1:1'
-prefs_enter
-sleep 1
-expect_setting 'an address of another origin is stored' t3-server-url "'http://127.0.0.1:1'"
-expect_setting 'and forgets the pairing' t3-token-origin "''"
-if [[ -z "$(keyring_lookup 'http://127.0.0.1:9')" ]]; then echo 'ok    and its token in the keyring'; else echo 'FAIL  the token of the old origin is still in the keyring'; failures=$((failures + 1)); fi
-expect_hides 'the window no longer says Connected' 'Connected'
-gs t3-server-url ''
 
 # Change what the window shows while it is open. Visor in the shell follows the
 # same settings, so the shell is checked as well.
@@ -210,7 +179,6 @@ for width in compact wide normal; do gs width "$width"; done
 gs hover-preview false
 gs peek-delay 900
 gs flash-on-events false
-gs flash-on-waiting-agents false
 gs currency-rates false
 gs open-shortcut "['<Super>j']"
 gs open-shortcut "[]"
@@ -219,7 +187,7 @@ gs module-order "['timers', 'notes', 'media']"
 gs module-order "['downloads', 'media']"
 gs disabled-modules "[]"
 gs module-order "[]"
-for key in hover-preview flash-on-events flash-on-waiting-agents currency-rates; do gs "$key" true; done
+for key in hover-preview flash-on-events currency-rates; do gs "$key" true; done
 gs peek-delay 380
 sleep 1
 check 'the window survives the changes' "$window_titles.includes('Visor')" true

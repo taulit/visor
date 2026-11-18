@@ -1,4 +1,4 @@
-# The settings window on its modules page, scrolled to the group "T3 Code".
+# The settings window on its modules page, scrolled to the group "Discover".
 source "$repo/scripts/lib/prefs.sh"
 prefs_open
 prefs_page modules

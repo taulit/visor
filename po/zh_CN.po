@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-18 12:34+0100\n"
+"POT-Creation-Date: 2026-11-18 14:51+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Simplified Chinese\n"
@@ -137,7 +137,7 @@ msgstr "关闭夜灯"
 msgid "Turn On Night Light"
 msgstr "开启夜灯"
 
-#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:18
+#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:17
 msgid "Modules"
 msgstr "模块"
 
@@ -145,12 +145,12 @@ msgstr "模块"
 msgid "Search, calculate or run a command …"
 msgstr "搜索、计算或运行命令 …"
 
-#: build/core/sheet.js:332 build/prefs/general.js:75
+#: build/core/sheet.js:332 build/prefs/general.js:74
 msgid "Search"
 msgstr "搜索"
 
 #: build/core/sheet.js:357 build/core/sheet.js:438
-#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:18
+#: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:17
 msgid "Now"
 msgstr "现在"
 
@@ -164,8 +164,8 @@ msgstr "仅在有任务进行时显示。"
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/core/sheet.js:439 build/modules/upcoming/module.js:28
-#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:8
-#: build/prefs/builtin-modules.js:19
+#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:7
+#: build/prefs/builtin-modules.js:18
 msgid "Up Next"
 msgstr "接下来"
 
@@ -173,7 +173,7 @@ msgstr "接下来"
 msgid "A short section next to “Now”."
 msgstr "“现在”旁的一个简短区域。"
 
-#: build/core/sheet.js:440 build/prefs/builtin-modules.js:20
+#: build/core/sheet.js:440 build/prefs/builtin-modules.js:19
 msgid "Dock"
 msgstr "Dock"
 
@@ -189,8 +189,7 @@ msgstr "没有模块"
 msgid "Downloads"
 msgstr "下载"
 
-#: build/modules/downloads/module.js:336 build/modules/t3/module.js:361
-#: build/modules/timers/module.js:229
+#: build/modules/downloads/module.js:336 build/modules/timers/module.js:229
 msgid "Done"
 msgstr "完成"
 
@@ -224,7 +223,7 @@ msgstr "下一首"
 
 #. Needed before enable(), for the list of modules: there is no context yet.
 #: build/modules/notifications/module.js:19
-#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:13
+#: build/modules/notifications/module.js:92 build/prefs/builtin-modules.js:12
 msgid "Notifications"
 msgstr "通知"
 
@@ -252,115 +251,6 @@ msgstr "全部清除"
 #: build/modules/notifications/module.js:345
 msgid "Dismiss"
 msgstr "忽略"
-
-#: build/modules/t3/module.js:27 build/prefs/builtin-modules.js:7
-#: build/prefs/t3.js:78
-msgid "T3 Code"
-msgstr "T3 Code"
-
-#: build/modules/t3/module.js:33
-msgid "t3 Fix the failing test"
-msgstr "t3 修复失败的测试"
-
-#: build/modules/t3/module.js:105 build/modules/t3/module.js:378
-msgid "Untitled thread"
-msgstr "未命名的会话"
-
-#: build/modules/t3/module.js:110
-#, javascript-format
-msgid "Send to %s"
-msgstr "发送给 %s"
-
-#: build/modules/t3/module.js:119
-msgid "Start a new thread"
-msgstr "开始新会话"
-
-#: build/modules/t3/module.js:280
-#, javascript-format
-msgid "+ %d more"
-msgstr "+ 另外 %d 个"
-
-#: build/modules/t3/module.js:333
-msgid "Agent"
-msgstr "代理"
-
-#: build/modules/t3/module.js:336
-#, javascript-format
-msgid "%s is waiting"
-msgstr "%s 正在等待"
-
-#: build/modules/t3/module.js:345
-msgid "Starting"
-msgstr "正在启动"
-
-#: build/modules/t3/module.js:348 build/modules/t3/module.js:349
-msgid "Working"
-msgstr "正在工作"
-
-#: build/modules/t3/module.js:352
-msgid "Answer this request in T3 Code"
-msgstr "请在 T3 Code 中回答此请求"
-
-#: build/modules/t3/module.js:354
-msgid "Wants to run"
-msgstr "想要运行"
-
-#: build/modules/t3/module.js:356
-msgid "Wants to use a file"
-msgstr "想要使用文件"
-
-#: build/modules/t3/module.js:357
-msgid "Asks for permission"
-msgstr "请求权限"
-
-#: build/modules/t3/module.js:359
-msgid "Has a question"
-msgstr "有一个问题"
-
-#: build/modules/t3/module.js:363
-msgid "Failed"
-msgstr "失败"
-
-#: build/modules/t3/module.js:374
-msgid "Could not send"
-msgstr "无法发送"
-
-#: build/modules/t3/module.js:400 build/modules/t3/module.js:581
-msgid "Open in T3 Code"
-msgstr "在 T3 Code 中打开"
-
-#: build/modules/t3/module.js:412 build/modules/t3/module.js:504
-msgid "Deny"
-msgstr "拒绝"
-
-#: build/modules/t3/module.js:418 build/modules/t3/module.js:505
-msgid "Allow"
-msgstr "允许"
-
-#: build/modules/t3/module.js:428
-msgid "Answer"
-msgstr "回答"
-
-#: build/modules/t3/module.js:515
-msgid "Has characters that cannot be shown. Open T3 Code to read it"
-msgstr "包含无法显示的字符。请打开 T3 Code 阅读"
-
-#: build/modules/t3/module.js:516
-msgid "Open T3 Code to read all of it"
-msgstr "打开 T3 Code 阅读全部内容"
-
-#: build/modules/t3/module.js:554
-#, javascript-format
-msgid "Reply to %s"
-msgstr "回复 %s"
-
-#: build/modules/t3/module.js:554 build/modules/t3/module.js:555
-msgid "Reply"
-msgstr "回复"
-
-#: build/modules/t3/module.js:570 build/modules/timers/module.js:246
-msgid "Stop"
-msgstr "停止"
 
 #: build/modules/timers/module.js:19 build/prefs/builtin-modules.js:5
 msgid "Timers"
@@ -403,6 +293,10 @@ msgstr "计时器"
 #: build/modules/timers/module.js:236
 msgid "Resume"
 msgstr "继续"
+
+#: build/modules/timers/module.js:246
+msgid "Stop"
+msgstr "停止"
 
 #: build/modules/timers/module.js:251
 msgid "+1 min"
@@ -573,51 +467,47 @@ msgstr "悬停时预览"
 msgid "Show briefly on events"
 msgstr "有事件时短暂显示"
 
-#: build/prefs/general.js:70
-msgid "Show briefly when an agent is waiting"
-msgstr "代理等待时短暂显示"
-
-#: build/prefs/general.js:72
+#: build/prefs/general.js:71
 msgid "Appearance"
 msgstr "外观"
 
-#: build/prefs/general.js:76
+#: build/prefs/general.js:75
 msgid "Load currency rates"
 msgstr "加载汇率"
 
-#: build/prefs/general.js:76
+#: build/prefs/general.js:75
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr "汇率来自欧洲中央银行，每天最多一次。"
 
-#: build/prefs/modules.js:96
+#: build/prefs/modules.js:94
 msgid "Discover"
 msgstr "发现"
 
-#: build/prefs/modules.js:132
+#: build/prefs/modules.js:130
 msgid "Move up"
 msgstr "上移"
 
-#: build/prefs/modules.js:133
+#: build/prefs/modules.js:131
 msgid "Move down"
 msgstr "下移"
 
-#: build/prefs/modules.js:136
+#: build/prefs/modules.js:134
 msgid "Change the order"
 msgstr "更改顺序"
 
-#: build/prefs/modules.js:146
+#: build/prefs/modules.js:144
 msgid "Drag to change the order"
 msgstr "拖动以更改顺序"
 
-#: build/prefs/modules.js:173
+#: build/prefs/modules.js:171
 msgid "Built for another version of Visor"
 msgstr "为另一个版本的 Visor 构建"
 
-#: build/prefs/modules.js:175
+#: build/prefs/modules.js:173
 msgid "Turned off in the extensions"
 msgstr "已在扩展中关闭"
 
-#: build/prefs/modules.js:185
+#: build/prefs/modules.js:183
 msgid "Settings of the module"
 msgstr "模块设置"
 
@@ -645,68 +535,3 @@ msgstr "按下要使用的按键。Esc 取消，退格键移除快捷键。"
 #: build/prefs/shortcut.js:48
 msgid "Cancel"
 msgstr "取消"
-
-#: build/prefs/t3.js:63
-msgid "This is not a pairing link"
-msgstr "这不是配对链接"
-
-#: build/prefs/t3.js:65 build/prefs/t3.js:206
-msgid "Use https for a server on another machine"
-msgstr "其他机器上的服务器请使用 https"
-
-#: build/prefs/t3.js:67
-msgid "The link is wrong or has expired"
-msgstr "链接有误或已过期"
-
-#: build/prefs/t3.js:69
-msgid "This version of T3 Code does not fit Visor"
-msgstr "此版本的 T3 Code 与 Visor 不兼容"
-
-#: build/prefs/t3.js:71
-msgid "The keyring is not available"
-msgstr "密钥环不可用"
-
-#: build/prefs/t3.js:73
-msgid "The server cannot be reached"
-msgstr "无法连接到服务器"
-
-#. --- not paired ---
-#: build/prefs/t3.js:83
-msgid "Pairing link or code"
-msgstr "配对链接或代码"
-
-#: build/prefs/t3.js:86
-msgid "Connect"
-msgstr "连接"
-
-#. --- paired ---
-#: build/prefs/t3.js:176
-msgid "Connected"
-msgstr "已连接"
-
-#: build/prefs/t3.js:178
-msgid "Disconnect"
-msgstr "断开连接"
-
-#. --- the address ---
-#: build/prefs/t3.js:193
-msgid "Server address"
-msgstr "服务器地址"
-
-#: build/prefs/t3.js:194
-msgid "Address, empty for this machine"
-msgstr "地址，留空表示本机"
-
-#: build/prefs/t3.js:207
-msgid "This is not a server address"
-msgstr "这不是服务器地址"
-
-#: build/prefs/t3.js:227
-msgid ""
-"Create a pairing link in T3 Code under Settings → Sharing & access and paste it "
-"here."
-msgstr "在 T3 Code 的 Settings → Sharing & access 中创建配对链接，并粘贴到此处。"
-
-#: build/prefs/t3.js:230 build/prefs/t3.js:231
-msgid "This machine"
-msgstr "本机"
