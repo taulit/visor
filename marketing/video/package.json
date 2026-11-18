@@ -1,0 +1,30 @@
+{
+  "name": "visor-launch-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "record": "bash record/record.sh",
+    "studio": "remotion studio src/index.ts",
+    "render": "pnpm render:reddit && pnpm render:square && pnpm render:reel",
+    "render:reddit": "remotion render src/index.ts Reddit out/visor-reddit-16x9.mp4",
+    "render:square": "remotion render src/index.ts RedditSquare out/visor-reddit-1x1.mp4",
+    "render:reel": "remotion render src/index.ts Reel out/visor-reel-9x16.mp4",
+    "render:og": "remotion still src/index.ts OgImage ../../site/public/og.png",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.544",
+    "@remotion/google-fonts": "^4.0.544",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.544"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "^7.0.2"
+  },
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=24"
+  }
+}

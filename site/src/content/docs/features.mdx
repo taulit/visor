@@ -1,0 +1,51 @@
+---
+title: Features
+description: 'The notch, the open panel with Now and Up Next, and the built-in modules of Visor for GNOME Shell: media, timers, downloads, calendar and notifications, and the T3 Code module.'
+---
+
+## The notch
+
+Visor replaces the date menu in the middle of the top bar with a notch. It has four states:
+
+1. **Rest**: the clock, as before.
+2. **Hint**: it grows a little when something happens, for example when a timer ends or an agent waits.
+3. **Peek**: a row of chips peeks out below the top bar, with the most important things first.
+4. **Open**: the panel, with what is going on right now, what comes next, and a search field.
+
+Click the clock or press the shortcut of the shell for the notification list (<kbd>Super</kbd>+<kbd>V</kbd> by default) to open it. One more shortcut can be set in the settings.
+
+![The notch with chips peeking out below the top bar](../../assets/screenshots/peek-dark.png)
+
+## Now
+
+The left column shows what plays, what runs and what waits. It is only there while something runs.
+
+| Module    | What it shows                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| Media     | Players that report through MPRIS: cover, title, artist, the controls and a progress line.       |
+| Timers    | Timers, alarms and stopwatches started from the search, with a notification when one ends.       |
+| Downloads | Running downloads, found through the partial files browsers write, then Open and Show in folder. |
+
+![Media, timers and downloads in Now](../../assets/screenshots/now-dark.png)
+
+## Up Next
+
+The right column shows the next events of the calendars GNOME knows, with a **Join** button for video calls shortly before the start, and below them the notifications of the shell, newest first, with Do Not Disturb and Clear all.
+
+![Calendar events and notifications in Up Next](../../assets/screenshots/ahead-dark.png)
+
+## Agent approvals with T3 Code
+
+Agent sessions of [T3 Code](https://github.com/pingdotgg/t3code) come with the module **Visor: T3 Code** (`visor-t3@taulit.github.io`), a GNOME extension of its own that is installed next to Visor. Pair it with a T3 Code server in its settings. When an agent asks to run a command, the notch lights up and a chip waits in the peek row. Open the panel, unfold the row to read the full command and press **Allow** or **Deny**. You can also reply to the thread, stop it or open it in T3 Code, and `t3 <text>` in the search sends a message to the thread that was active last.
+
+![A waiting agent session with the command and Deny and Allow](../../assets/t3-approval.png)
+
+## Looks like GNOME
+
+The colours follow the top bar and the accent colour of the system, light or dark. Animations are off when the animations of GNOME are off. High contrast and large text are supported.
+
+## Everything is optional
+
+Each built-in module can be turned off and put in order in the settings, or in the Modules view of the dock in the panel.
+
+![The settings window with the list of modules](../../assets/screenshots/prefs-modules-dark.png)
