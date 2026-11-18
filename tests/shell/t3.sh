@@ -148,6 +148,8 @@ check 'the expanded waiting row shows the complete command' \
     "(async () => { A.chevron('$wait_title').emit('clicked', 1); await A.wait(300); const label = A.find('visor-t3-command').find(a => a.mapped); return label != null && label.text === \"printf 'subagent approval fixture' > subagent-approval.txt\" && !label.clutter_text.get_layout().is_ellipsized() && !A.find('visor-t3-cut').some(a => a.mapped) || (label ? label.text : 'no label'); })()"
 check 'with Deny and Allow below it' \
     "A.answers().map(b => b.label_actor.text).join() === 'Deny,Allow'"
+# A request that has just come in ignores Allow and Deny for 500 ms (ANSWER_GUARD_MS).
+sleep 0.6
 run "A.answers()[1].emit('clicked', 1)"
 check 'Allow: the row runs at once' "A.row('thread-wait').status === undefined && A.row('thread-wait').primary === undefined && A.row('thread-wait').subtitle.startsWith('visor · Working')"
 wait_check 'the dot and the chip are gone' "visor.content.attention === null && A.chip() === null && !A.dot().visible"
