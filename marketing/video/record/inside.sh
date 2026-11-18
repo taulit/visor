@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Runs inside the sandbox of scripts/nested.sh (see record.sh): prepares the
 # desktop and the modules, then records one clip per scene.
-# Usage: inside.sh OUTDIR scene...
+# Usage: inside.sh OUTDIR T3DIR scene...
+#   T3DIR: a built checkout of taulit/visor-t3 (the T3 Code module), or "-".
 set -euo pipefail
 raw="$1"
-shift
+t3_repo="$2"
+shift 2
 repo="$VISOR_REPO"
 source "$repo/scripts/lib/shell.sh"
 source "$repo/scripts/scenarios/content-lib.sh"
@@ -103,15 +105,25 @@ gjs -m "$repo/tests/shell/calendar-events.js" '[
     {"uid":"standup","summary":"Team standup","start":4,"minutes":15,"location":"https://meet.google.com/abc-defg-hij"},
     {"uid":"lunch","summary":"Lunch with Sam","start":150,"minutes":60}]' >/dev/null 2>&1 || true
 
-# T3 Code: the mock server with one working and one finished session.
-t3_port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
-node "$repo/tests/t3-mock/server.js" --port "$t3_port" --home "$HOME/.t3" --fixture default >"$HOME/t3-mock.log" 2>&1 &
-t3() { curl -s -X POST "http://127.0.0.1:$t3_port/__mock/$1" "${@:2}" >/dev/null; }
-shell_wait_for "visor.content.registry.get('t3') !== undefined"
-t3_pair "http://127.0.0.1:$t3_port" mock-token
-shell_wait_for "$(rows t3).length > 0" 10
-for id in thread-wait-child thread-wait thread-error; do t3 "remove?thread=$id"; done
-shell_wait_for "$(rows t3).length === 2 && !$(rows t3).some(r => r.id === 't3:thread-wait')" 10
+# T3 Code: the module of taulit/visor-t3 with its mock server, one working
+# and one finished session.
+if [[ "$t3_repo" != - ]]; then
+    t3_uuid='visor-t3@taulit.github.io'
+    t3_port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
+    node "$t3_repo/tests/mock/server.js" --port "$t3_port" --home "$HOME/.t3" --fixture default >"$HOME/t3-mock.log" 2>&1 &
+    t3() { curl -s -X POST "http://127.0.0.1:$t3_port/__mock/$1" "${@:2}" >/dev/null; }
+    shell_wait_for "Main.extensionManager.lookup('$t3_uuid')?.state === 1 && visor.content.registry.get('t3') != null" 15
+    # What pairing in the settings window of the module leaves behind.
+    origin="http://127.0.0.1:$t3_port"
+    printf 'mock-token' | secret-tool store --label="Visor: T3 Code ($origin)" xdg:schema io.github.taulit.Visor.T3 origin "$origin"
+    schema_dir="$HOME/.local/share/gnome-shell/extensions/$t3_uuid/schemas"
+    GSETTINGS_SCHEMA_DIR="$schema_dir" gsettings set org.gnome.shell.extensions.visor-t3 token-origin "$origin"
+    serial="$(GSETTINGS_SCHEMA_DIR="$schema_dir" gsettings get org.gnome.shell.extensions.visor-t3 token-serial | grep -oE '[0-9]+$')"
+    GSETTINGS_SCHEMA_DIR="$schema_dir" gsettings set org.gnome.shell.extensions.visor-t3 token-serial "$((serial + 1))"
+    shell_wait_for "$(rows t3).length > 0" 10
+    for id in thread-wait-child thread-wait thread-error; do t3 "remove?thread=$id"; done
+    shell_wait_for "$(rows t3).length === 2 && !$(rows t3).some(r => r.id === 't3:thread-wait')" 10
+fi
 
 shell_wait_for "$(rows media).length === 1 && $(rows timers).length === 2"
 run 'visor.notch.close()'

@@ -12,7 +12,6 @@ Type in the field of the open panel. The arrow keys choose, <kbd>Enter</kbd> run
 | `timer 25m Pizza`, `timer 1h30 Laundry`, `timer 90s`                                                              | Starts a countdown with an optional name.                                                    |
 | `timer 18:30 Meeting`, `timer 6:30 pm`                                                                            | Starts an alarm for the next time the clock shows that time.                                 |
 | `stopwatch Research`                                                                                              | Starts a stopwatch.                                                                          |
-| `t3 Please add a test`                                                                                            | Sends the text to the thread of T3 Code that was active last, or starts a new thread.        |
 | `1+1`, `sqrt(16)`, `2 ^ 3`, `20% of 80`, `pi*2`                                                                   | Calculates. Enter copies the result.                                                         |
 | `100 usd in eur`, `50 chf`, `100$ €`                                                                              | Converts with the daily rates of the European Central Bank. Enter copies the result.         |
 | `10ft in m`, `100 km/h in mph`, `1 GiB in MB`, `20 c in f`                                                        | Converts units: length, area, volume, mass, time, speed, temperature, data, energy and more. |

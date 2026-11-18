@@ -9,6 +9,8 @@
 # and <scene>.json with the time of each step (see inside.sh).
 #
 # Needs: a built extension (pnpm build), pipewire, wireplumber, ffmpeg, magick, node.
+# The t3 scene needs the T3 Code module: a checkout of taulit/visor-t3 with
+# `pnpm build` done, in VISOR_T3_REPO (default: ../visor-t3 next to this repository).
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,13 +21,27 @@ mkdir -p "$out" "$repo/.shell-test"
 scenes=("$@")
 [[ ${#scenes[@]} -gt 0 ]] || scenes=(intro search t3)
 
+t3_repo="${VISOR_T3_REPO:-$repo/../visor-t3}"
+t3_args=()
+if [[ -f "$t3_repo/build/metadata.json" ]]; then
+    t3_repo="$(cd "$t3_repo" && pwd)"
+    t3_args=(--extension "$t3_repo/build")
+else
+    t3_repo=-
+    if [[ " ${scenes[*]} " == *" t3 "* ]]; then
+        echo "record.sh: no built visor-t3 (set VISOR_T3_REPO); leaving out the t3 scene" >&2
+        scenes=("${scenes[@]/t3/}")
+        read -r -a scenes <<<"${scenes[*]}"
+    fi
+fi
+
 raw="$(mktemp -d)"
 trap 'rm -rf "$raw"' EXIT
 
 # 3200x1800 at scale 2: a 1600x900 desktop in sharp pixels, so the zooms of
 # the edit stay crisp.
-"$repo/scripts/nested.sh" --animations --size 3200x1800 --log "$repo/.shell-test/marketing-record.log" -- \
-    bash "$here/inside.sh" "$raw" "${scenes[@]}" 2>"$repo/.shell-test/marketing-record.stderr" ||
+"$repo/scripts/nested.sh" --animations --size 3200x1800 "${t3_args[@]}" --log "$repo/.shell-test/marketing-record.log" -- \
+    bash "$here/inside.sh" "$raw" "$t3_repo" "${scenes[@]}" 2>"$repo/.shell-test/marketing-record.stderr" ||
     echo "record.sh: the recording failed, see .shell-test/marketing-record.stderr" >&2
 
 # The screencast has a variable frame rate (a frame only when something moves);

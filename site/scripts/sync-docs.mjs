@@ -17,7 +17,6 @@ const shots = [
   'search-dark',
   'search-convert-dark',
   'search-date-dark',
-  't3-dark',
   'now-dark',
   'ahead-dark',
   'modules-view-dark',

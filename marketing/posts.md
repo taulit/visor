@@ -18,6 +18,7 @@ All three have no sound and work without it: every step has a short English capt
 
 - Decide the install path the post links to. The README still says "link after release" for extensions.gnome.org and the AUR. Posting before the extensions.gnome.org review is through means people can only build from source, which costs a lot of the interest a launch post gets. Best: post on the day the extension is live on extensions.gnome.org.
 - The website (https://taulit.github.io/visor/) works only after GitHub Pages is switched on (see the PR).
+- The video shows the T3 Code approvals, which come from the separate module Visor: T3 Code (taulit/visor-t3). That repository is private right now; make it public (and ideally released) before posting, or people ask where to get it.
 - Post from the personal account, one subreddit per day or two, not all at once (crossposting the same video to five subreddits in an hour looks like spam to moderators and to Reddit's filters).
 - Stay in the comments for the first two hours. Answer questions, take criticism without arguing.
 
@@ -57,8 +58,8 @@ Sources (secondary): [rules list quoted in lumen-wm PR #14](https://github.com/m
 > Some things I cared about:
 >
 > - It follows the top bar, your accent colour and light/dark, and respects reduced animations.
-> - No account, no telemetry. The only network requests are the ECB exchange rates (only when you type a conversion, can be turned off), cover art a player points to, and a T3 Code server if you pair one.
-> - Other extensions can add their own rows or sections through a small, frozen module API.
+> - No account, no telemetry. The only network requests are the ECB exchange rates (only when you type a conversion, can be turned off) and cover art a player points to.
+> - Other extensions can add their own rows or sections through a small, frozen module API. The AI agent part in the video is one: Visor: T3 Code, a separate extension that shows T3 Code sessions and lets you answer their approvals.
 > - Disabling it brings the normal date menu back.
 >
 > It needs GNOME Shell 50 or 51. It's GPL, on GitHub: https://github.com/taulit/visor (install: [extensions.gnome.org link / "build from source" until the review is done])
@@ -77,9 +78,9 @@ Sources (secondary): [rules list quoted in lumen-wm PR #14](https://github.com/m
 
 > Visor is a GNOME Shell 50/51 extension I've been building. The clock in the middle of the top bar becomes a notch: it peeks out when something happens and opens into a panel with players (MPRIS), timers, downloads, calendar events and notifications, plus one search field for calculations, conversions, time zones, apps and system actions.
 >
-> One part that's a bit unusual: when a T3 Code agent wants to run a command, the notch lights up and I can read the command and allow or deny it without switching windows.
+> One part that's a bit unusual: with the companion module Visor: T3 Code (a separate extension, built on the same module API anyone can use), the notch lights up when a T3 Code agent wants to run a command, and you can read the command and allow or deny it without switching windows.
 >
-> Technical bits, since this is r/linux: TypeScript compiled to GJS, no runtime dependencies, the calculator is a small parser (no `eval`), no telemetry, every network request is listed in the README with a switch to turn it off, tokens go in the keyring via libsecret. Tests run in a sandboxed headless GNOME Shell so they never touch your session. Modules from other extensions plug in through a versioned API.
+> Technical bits, since this is r/linux: TypeScript compiled to GJS, no runtime dependencies, the calculator is a small parser (no `eval`), no telemetry, every network request is listed in the README with a switch to turn it off. Tests run in a sandboxed headless GNOME Shell so they never touch your session. Modules from other extensions plug in through a versioned API.
 >
 > GPL-2.0-or-later: https://github.com/taulit/visor
 >
@@ -115,7 +116,7 @@ Only after checking the rules above (flair, two-windows rule).
 
 **Text:**
 
-> Visor is a GNOME Shell extension: the clock in the top bar turns into a notch that shows what's playing, running timers, downloads, your next meetings and notifications, and has a search field for quick maths, conversions and apps. It also shows when an AI coding agent (T3 Code) needs an approval, and you can allow it right there.
+> Visor is a GNOME Shell extension: the clock in the top bar turns into a notch that shows what's playing, running timers, downloads, your next meetings and notifications, and has a search field for quick maths, conversions and apps. With a companion module it also shows when an AI coding agent (T3 Code) needs an approval, and you can allow it right there.
 >
 > Built in TypeScript, no telemetry, other extensions can add modules. Free and open source: https://github.com/taulit/visor
 >
@@ -129,7 +130,7 @@ Only after checking the rules above (flair, two-windows rule).
 
 > Your top bar, but it pays attention. 👀
 >
-> Visor turns the clock of GNOME into a notch: it peeks out when something happens and opens into what's playing, your timers, your next meeting, and the AI agent that's waiting for your OK.
+> Visor turns the clock of GNOME into a notch: it peeks out when something happens and opens into what's playing, your timers, your next meeting, and (with a module) the AI agent that's waiting for your OK.
 >
 > One search field does the rest: maths, currencies, time zones, apps, timers.
 >

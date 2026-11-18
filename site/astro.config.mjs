@@ -16,7 +16,7 @@ export default defineConfig({
     starlight({
       title: 'Visor',
       description:
-        'Visor is a Dynamic Island and notch for GNOME Shell: media, timers, downloads, calendar, notifications, search and AI agent approvals below the top bar.',
+        'Visor is a Dynamic Island and notch for GNOME Shell: media, timers, downloads, calendar, notifications and search below the top bar, open to modules from other extensions.',
       logo: { src: './src/assets/logo.svg', alt: 'Visor' },
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/taulit/visor' }],

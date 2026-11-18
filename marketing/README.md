@@ -16,7 +16,7 @@ pnpm build                          # in the repository root: the extension
 marketing/video/record/record.sh    # or: record.sh intro search t3
 ```
 
-`record.sh` starts the headless GNOME Shell of `scripts/nested.sh` (its own home, D-Bus session and keyring, never your session) at 3200×1800 with scale 2, so the desktop is 1600×900 and zooms stay sharp. It loads the mock media player, timers, a download, two calendar events and the T3 Code mock server of the tests, starts PipeWire in the sandbox and records each scene with the screencast service of GNOME Shell:
+`record.sh` starts the headless GNOME Shell of `scripts/nested.sh` (its own home, D-Bus session and keyring, never your session) at 3200×1800 with scale 2, so the desktop is 1600×900 and zooms stay sharp. It loads the mock media player, timers, a download and two calendar events, and for the `t3` scene the module [Visor: T3 Code](https://github.com/taulit/visor-t3) with the mock server of its tests (a checkout with `pnpm build` done, in `VISOR_T3_REPO`, default `../visor-t3`; without it the `t3` scene is left out). It starts PipeWire in the sandbox and records each scene with the screencast service of GNOME Shell:
 
 | Scene    | What happens                                                                                    |
 | -------- | ----------------------------------------------------------------------------------------------- |

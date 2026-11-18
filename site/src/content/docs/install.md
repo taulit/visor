@@ -7,7 +7,6 @@ description: 'How to install the Visor GNOME Shell extension from extensions.gno
 
 - **GNOME Shell 50 or 51.** Other versions are not supported.
 - For the Join button of Up Next: the typelibs of Evolution Data Server (`ECal`, `EDataServer`). Without them the button is missing and nothing else changes.
-- For the T3 Code module: a running [T3 Code](https://github.com/pingdotgg/t3code) server. Without one it stays empty.
 
 While Visor is enabled it replaces the date menu in the middle of the top bar. Disabling Visor brings the date menu back unchanged.
 
@@ -44,7 +43,7 @@ Open the settings in the Extensions app or with:
 gnome-extensions prefs visor@taulit.github.io
 ```
 
-There you can turn each built-in module off, change their order, set an extra shortcut, turn off the currency rates and pair Visor with T3 Code.
+There you can turn each built-in module off, change their order, set an extra shortcut and turn off the currency rates. Modules from other extensions, such as Visor: T3 Code, are installed like any other extension and have their own settings.
 
 ## Uninstall
 

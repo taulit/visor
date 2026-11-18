@@ -22,8 +22,7 @@ export const Og: React.FC = () => (
         A Dynamic Island for GNOME Shell
       </div>
       <div style={{ fontSize: 26, color: colors.dim, marginTop: 26, lineHeight: 1.35 }}>
-        Media, timers, calendar, search and AI agent approvals below the top bar. Free and open
-        source.
+        Media, timers, calendar and search below the top bar, open to modules. Free and open source.
       </div>
     </div>
     {/* The open panel, cut from the recording (x 636–2560, y 66–884 of 3200x1800); it bleeds off the right edge. */}

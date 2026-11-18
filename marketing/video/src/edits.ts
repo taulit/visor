@@ -14,13 +14,15 @@ const NOTCH: Rect = [1000, 0, 1200, 675];
 const PANEL: Rect = [400, 0, 2400, 1350];
 const NOW: Rect = [560, 0, 1900, 1069];
 const RESULTS: Rect = [600, 0, 1500, 844];
-const T3_ROW: Rect = [560, 40, 1900, 1069];
+// The rows of the T3 Code module come after the built-in ones, low in Now.
+const T3_ROW: Rect = [560, 420, 1900, 1069];
 
 // For the tall box of the reel.
 const V_NOTCH: Rect = [1100, 0, 1000, 1000];
 const V_PEEK: Rect = [860, 0, 1480, 1480];
 const V_NOW: Rect = [626, 0, 980, 980];
 const V_NEXT: Rect = [1580, 0, 980, 980];
+const V_T3: Rect = [626, 420, 980, 980];
 const V_SEARCH: Rect = [626, 0, 980, 980];
 
 /** One query of the search clip, from the first key to the held result. */
@@ -113,7 +115,7 @@ export const long: Part[] = [
       { at: t3.ask + 0.4, text: 'The notch lights up' },
       { at: t3.open + 0.2, text: 'See what it wants to run' },
       { at: t3.allow - 0.4, text: '**Allow** it right from the top bar' },
-      { at: t3.close, text: 'Works with T3 Code' },
+      { at: t3.close, text: 'With the **T3 Code** module for Visor' },
     ],
   },
   { kind: 'outro', seconds: 3.6 },
@@ -154,7 +156,7 @@ export const reel: Part[] = [
     to: t3.open + 1.4,
     cams: [
       { at: 0, rect: V_PEEK },
-      { at: t3.open + 0.05, rect: V_NOW, dur: 0.7 },
+      { at: t3.open + 0.05, rect: V_T3, dur: 0.9 },
     ],
     captions: [{ at: 0, text: 'Your AI agent needs you?' }],
   },
@@ -163,7 +165,7 @@ export const reel: Part[] = [
     clip: 't3',
     from: t3.unfold + 0.9,
     to: t3.allow + 2.0,
-    cams: [{ at: 0, rect: V_NOW }],
+    cams: [{ at: 0, rect: V_T3 }],
     captions: [{ at: 0, text: '**Allow** it from the top bar' }],
   },
   { kind: 'outro', seconds: 2.6 },

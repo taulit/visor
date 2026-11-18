@@ -3,7 +3,7 @@ title: Write a module
 description: 'Add rows, sections and dock views to Visor from your own GNOME Shell extension with the stable module API v1, the connectVisor() helper and the module template.'
 ---
 
-A **module** is a GNOME extension of its own that hands Visor rows for **Now**, a section for **Up Next**, or an icon with a view of its own in the dock. The built-in modules (Media, Timers, Downloads, Up Next, Notifications, T3 Code) use exactly the same API. The contract is frozen as [version 1](/visor/modules/api-v1/).
+A **module** is a GNOME extension of its own that hands Visor rows for **Now**, a section for **Up Next**, or an icon with a view of its own in the dock. The built-in modules (Media, Timers, Downloads, Up Next, Notifications) use exactly the same API, and so does Visor: T3 Code, the agent sessions of T3 Code as a module of its own. The contract is frozen as [version 1](/visor/modules/api-v1/).
 
 | Slot      | Place                                        | What the module provides                       |
 | --------- | -------------------------------------------- | ---------------------------------------------- |
