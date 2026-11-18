@@ -33,7 +33,6 @@ else
 fi
 check 'no timeline left' 'visor.notch.motion.running' false
 check 'at rest the clip is as large as the body' "(s => s.at(-1)[3] === s.at(-1)[1] && s.at(-1)[4] === s.at(-1)[2])($open)" true
-check 'shadow is shown once settled' 'visor.notch.shadow.visible' true
 
 echo "--- open -> idle (ease-out quint, 400 ms)"
 close="$(shell_eval "visorTest.sample(visor.notch, () => visor.notch.close(), 600)")"

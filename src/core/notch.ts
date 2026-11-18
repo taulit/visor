@@ -8,7 +8,6 @@
 //   └─ neck                  clock and attention dot (core/clock.ts)
 //   Main.uiGroup             chrome, just above the panel
 //   └─ root                  0 × 0 at the centre of the panel's lower edge
-//      ├─ shadow             shown once the size has settled
 //      ├─ ear, ear           concave corners in the colour of the panel
 //      ├─ seam               covers the line some themes draw along the panel's lower edge
 //      ├─ body               the background; the only actor that is resized per frame
@@ -68,7 +67,10 @@ const DURATION: Record<NotchState, number> = { idle: 400, hint: 500, peek: 620, 
 const CONTENT_IN_DELAY = 80;
 const CONTENT_IN = 300;
 const CONTENT_OUT = 140;
-const SHADOW_IN = 120;
+/** Seconds after start until the sheet is built ahead of its first use. */
+const WARM_UP_AFTER = 3;
+/** Milliseconds the sheet then stays in the layout, unseen: time for one frame. */
+const WARM_UP_FRAME = 100;
 
 const STATE_CLASSES: NotchState[] = ['hint', 'peek', 'open'];
 const THEME_CLASSES = [CLASS_DARK, CLASS_LIGHT, CLASS_HIGH_CONTRAST];
@@ -97,7 +99,6 @@ export class Notch implements NotchHost {
   private clock: Clock;
   private neck: St.Widget;
   private root: St.Widget;
-  private shadow: St.Widget;
   private ears: [Ear, Ear];
   private seam: St.Widget;
   private body: St.Widget;
@@ -122,6 +123,9 @@ export class Notch implements NotchHost {
   private overBody = false;
   private pointerInside = false;
   private syncLater = 0;
+  private warmUpSource = 0;
+  /** The sheet, while it is laid out ahead of its first use. */
+  private warming: St.Widget | null = null;
   private themeKey = '';
   private bannerWasBlocked = false;
 
@@ -155,12 +159,10 @@ export class Notch implements NotchHost {
       width: 0,
       height: 0,
     });
-    this.shadow = new St.Widget({ style_class: 'visor-shadow', visible: false });
     this.ears = [new Ear('left'), new Ear('right')];
     this.seam = new St.Widget({ visible: false });
     this.body = new St.Widget({ style_class: 'visor-body', reactive: true, visible: false });
     this.clip = new Clutter.Actor({ layout_manager: new Clutter.FixedLayout() });
-    this.root.add_child(this.shadow);
     for (const ear of this.ears) this.root.add_child(ear.actor);
     this.root.add_child(this.seam);
     this.root.add_child(this.body);
@@ -243,6 +245,10 @@ export class Notch implements NotchHost {
     );
 
     this.syncTheme();
+
+    this.warmUpSource = GLib.timeout_add_seconds(GLib.PRIORITY_LOW, WARM_UP_AFTER, () =>
+      this.warmUp(),
+    );
   }
 
   // ---------------------------------------------------------------- NotchHost
@@ -347,6 +353,7 @@ export class Notch implements NotchHost {
   }
 
   private change(state: NotchState, previous: NotchState, animate: boolean): void {
+    this.endWarmUp();
     // The new state is measured below, once its content is in the clip.
     this.updatePosition();
 
@@ -358,10 +365,8 @@ export class Notch implements NotchHost {
 
     // The lower corners. Closing keeps the radius it has; it shrinks with the height.
     if (state !== 'idle') {
-      for (const actor of [this.body, this.shadow]) {
-        for (const name of STATE_CLASSES) actor.remove_style_class_name(name);
-        actor.add_style_class_name(state);
-      }
+      for (const name of STATE_CLASSES) this.body.remove_style_class_name(name);
+      this.body.add_style_class_name(state);
     }
 
     this.retarget(animate);
@@ -418,6 +423,42 @@ export class Notch implements NotchHost {
     }
   }
 
+  /**
+   * Builds, styles and lays out the sheet once, a moment after start, so the
+   * first open costs what every later one does. St resolves styles only for
+   * actors on screen and lays them out with the next frame: the sheet stays
+   * in the clip for that long, transparent and behind an empty clip, so it is
+   * neither seen nor picked. Returns whether the timer has to come again.
+   */
+  private warmUp(): boolean {
+    // Busy, or hidden by a fullscreen window: next time.
+    if (this.model.state !== 'idle' || this.body.visible || !this.root.mapped)
+      return GLib.SOURCE_CONTINUE;
+
+    this.warmUpSource = 0;
+    const sheet = this.content.getSheet();
+    // Opened before the timer fired.
+    if (sheet.get_parent() === this.clip) return GLib.SOURCE_REMOVE;
+
+    sheet.opacity = 0;
+    this.clip.set_clip(0, 0, 0, 0);
+    this.clip.add_child(sheet);
+    this.measureSheet();
+    this.warming = sheet;
+    this.warmUpSource = GLib.timeout_add(GLib.PRIORITY_LOW, WARM_UP_FRAME, () => {
+      this.warmUpSource = 0;
+      this.endWarmUp();
+      return GLib.SOURCE_REMOVE;
+    });
+    return GLib.SOURCE_REMOVE;
+  }
+
+  /** Takes the sheet out of the layout again; a state that begins finds it as after a close. */
+  private endWarmUp(): void {
+    this.warming?.hide();
+    this.warming = null;
+  }
+
   // ----------------------------------------------------------------- geometry
 
   /** Width of the neck, as allocated or, before the first layout, as it asks for. */
@@ -462,23 +503,28 @@ export class Notch implements NotchHost {
         return { halfWidth, height, ear: EAR * s, reveal: 1 };
       }
 
-      case 'open': {
-        const sheet = this.content.getSheet();
-        const halfWidth = half(this.content.sheetWidth());
-        // Without the height of the last time, to learn what it asks for now.
-        sheet.set_size(halfWidth * 2, -1);
-        const [, natural] = sheet.get_preferred_height(halfWidth * 2);
-        const screen = Main.layoutManager.primaryMonitor?.height ?? global.stage.height;
-        const height = Math.round(
-          Math.max(0, Math.min(natural, SHEET_MAX_HEIGHT * s, screen - SHEET_SCREEN_MARGIN * s)),
-        );
-        this.layout(halfWidth * 2, height);
-        sheet.set_height(height);
-        sheet.set_position(0, 0);
-        return { halfWidth, height, ear: EAR * s, reveal: 1 };
-      }
+      case 'open':
+        return this.measureSheet();
     }
     return this.current;
+  }
+
+  /** The size of the open state; lays out the sheet at that size. */
+  private measureSheet(): Shape {
+    const s = scaleFactor();
+    const sheet = this.content.getSheet();
+    const halfWidth = Math.ceil(this.content.sheetWidth() / 2);
+    // Without the height of the last time, to learn what it asks for now.
+    sheet.set_size(halfWidth * 2, -1);
+    const [, natural] = sheet.get_preferred_height(halfWidth * 2);
+    const screen = Main.layoutManager.primaryMonitor?.height ?? global.stage.height;
+    const height = Math.round(
+      Math.max(0, Math.min(natural, SHEET_MAX_HEIGHT * s, screen - SHEET_SCREEN_MARGIN * s)),
+    );
+    this.layout(halfWidth * 2, height);
+    sheet.set_height(height);
+    sheet.set_position(0, 0);
+    return { halfWidth, height, ear: EAR * s, reveal: 1 };
   }
 
   /** Gives the clip box its final size; content that fades out stays centred. */
@@ -516,9 +562,6 @@ export class Notch implements NotchHost {
     this.corner = this.body.get_theme_node().get_border_radius(St.Corner.BOTTOMLEFT);
     this.place(from);
 
-    // The shadow never follows a moving edge.
-    this.shadow.remove_all_transitions();
-    this.shadow.hide();
     this.body.show();
     this.seam.show();
     for (const ear of this.ears) ear.actor.show();
@@ -598,27 +641,10 @@ export class Notch implements NotchHost {
     // At rest the ears are drawn at their own size, not scaled.
     this.drawEars(this.target.ear);
     this.place(this.target, false);
-    if (state === 'hint') return;
-
-    const halfWidth = Math.round(this.target.halfWidth);
-    this.shadow.set_position(-halfWidth, 0);
-    this.shadow.set_size(halfWidth * 2, Math.round(this.target.height));
-    // It falls on what is below the panel, never on the panel itself.
-    const spread = 200 * scaleFactor();
-    this.shadow.set_clip(-spread, 0, halfWidth * 2 + spread * 2, this.target.height + spread);
-    this.shadow.opacity = 0;
-    this.shadow.show();
-    this.shadow.ease({
-      opacity: 255,
-      duration: SHADOW_IN,
-      mode: Clutter.AnimationMode.LINEAR,
-    });
   }
 
   /** Idle: nothing of the body is painted or can be picked, and nothing runs. */
   private hideAll(): void {
-    this.shadow.remove_all_transitions();
-    this.shadow.hide();
     this.body.hide();
     this.seam.hide();
     for (const ear of this.ears) ear.actor.hide();
@@ -690,8 +716,6 @@ export class Notch implements NotchHost {
     }
     this.body.set_style(`background-color: ${css};`);
     this.seam.set_style(`background-color: ${css};`);
-    // The shadow is cast by a box of its own that hides behind the body.
-    this.shadow.set_style(`background-color: ${css};`);
     for (const ear of this.ears) ear.setColor(color);
   }
 
@@ -798,6 +822,9 @@ export class Notch implements NotchHost {
     this.destroyed = true;
     for (const id of this.timers.values()) GLib.Source.remove(id);
     this.timers.clear();
+    if (this.warmUpSource) GLib.Source.remove(this.warmUpSource);
+    this.warmUpSource = 0;
+    this.warming = null;
     if (this.syncLater) global.compositor.get_laters().remove(this.syncLater);
     this.syncLater = 0;
     this.queue.length = 0;

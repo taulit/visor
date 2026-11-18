@@ -96,9 +96,7 @@ Typen kommen von `@girs/gnome-shell` und den passenden `@girs/*`-Paketen für GN
   - Animiert werden nur Breite und Höhe eines Clip-Containers.
   - Der Inhalt wird einmal auf Endgröße gelayoutet und dann nur noch per Clip enthüllt. So gibt es keinen Relayout pro Frame.
   - Der Inhalt blendet mit Opazität ein (300 ms, 80 ms verzögert) und gleitet von translateY −6 px und scale 0,97. Unschärfe gibt es nicht, sie wäre zu teuer.
-- **Schatten:**
-  - Liegt auf einem eigenen Aktor hinter dem Körper.
-  - Erscheint erst nach dem Einrasten der Größe mit einer Einblendung von 120 ms, damit er nicht pro Frame neu berechnet wird.
+- **Schatten:** keiner. Der Körper setzt sich allein durch die Farbe der Leiste ab (2026-11-18 entfernt: der nach dem Einrasten eingeblendete Schatten wirkte fremd).
 - **Ohne Animationen:** Bei `org.gnome.desktop.interface enable-animations = false` springen alle Übergänge sofort.
 - **Hover-Logik** wie im Prototyp:
   - Verlassen von Hals und Körper startet einen Timer von 250 ms, Wiedereintritt bricht ihn ab.

@@ -132,8 +132,8 @@ note='T.notifications().length'
 state='visor.notch.state'
 
 echo "# scenario 1: a notification arrives while the panel is closed"
-check 'at rest: idle, no chip, no dot, both sections not built yet' \
-    "$state === 'idle' && !visor.content.hasPeek() && T.content.attention === null && visor.content.sheet.root === null"
+check 'at rest: idle, no chip, no dot' \
+    "$state === 'idle' && !visor.content.hasPeek() && T.content.attention === null"
 notify mail '{"app":"Mail","title":"Quarterly report","body":"The numbers are in","desktop":"org.gnome.Settings","actions":["default","Open"]}'
 shell_wait_for "$state === 'peek'" || true
 run 'globalThis.flashStart = GLib.get_monotonic_time()'

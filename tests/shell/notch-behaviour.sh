@@ -26,7 +26,6 @@ check 'root is centred on the neck, below the panel' "[$n.root.x, $n.root.y]" "[
 check 'root is on the primary monitor' "Main.layoutManager.findMonitorForActor($n.root) === Main.layoutManager.primaryMonitor" true
 check 'idle: nothing of the body can be picked' "[$ours($nx, $panel + 2), $ours($nx, $panel + 30)]" '[false,false]'
 check 'idle: quiet' "$quiet" '["idle",false,false,0]'
-check 'content not built yet' '[visor.content.peek.actor, visor.content.sheet.root]' '[null,null]'
 
 echo "--- hover (virtual pointer)"
 shell_eval "visorTest.move(...visorTest.away)" >/dev/null

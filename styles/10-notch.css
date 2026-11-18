@@ -1,4 +1,4 @@
-/* ---- Notch: the neck in the panel, the body, the ears and the shadow below it ---- */
+/* ---- Notch: the neck in the panel, the body and the ears ---- */
 
 /* The neck carries the classes of the stock clock button, which give it the
    font and the colour of the panel. Only its box is Visor's own. */
@@ -46,22 +46,14 @@
 /* The colour of the body is the colour of the panel, set inline. The lower
    corners belong to the state; St shrinks them while the body is still flat.
    The hint is 8 px high: an ear of 4 px runs straight into a corner of 4 px. */
-.visor-body.hint,
-.visor-shadow.hint {
+.visor-body.hint {
   border-radius: 0 0 4px 4px;
 }
 
-.visor-body.peek,
-.visor-shadow.peek {
+.visor-body.peek {
   border-radius: 0 0 24px 24px;
 }
 
-.visor-body.open,
-.visor-shadow.open {
+.visor-body.open {
   border-radius: 0 0 30px 30px;
-}
-
-/* A box of the size of the body behind it, only there to cast the shadow. */
-.visor-shadow {
-  box-shadow: 0 34px 70px -24px rgba(0, 0, 0, 0.75);
 }

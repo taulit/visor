@@ -45,7 +45,7 @@ Der Körper hat immer die Farbe der Leiste. Die Vordergrund-Tokens hängen von d
 | hint | Halsbreite + 40 × 8, Radius 8 |
 | peek | Chips + 28 × 56, Radius 24, Chips 12 px/500, Höhe 26, Radius voll, Abstand 8 |
 | open | Breite 960 (800/1120 wählbar), Höhe = Inhalt, max. 820, Radius unten 30 |
-| Schatten | `0 34px 70px -24px rgba(0,0,0,.75)`, erst nach dem Einrasten |
+| Schatten | keiner (2026-11-18 entfernt) |
 | Sheet-Innenabstand | 0 24 20 |
 | Suchzeile | Höhe 56, Symbol 18, Eingabe 17 px/500, Hairline unten |
 | Dock | Linke Hairline, 10 px Abstand, Symbolknöpfe 30×30, Radius 9, Symbol 17, Farbe muted → fg bei Hover |
