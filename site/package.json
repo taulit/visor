@@ -1,0 +1,20 @@
+{
+  "name": "visor-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-docs.mjs",
+    "dev": "pnpm sync && astro dev",
+    "build": "pnpm sync && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.43.1",
+    "astro": "^7.4.12",
+    "sharp": "^0.35.5"
+  },
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=24"
+  }
+}

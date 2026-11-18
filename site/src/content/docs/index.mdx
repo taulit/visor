@@ -1,0 +1,99 @@
+---
+title: Visor, a Dynamic Island for GNOME Shell
+description: 'Visor puts a notch below the GNOME top bar. It shows media, timers, downloads, calendar events and notifications, has one search field for calculations, conversions, apps and commands, and takes modules such as AI agent approvals.'
+template: splash
+head:
+  - tag: title
+    content: Visor – a Dynamic Island and notch for GNOME Shell
+hero:
+  title: A Dynamic Island for GNOME Shell
+  tagline: Visor turns the clock in the top bar into a notch. It shows what plays, runs and waits, what comes next, and has one search field for everything else. Free and open source.
+  image:
+    file: ../../assets/hero.png
+    alt: The open Visor panel below the GNOME top bar, with a playing song, a coding agent, timers and calendar events
+  actions:
+    - text: Install
+      link: /visor/install/
+      icon: right-arrow
+    - text: GitHub
+      link: https://github.com/taulit/visor
+      icon: github
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import openReal from '../../assets/screenshots/open-real-dark.png';
+import search from '../../assets/screenshots/search-convert-dark.png';
+import t3 from '../../assets/t3-approval.png';
+import openLight from '../../assets/screenshots/open-real-light.png';
+
+export const media = path => `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}media/${path}`;
+
+<video
+  class="demo-video"
+  controls
+  muted
+  playsinline
+  preload="metadata"
+  poster={media('visor-demo-poster.jpg')}
+  aria-label="Visor in a GNOME session: the notch opens, the search calculates and converts, a timer starts and a coding agent asks for approval"
+>
+  <source src={media('visor-demo.mp4')} type="video/mp4" />
+</video>
+
+## What it does
+
+<CardGrid>
+  <Card title="Now" icon="seti:video">
+    Players that report through MPRIS with cover and controls, timers, alarms and stopwatches,
+    running downloads and the sessions of your coding agent.
+  </Card>
+  <Card title="Up Next" icon="seti:clock">
+    Your next calendar events with a Join button for video calls, and the notifications of the shell
+    with Do Not Disturb.
+  </Card>
+  <Card title="One search field" icon="magnifier">
+    Calculate, convert currencies and units, ask for time zones and dates, find emoji, launch apps
+    and run system actions. `timer 25m Pizza` starts a timer.
+  </Card>
+  <Card title="Agent approvals" icon="approve-check">
+    With the module [Visor: T3 Code](/visor/features/#agent-approvals-with-t3-code), the notch
+    lights up when a [T3 Code](https://github.com/pingdotgg/t3code) agent wants to run a command.
+    Read it and allow or deny it in the row.
+  </Card>
+  <Card title="Looks like GNOME" icon="setting">
+    Follows the top bar, the accent colour and the light or dark style. Animations stay off when
+    GNOME's animations are off.
+  </Card>
+  <Card title="Modules" icon="puzzle">
+    Other extensions add rows, sections and dock views through a stable, frozen API. [Write a
+    module](/visor/modules/).
+  </Card>
+</CardGrid>
+
+## Screenshots
+
+<div class="shots">
+  <figure>
+    <Image src={openReal} alt="The open Visor panel with Now, Up Next and notifications" />
+    <figcaption>The open panel: Now on the left, Up Next on the right.</figcaption>
+  </figure>
+  <figure>
+    <Image src={search} alt="A currency conversion in the Visor search" />
+    <figcaption>100 usd in eur, with the daily rates of the ECB.</figcaption>
+  </figure>
+  <figure>
+    <Image src={t3} alt="A T3 Code agent asking to run a command, with Deny and Allow in the row" />
+    <figcaption>A coding agent waits for an approval (module Visor: T3 Code).</figcaption>
+  </figure>
+  <figure>
+    <Image src={openLight} alt="The open Visor panel in the light style" />
+    <figcaption>The same panel in the light style.</figcaption>
+  </figure>
+</div>
+
+## Privacy
+
+No account, no telemetry, no server of its own. Visor makes only the requests listed on the
+[privacy page](/visor/privacy/), and each of them can be turned off.
