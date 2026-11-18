@@ -49,7 +49,7 @@ run "(() => {
     globalThis.R = {
         wait,
         key,
-        async type(text, ms = 75) {
+        async type(text, ms = 105) {
             for (const ch of text) {
                 key(Clutter.unicode_to_keysym(ch.codePointAt(0)));
                 await wait(ms + Math.round((Math.random() - 0.5) * 40));
@@ -142,6 +142,11 @@ cast() {
 # Each clip gets <scene>.json next to it: the time of each step in seconds
 # from the first frame, which the edit (src/markers.ts) cuts by.
 now_ms() { date +%s%3N; }
+# The animations of the shell and of Visor run this many times slower while
+# recording, so the opening reads calmly in the video (1 = real speed).
+SLOWDOWN="${SLOWDOWN:-1.6}"
+run "(St.Settings.get().slow_down_factor = $SLOWDOWN, true)"
+
 rec_start() {
     cast Screencast "new GLib.Variant('(sa{sv})', ['$raw/$1.mp4', {'framerate': new GLib.Variant('u', 30), 'draw-cursor': new GLib.Variant('b', false)}])" >/dev/null
     t0="$(now_ms)"
@@ -163,51 +168,51 @@ rec_stop() {
 
 scene_intro() {
     rec_start intro
-    pause 1.6                                   # the clock at rest
+    pause 2.5                                   # the clock at rest
     mark peek
     run 'visor.notch.dispatch({type: "enter"})' # the pointer comes onto the clock: chips peek out
     shell_wait_for 'visor.notch.state === "peek"'
-    pause 1.8
+    pause 2.8
     mark open
     run 'visor.notch.open()'
     shell_wait_for 'visor.notch.state === "open"'
-    pause 4.5
+    pause 5.5
     mark close
     run 'visor.notch.close()'
-    pause 1.5
+    pause 2.5
     rec_stop intro
 }
 
 scene_search() {
     rec_start search
-    pause 0.8
+    pause 1.2
     mark open
     run 'visor.notch.open()'
     shell_wait_for 'visor.notch.state === "open"'
-    pause 0.8
+    pause 1.5
     local i=0
-    for query in 'sqrt(144) * 3' '100 usd in eur' 'time in tokyo' '10 km in miles' 'firef' 'timer 25m Pizza'; do
+    for query in '100 usd in eur' 'timer 25m Pizza'; do
         mark "q${i}_type"
         run "R.type('$query')"
         mark "q${i}_typed"
-        pause 2.2
+        pause 3.2
         mark "q${i}_done"
         if [[ "$query" == timer* ]]; then
             run 'R.key(Clutter.KEY_Return)'
-            pause 2.5
+            pause 2.2
         else
             run 'R.key(Clutter.KEY_Escape)'
-            pause 0.6
+            pause 1.2
         fi
         i=$((i + 1))
     done
     mark reopen
     run 'visor.notch.open()'
     shell_wait_for 'visor.notch.state === "open"'
-    pause 3
+    pause 4
     mark close
     run 'visor.notch.close()'
-    pause 1.2
+    pause 2
     rec_stop search
 }
 
@@ -215,11 +220,11 @@ scene_t3() {
     run 'visor.notch.close()'
     sleep 1
     rec_start t3
-    pause 1.5
+    pause 2
     # The agent asks to run a command: the notch flashes and the chip waits.
     mark ask
     t3 "wait?thread=thread-run&request=request-run&prompt=pnpm%20test%20--%20websocket"
-    pause 3.5
+    pause 4.5
     mark open
     run 'visor.notch.open()'
     shell_wait_for 'visor.notch.state === "open"'
@@ -228,13 +233,13 @@ scene_t3() {
     mark unfold
     run "R.find('visor-row-chevron').find(a => a.mapped).emit('clicked', 1)"
     shell_wait_for "R.find('visor-t3-buttons').some(a => a.mapped && a.get_children().length === 2)"
-    pause 2.2
+    pause 3.5
     mark allow
     run "R.find('visor-t3-buttons').find(a => a.mapped && a.get_children().length === 2).get_last_child().emit('clicked', 1)"
-    pause 3
+    pause 3.5
     mark close
     run 'visor.notch.close()'
-    pause 1.5
+    pause 2.5
     rec_stop t3
 }
 

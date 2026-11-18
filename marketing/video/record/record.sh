@@ -40,7 +40,7 @@ trap 'rm -rf "$raw"' EXIT
 
 # 3200x1800 at scale 2: a 1600x900 desktop in sharp pixels, so the zooms of
 # the edit stay crisp.
-"$repo/scripts/nested.sh" --animations --size 3200x1800 "${t3_args[@]}" --log "$repo/.shell-test/marketing-record.log" -- \
+"$repo/scripts/nested.sh" --animations --size "${RECORD_SIZE:-2560x1440}" "${t3_args[@]}" --log "$repo/.shell-test/marketing-record.log" -- \
     bash "$here/inside.sh" "$raw" "$t3_repo" "${scenes[@]}" 2>"$repo/.shell-test/marketing-record.stderr" ||
     echo "record.sh: the recording failed, see .shell-test/marketing-record.stderr" >&2
 

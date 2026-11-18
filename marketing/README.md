@@ -16,7 +16,7 @@ pnpm build                          # in the repository root: the extension
 marketing/video/record/record.sh    # or: record.sh intro search t3
 ```
 
-`record.sh` starts the headless GNOME Shell of `scripts/nested.sh` (its own home, D-Bus session and keyring, never your session) at 3200×1800 with scale 2, so the desktop is 1600×900 and zooms stay sharp. It loads the mock media player, timers, a download and two calendar events, and for the `t3` scene the module [Visor: T3 Code](https://github.com/taulit/visor-t3) with the mock server of its tests (a checkout with `pnpm build` done, in `VISOR_T3_REPO`, default `../visor-t3`; without it the `t3` scene is left out). It starts PipeWire in the sandbox and records each scene with the screencast service of GNOME Shell:
+`record.sh` starts the headless GNOME Shell of `scripts/nested.sh` (its own home, D-Bus session and keyring, never your session) at 2560×1440 with scale 2 (a 1280×720 desktop in sharp pixels; `RECORD_SIZE` changes it). The animations run 1.6 times slower while recording (`SLOWDOWN`, 1 is real speed) so the opening reads calmly; Visor follows the slow-down setting of GNOME, so these are real frames, not stretched ones. It loads the mock media player, timers, a download and two calendar events, and for the `t3` scene the module [Visor: T3 Code](https://github.com/taulit/visor-t3) with the mock server of its tests (a checkout with `pnpm build` done, in `VISOR_T3_REPO`, default `../visor-t3`; without it the `t3` scene is left out). It starts PipeWire in the sandbox and records each scene with the screencast service of GNOME Shell:
 
 | Scene    | What happens                                                                                    |
 | -------- | ----------------------------------------------------------------------------------------------- |
@@ -40,10 +40,10 @@ pnpm render:og     # the Open Graph image of the website (site/public/og.png)
 
 | Composition    | File                        | Size      | Length |
 | -------------- | --------------------------- | --------- | ------ |
-| `Reddit`       | `out/visor-reddit-16x9.mp4` | 1920×1080 | 52 s   |
-| `RedditSquare` | `out/visor-reddit-1x1.mp4`  | 1080×1080 | 52 s   |
-| `Reel`         | `out/visor-reel-9x16.mp4`   | 1080×1920 | 27 s   |
+| `Reddit`       | `out/visor-reddit-16x9.mp4` | 1920×1080 | 57 s   |
+| `RedditSquare` | `out/visor-reddit-1x1.mp4`  | 1080×1080 | 57 s   |
+| `Reel`         | `out/visor-reel-9x16.mp4`   | 1080×1920 | 28 s   |
 
-The two edits are in `src/edits.ts`: each shot names a clip, the part of it, the camera (rectangles of the recording it moves between) and the captions. `src/Shot.tsx` fits a rectangle into the frame; the reel puts the recording in a card with the caption below.
+The two edits are in `src/edits.ts`: each shot names a clip, the part of it, the camera (rectangles of the recording) and the captions. They are calm on purpose: one framing per shot and at most one slow camera move. `src/Shot.tsx` fits a rectangle into the frame; the square and the reel put the recording in a card with the caption below.
 
 The clips and renders are not committed (`.gitignore`); record and render them again as above. The website keeps its own small copy of the 16:9 video in `site/public/media/`.

@@ -57,7 +57,7 @@ export const Shot: React.FC<{ spec: ShotSpec; format: Format }> = ({ spec, forma
   const tx = clamp(box.width / 2 - (x + w / 2) * s, SOURCE.width, box.width);
   const ty = clamp(box.height / 2 - (y + h / 2) * s, SOURCE.height, box.height);
 
-  const fade = interpolate(frame, [0, 5], [0, 1], { extrapolateRight: 'clamp' });
+  const fade = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: 'clamp' });
   const cues = spec.captions ?? [];
   const cueIndex = cues.findLastIndex(c => t >= c.at);
   const cue = cues[cueIndex];

@@ -25,7 +25,7 @@ export const Og: React.FC = () => (
         Media, timers, calendar and search below the top bar, open to modules. Free and open source.
       </div>
     </div>
-    {/* The open panel, cut from the recording (x 636–2560, y 66–884 of 3200x1800); it bleeds off the right edge. */}
+    {/* The open panel, cut from the recording (x 316–2244, y 66–882 of 2560x1440); it bleeds off the right edge. */}
     <div
       style={{
         position: 'absolute',
@@ -42,9 +42,9 @@ export const Og: React.FC = () => (
         src={staticFile('frames/open.png')}
         style={{
           position: 'absolute',
-          width: 3200 * 0.5,
-          height: 1800 * 0.5,
-          left: -620 * 0.5,
+          width: 2560 * 0.5,
+          height: 1440 * 0.5,
+          left: -296 * 0.5,
           top: -66 * 0.5,
           maxWidth: 'none',
         }}

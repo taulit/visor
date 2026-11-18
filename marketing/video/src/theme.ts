@@ -7,8 +7,8 @@ export const { fontFamily } = loadFont('normal', {
 
 export const FPS = 30;
 
-/** Size of the recorded clips: a 1600x900 desktop at scale 2. */
-export const SOURCE = { width: 3200, height: 1800 };
+/** Size of the recorded clips: a 1280x720 desktop at scale 2. */
+export const SOURCE = { width: 2560, height: 1440 };
 
 export const colors = {
   bg: '#0c0a10',
@@ -31,5 +31,7 @@ export const formats: Record<Format, { width: number; height: number }> = {
 export function screenBox(format: Format) {
   const { width, height } = formats[format];
   if (format === 'vertical') return { x: 40, y: 380, width: width - 80, height: 1000, radius: 40 };
+  // The panel is too wide for a square: the recording sits in a 16:9 card, the caption below it.
+  if (format === 'square') return { x: 30, y: 200, width: width - 60, height: 574, radius: 28 };
   return { x: 0, y: 0, width, height, radius: 0 };
 }

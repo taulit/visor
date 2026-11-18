@@ -6,9 +6,9 @@ Drafts only. Nothing here has been posted. Every post waits for the developer's 
 
 | File                              | Format            | Length | For                                      |
 | --------------------------------- | ----------------- | ------ | ---------------------------------------- |
-| `video/out/visor-reddit-16x9.mp4` | 1920×1080, 16:9   | 52 s   | Reddit (r/gnome, r/linux, r/SideProject) |
-| `video/out/visor-reddit-1x1.mp4`  | 1080×1080, square | 52 s   | Reddit in the feed on phones, r/unixporn |
-| `video/out/visor-reel-9x16.mp4`   | 1080×1920, 9:16   | 27 s   | Instagram Reel (@bytaulit)               |
+| `video/out/visor-reddit-16x9.mp4` | 1920×1080, 16:9   | 57 s   | Reddit (r/gnome, r/linux, r/SideProject) |
+| `video/out/visor-reddit-1x1.mp4`  | 1080×1080, square | 57 s   | Reddit in the feed on phones, r/unixporn |
+| `video/out/visor-reel-9x16.mp4`   | 1080×1920, 9:16   | 28 s   | Instagram Reel (@bytaulit)               |
 
 All three have no sound and work without it: every step has a short English caption.
 
@@ -124,7 +124,7 @@ Only after checking the rules above (flair, two-windows rule).
 
 ## Instagram, @bytaulit
 
-**Video:** `visor-reel-9x16.mp4` (27 s). Cover: the frame with the open panel and "Media, timers, agents…" (about second 4).
+**Video:** `visor-reel-9x16.mp4` (28 s). Cover: the frame with the open panel and "What plays, runs and waits" (about second 6).
 
 **Caption:**
 

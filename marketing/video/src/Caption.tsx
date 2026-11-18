@@ -25,7 +25,7 @@ export const Caption: React.FC<{ text: string; format: Format; enterFrame: numbe
   );
 
   const { width } = formats[format];
-  if (format === 'vertical') {
+  if (format !== 'landscape') {
     const box = screenBox(format);
     return (
       <div
@@ -33,11 +33,11 @@ export const Caption: React.FC<{ text: string; format: Format; enterFrame: numbe
           position: 'absolute',
           left: 60,
           right: 60,
-          top: box.y + box.height + 60,
+          top: box.y + box.height + (format === 'square' ? 50 : 60),
           textAlign: 'center',
           fontFamily,
           fontWeight: 800,
-          fontSize: 66,
+          fontSize: format === 'square' ? 54 : 66,
           lineHeight: 1.12,
           letterSpacing: -1,
           color: colors.text,
@@ -50,14 +50,14 @@ export const Caption: React.FC<{ text: string; format: Format; enterFrame: numbe
     );
   }
 
-  const size = format === 'square' ? 46 : 50;
+  const size = 50;
   return (
     <div
       style={{
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: format === 'square' ? 56 : 64,
+        bottom: 64,
         display: 'flex',
         justifyContent: 'center',
         opacity: p,

@@ -11,7 +11,7 @@ const total = (parts: Part[]) => parts.reduce((n, p) => n + frames(p), 0);
 
 const Edit: React.FC<{ parts: Part[]; format: Format }> = ({ parts, format }) => (
   <AbsoluteFill style={{ background: colors.bg }}>
-    {format === 'vertical' ? <VerticalFrame /> : null}
+    {format !== 'landscape' ? <CardFrame format={format} /> : null}
     <Series>
       {parts.map((p, n) => (
         <Series.Sequence key={n} durationInFrames={frames(p)}>
@@ -28,14 +28,14 @@ const Edit: React.FC<{ parts: Part[]; format: Format }> = ({ parts, format }) =>
   </AbsoluteFill>
 );
 
-/** The reel: the recording in a card, a header above, the caption below. */
-const VerticalFrame: React.FC = () => (
+/** Reel and square: the recording in a card, a header above, the caption below. */
+const CardFrame: React.FC<{ format: Format }> = ({ format }) => (
   <AbsoluteFill>
     <Backdrop />
     <div
       style={{
         position: 'absolute',
-        top: 150,
+        top: format === 'square' ? 46 : 150,
         left: 0,
         right: 0,
         textAlign: 'center',
@@ -43,8 +43,17 @@ const VerticalFrame: React.FC = () => (
         color: colors.text,
       }}
     >
-      <div style={{ fontSize: 76, fontWeight: 800, letterSpacing: -2 }}>Visor</div>
-      <div style={{ fontSize: 34, fontWeight: 600, color: colors.dim, marginTop: 4 }}>
+      <div style={{ fontSize: format === 'square' ? 62 : 76, fontWeight: 800, letterSpacing: -2 }}>
+        Visor
+      </div>
+      <div
+        style={{
+          fontSize: format === 'square' ? 28 : 34,
+          fontWeight: 600,
+          color: colors.dim,
+          marginTop: 4,
+        }}
+      >
         GNOME Shell extension · open source
       </div>
     </div>
