@@ -13,6 +13,7 @@ import type { Command, ModuleContext, NowRow, PeekChip, Result, VisorModule } fr
 import { formatDuration, truncate } from '../../lib/format.js';
 import { T3Client } from './client.js';
 import {
+  APP_SCHEME,
   METHODS,
   MAX_REPLY,
   approvalPrompt,
@@ -254,13 +255,16 @@ class T3Module implements VisorModule {
   }
 
   private openInApp(threadId: string): void {
-    const link = this.client?.link(threadId);
+    // The desktop app when it is installed, the browser otherwise. The browser
+    // has a session of its own and asks for a pairing when it has none.
+    const app = Gio.AppInfo.get_default_for_uri_scheme(APP_SCHEME);
+    const link = (app && this.client?.appLink(threadId)) || this.client?.link(threadId);
     this.ctx?.close();
     if (!link) return;
     try {
       Gio.AppInfo.launch_default_for_uri(link, global.create_app_launch_context(0, -1));
     } catch {
-      // No application for http links; nothing to open then.
+      // No application for the link; nothing to open then.
     }
   }
 

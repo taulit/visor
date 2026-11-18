@@ -142,8 +142,11 @@ initialMessage:{messageId, text, attachments:[]}}`
 ### Open in T3 Code
 
 `<origin>/threads/<environmentId>/<threadId>` (`buildAgentAwarenessDeepLink`, web route
-`apps/web/src/routes/threads.$environmentId.$threadId.tsx`). It opens in the default browser. The desktop
-app registers `t3code://` only for pairing links, so there is no link that raises the desktop window.
+`apps/web/src/routes/threads.$environmentId.$threadId.tsx`). The desktop app registers the
+scheme `t3code` and takes `t3code://threads/<environmentId>/<threadId>` (`promptLinkAppPath` in
+`packages/shared/src/promptLinks.ts`, handled in `apps/desktop/src/app/DesktopClerk.ts`). Visor opens that
+link when an application is registered for the scheme, and the browser address otherwise; the browser has
+a session of its own and shows the pairing page when it has none.
 
 ## 4. Version
 
