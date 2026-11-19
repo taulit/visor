@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Copies what Visor takes from the module catalog (taulit/visor-modules): the
 # search (src/lib/catalog-search.ts, shared with the website) and the snapshot
-# of catalog.json that ships with the extension (data/catalog.json).
+# of catalog.json that ships with the extension (data/catalog.json) with the
+# screenshots of its modules (data/modules/).
 #
 # Usage: scripts/catalog-sync.sh [--check] [CATALOG_DIR]
 #   CATALOG_DIR  a checkout of taulit/visor-modules, default ../visor-modules
@@ -25,6 +26,12 @@ trap 'rm -rf "$tmp"' EXIT
   cat "$src/src/catalog-search.ts"
 } | node_modules/.bin/prettier --stdin-filepath src/lib/catalog-search.ts >"$tmp/catalog-search.ts"
 cp "$src/catalog.json" "$tmp/catalog.json"
+# The screenshots of the snapshot, so its cards have pictures without a server.
+(cd "$src" && find modules -path 'modules/*/screenshot-*.png' -print0) |
+  while IFS= read -r -d '' png; do
+    mkdir -p "$tmp/$(dirname "$png")"
+    cp "$src/$png" "$tmp/$png"
+  done
 
 status=0
 for pair in "catalog-search.ts:src/lib/catalog-search.ts" "catalog.json:data/catalog.json"; do
@@ -35,5 +42,11 @@ for pair in "catalog-search.ts:src/lib/catalog-search.ts" "catalog.json:data/cat
     cp "$from" "$to"
   fi
 done
+if $check; then
+  diff -rq "$tmp/modules" data/modules >/dev/null 2>&1 || { echo "catalog-sync: data/modules is out of date" >&2; status=1; }
+else
+  rm -rf data/modules
+  cp -r "$tmp/modules" data/modules
+fi
 $check || echo "Copied the search and the snapshot from $src"
 exit "$status"

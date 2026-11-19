@@ -1,6 +1,7 @@
 // Where the settings window gets the module catalog from: the snapshot that
 // ships with Visor, a newer copy in the cache, and the network, which is
-// asked at most once a day and only when the user left that on. Pictures are
+// asked at most once a day and only when the user left that on. Pictures come
+// from the cache, the ones of the snapshot that ship with Visor, or are
 // fetched when a card shows and kept in the cache. Runs in the settings
 // window only.
 import Gio from 'gi://Gio';
@@ -117,17 +118,21 @@ export async function refreshCatalog(
 }
 
 /**
- * The file of a screenshot in the cache, fetched from `base` when it is not
- * there yet and `base` is given. Null when there is no picture to show.
+ * The file of a screenshot: the one in the cache, else the one that ships
+ * with Visor in `extensionPath`, else fetched from `base` when that is given.
+ * Null when there is no picture to show.
  */
 export async function loadPicture(
   http: Soup.Session,
   base: string | null,
+  extensionPath: string,
   path: string,
   cancellable: Gio.Cancellable,
 ): Promise<string | null> {
   const file = GLib.build_filenamev([cacheDir(), 'modules', ...path.split('/')]);
   if (GLib.file_test(file, GLib.FileTest.EXISTS)) return file;
+  const shipped = GLib.build_filenamev([extensionPath, 'data', 'modules', ...path.split('/')]);
+  if (GLib.file_test(shipped, GLib.FileTest.EXISTS)) return shipped;
   if (!base) return null;
   const bytes = await fetchBytes(http, pictureUrl(base, path), MAX_PICTURE_BYTES, cancellable);
   // Only what says it is a PNG is kept and handed to the picture loader.
