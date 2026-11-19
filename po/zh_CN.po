@@ -2,12 +2,12 @@
 # This file is distributed under the same license as the Visor package.
 # Machine translated, improvements welcome.
 #
-#: build/prefs/discover.js:102
+#: build/prefs/discover.js:106
 msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-19 13:07+0100\n"
+"POT-Creation-Date: 2026-11-19 13:45+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Simplified Chinese\n"
@@ -98,7 +98,7 @@ msgstr "锁定屏幕"
 msgid "Suspend"
 msgstr "挂起"
 
-#: build/core/search/system.js:68
+#: build/core/search/system.js:68 build/prefs/updates.js:92
 msgid "Log Out"
 msgstr "注销"
 
@@ -139,51 +139,70 @@ msgstr "关闭夜灯"
 msgid "Turn On Night Light"
 msgstr "开启夜灯"
 
-#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:17
+#: build/core/sheet.js:208 build/core/sheet.js:598 build/prefs/modules.js:17
 msgid "Modules"
 msgstr "模块"
 
-#: build/core/sheet.js:331
+#: build/core/sheet.js:346
 msgid "Search, calculate or run a command …"
 msgstr "搜索、计算或运行命令 …"
 
-#: build/core/sheet.js:332 build/prefs/general.js:77
+#: build/core/sheet.js:347 build/prefs/general.js:77
 msgid "Search"
 msgstr "搜索"
 
-#: build/core/sheet.js:357 build/core/sheet.js:438
+#: build/core/sheet.js:388 build/core/sheet.js:469
 #: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:17
 msgid "Now"
 msgstr "现在"
 
-#: build/core/sheet.js:371
+#: build/core/sheet.js:402
 msgid "Back"
 msgstr "返回"
 
-#: build/core/sheet.js:438
+#: build/core/sheet.js:469
 msgid "Shows up only while something is running."
 msgstr "仅在有任务进行时显示。"
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:439 build/modules/upcoming/module.js:34
+#: build/core/sheet.js:470 build/modules/upcoming/module.js:34
 #: build/modules/upcoming/module.js:137 build/prefs/builtin-modules.js:7
 #: build/prefs/builtin-modules.js:18 build/prefs/general.js:74
 msgid "Up Next"
 msgstr "接下来"
 
-#: build/core/sheet.js:439
+#: build/core/sheet.js:470
 msgid "A short section next to “Now”."
 msgstr "“现在”旁的一个简短区域。"
 
-#: build/core/sheet.js:440 build/prefs/builtin-modules.js:19
+#: build/core/sheet.js:471 build/prefs/builtin-modules.js:19
 msgid "Dock"
 msgstr "Dock"
 
-#: build/core/sheet.js:440
+#: build/core/sheet.js:471
 msgid "A view of its own behind an icon."
 msgstr "图标后面的独立视图。"
 
-#: build/core/sheet.js:638
+#: build/core/sheet.js:616
+#, javascript-format
+msgid "Update to Visor %s"
+msgstr ""
+
+#: build/core/sheet.js:618 build/prefs/updates.js:86
+#, javascript-format
+msgid "Updating to %s…"
+msgstr ""
+
+#: build/core/sheet.js:620
+msgid "The update did not work. Click to try again."
+msgstr ""
+
+#: build/core/sheet.js:622
+#, javascript-format
+msgid "Updated to %s. Click to log out and use it."
+msgstr ""
+
+#: build/core/sheet.js:708
 msgid "No modules"
 msgstr "没有模块"
 
@@ -404,31 +423,31 @@ msgstr[0] "%d 分钟前"
 msgid "Yesterday"
 msgstr "昨天"
 
-#: build/prefs/about.js:18
+#: build/prefs/about.js:19
 msgid "About"
 msgstr "关于"
 
-#: build/prefs/about.js:26
+#: build/prefs/about.js:27
 msgid "Version"
 msgstr "版本"
 
-#: build/prefs/about.js:27 build/prefs/discover.js:229
+#: build/prefs/about.js:28 build/prefs/discover.js:233
 msgid "License"
 msgstr "许可证"
 
-#: build/prefs/about.js:29
+#: build/prefs/about.js:31
 msgid "Links"
 msgstr "链接"
 
-#: build/prefs/about.js:30
+#: build/prefs/about.js:32
 msgid "Website"
 msgstr "网站"
 
-#: build/prefs/about.js:31 build/prefs/discover.js:224
+#: build/prefs/about.js:33 build/prefs/discover.js:228
 msgid "Source code"
 msgstr "源代码"
 
-#: build/prefs/about.js:32
+#: build/prefs/about.js:34
 msgid "Report an issue"
 msgstr "报告问题"
 
@@ -444,55 +463,55 @@ msgstr "安装"
 msgid "Not in the store yet"
 msgstr "尚未上架商店"
 
-#: build/prefs/discover.js:117
+#: build/prefs/discover.js:121
 msgid "By the makers of Visor"
 msgstr "由 Visor 的开发者提供"
 
-#: build/prefs/discover.js:199
+#: build/prefs/discover.js:203
 msgid "What it shows"
 msgstr "显示的内容"
 
-#: build/prefs/discover.js:200
+#: build/prefs/discover.js:204
 msgid "When it appears"
 msgstr "何时出现"
 
-#: build/prefs/discover.js:223
+#: build/prefs/discover.js:227
 msgid "Author"
 msgstr "作者"
 
-#: build/prefs/discover.js:227
+#: build/prefs/discover.js:231
 msgid "GNOME extension store"
 msgstr "GNOME 扩展商店"
 
-#: build/prefs/discover.js:254
+#: build/prefs/discover.js:259
 msgid "Discover"
 msgstr "发现"
 
-#: build/prefs/discover.js:255
+#: build/prefs/discover.js:260
 msgid "Modules from the GNOME extension store that add to Visor."
 msgstr "来自 GNOME 扩展商店、为 Visor 增添功能的模块。"
 
-#: build/prefs/discover.js:258 build/prefs/discover.js:261
+#: build/prefs/discover.js:263 build/prefs/discover.js:266
 msgid "Search modules"
 msgstr "搜索模块"
 
-#: build/prefs/discover.js:259
+#: build/prefs/discover.js:264
 msgid "All places"
 msgstr "所有位置"
 
-#: build/prefs/discover.js:262
+#: build/prefs/discover.js:267
 msgid "Place"
 msgstr "位置"
 
-#: build/prefs/discover.js:277
+#: build/prefs/discover.js:282
 msgid "No modules found"
 msgstr "未找到模块"
 
-#: build/prefs/discover.js:315
+#: build/prefs/discover.js:320
 msgid "Update the catalog from the network"
 msgstr "从网络更新目录"
 
-#: build/prefs/discover.js:316
+#: build/prefs/discover.js:321
 msgid ""
 "At most once a day, when this page is opened. Pictures are loaded with it."
 msgstr "打开此页面时更新，每天最多一次。图片会一并加载。"
@@ -632,3 +651,83 @@ msgstr "按下要使用的按键。Esc 取消，退格键移除快捷键。"
 #: build/prefs/shortcut.js:48
 msgid "Cancel"
 msgstr "取消"
+
+#: build/prefs/updates.js:15
+msgid "Updates"
+msgstr ""
+
+#: build/prefs/updates.js:16 build/prefs/updates.js:62
+msgid "Visor is up to date"
+msgstr ""
+
+#: build/prefs/updates.js:23 build/prefs/updates.js:111
+msgid "Look for updates"
+msgstr ""
+
+#: build/prefs/updates.js:24
+msgid "When this window opens, Visor asks GitHub for its latest release."
+msgstr ""
+
+#: build/prefs/updates.js:52
+msgid "Installed for all users"
+msgstr ""
+
+#: build/prefs/updates.js:53
+msgid "Update Visor with the package manager it came from."
+msgstr ""
+
+#: build/prefs/updates.js:57
+msgid "Looking for updates…"
+msgstr ""
+
+#: build/prefs/updates.js:63 build/prefs/updates.js:110
+#, fuzzy, javascript-format
+msgid "Version %s"
+msgstr "版本"
+
+#: build/prefs/updates.js:64
+msgid "Look again"
+msgstr ""
+
+#: build/prefs/updates.js:69
+#, javascript-format
+msgid "Visor %s is available"
+msgstr ""
+
+#: build/prefs/updates.js:70
+#, javascript-format
+msgid "You have version %s."
+msgstr ""
+
+#: build/prefs/updates.js:71
+msgid "Update"
+msgstr ""
+
+#: build/prefs/updates.js:79
+msgid "Could not look for updates"
+msgstr ""
+
+#: build/prefs/updates.js:80
+msgid "Check the connection and try again."
+msgstr ""
+
+#: build/prefs/updates.js:81 build/prefs/updates.js:102
+msgid "Try again"
+msgstr ""
+
+#: build/prefs/updates.js:90
+#, javascript-format
+msgid "Updated to %s"
+msgstr ""
+
+#: build/prefs/updates.js:91
+msgid "Log out and back in to use the new version."
+msgstr ""
+
+#: build/prefs/updates.js:100
+msgid "The update did not work"
+msgstr ""
+
+#: build/prefs/updates.js:101
+msgid "Visor stays as it is. Try again later."
+msgstr ""

@@ -13,6 +13,8 @@ cd "$repo"
 tests=(
     "prefs|tests/shell/prefs.sh"
     "prefs-discover|tests/shell/prefs-discover.sh"
+    "prefs-update|tests/shell/prefs-update.sh"
+    "update-button|tests/shell/update-button.sh"
     "content-shell|tests/shell/content-shell.sh"
     "search|tests/shell/search.sh"
     "a11y|tests/shell/a11y.sh"

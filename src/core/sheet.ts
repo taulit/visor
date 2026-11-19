@@ -15,6 +15,8 @@ import { badgeText } from '../lib/modules.js';
 import { leftColumnWidth, sheetWidth } from '../lib/widths.js';
 import { createKit, ownGuard, Row, scaleFactor } from './kit.js';
 import type { ModuleEntry, Registry } from './registry.js';
+import { Tooltip } from './tooltip.js';
+import type { Updater } from './updater.js';
 
 /** Name of the built-in view that lists the modules. No module can have this id. */
 const MODULES_VIEW = ':modules';
@@ -78,6 +80,9 @@ export class Sheet implements SearchMount {
   private entry: St.Entry | null = null;
   private dock: St.BoxLayout | null = null;
   private dockItems: DockItem[] = [];
+  /** Before the dock while an update of Visor is there, being installed or installed. */
+  private updateButton: St.Button | null = null;
+  private updateTooltip: Tooltip | null = null;
   private scroll: St.ScrollView | null = null;
   private left: St.BoxLayout | null = null;
   private right: St.BoxLayout | null = null;
@@ -117,7 +122,9 @@ export class Sheet implements SearchMount {
     private settings: Gio.Settings,
     private gettext: (s: string) => string,
     private callbacks: SheetCallbacks,
+    private updater: Updater | null = null,
   ) {
+    if (updater) updater.onChanged = () => this.syncUpdate();
     settings.connectObject(
       'changed::width',
       () => {
@@ -194,6 +201,7 @@ export class Sheet implements SearchMount {
     this.isOpen = true;
     this.lastHeight = -1;
     this.getActor();
+    this.updater?.maybeCheck();
     global.stage.connectObject('notify::key-focus', () => this.followFocus(), this);
     if (!(view && this.showView(view))) this.entry?.grab_key_focus();
   }
@@ -201,6 +209,7 @@ export class Sheet implements SearchMount {
   /** The panel closed: back to the main view with an empty search. */
   closed(): void {
     this.isOpen = false;
+    this.updateTooltip?.hide();
     global.stage.disconnectObject(this);
     this.cancelMeasure();
     this.unmark();
@@ -343,6 +352,10 @@ export class Sheet implements SearchMount {
       St.FocusManager.get_for_stage(global.stage).remove_group(this.root);
       this.root.destroy();
     }
+    this.updateTooltip?.hide();
+    if (this.updater) this.updater.onChanged = null;
+    this.updateButton = null;
+    this.updateTooltip = null;
     this.root = this.layer = this.mainPage = this.entry = this.dock = this.scroll = null;
     this.left = this.right = this.viewPage = this.viewTitle = this.viewScroll = this.viewBox = null;
     this.viewActions = null;
@@ -412,6 +425,22 @@ export class Sheet implements SearchMount {
     });
     this.dock = new St.BoxLayout({ style_class: 'visor-dock', y_align: Clutter.ActorAlign.CENTER });
     searchRow.add_child(this.dock);
+    if (this.updater) {
+      const icon = new St.Icon({ style_class: 'visor-dock-icon' });
+      const button = (this.updateButton = new St.Button({
+        style_class: 'visor-update-button',
+        can_focus: true,
+        accessible_role: Atk.Role.PUSH_BUTTON,
+        child: icon,
+        visible: false,
+      }));
+      button.connect('clicked', () => this.updater?.activate());
+      this.updateTooltip = new Tooltip(button, () => this.updateText());
+      // Next to the dock, not in it: the dock holds the icons of modules only.
+      button.y_align = Clutter.ActorAlign.CENTER;
+      searchRow.insert_child_below(button, this.dock);
+      this.syncUpdate();
+    }
 
     const columns = new St.BoxLayout({ style_class: 'visor-columns', x_expand: true });
     this.scroll = this.buildScroll(columns);
@@ -657,6 +686,44 @@ export class Sheet implements SearchMount {
     }
   }
 
+  /** What the update button says, as its tooltip and to screen readers. */
+  private updateText(): string {
+    const _ = this.gettext;
+    const state = this.updater?.state;
+    switch (state?.kind) {
+      case 'available':
+        return _('Update to Visor %s').replace('%s', state.release.version);
+      case 'updating':
+        return _('Updating to %s…').replace('%s', state.release.version);
+      case 'failed':
+        return _('The update did not work. Click to try again.');
+      case 'done':
+        return _('Updated to %s. Click to log out and use it.').replace('%s', state.version);
+      default:
+        return '';
+    }
+  }
+
+  private syncUpdate(): void {
+    const button = this.updateButton;
+    const kind = this.updater?.state.kind ?? 'none';
+    if (!button) return;
+    button.visible = kind !== 'none';
+    button.reactive = kind !== 'updating';
+    for (const name of ['available', 'updating', 'failed', 'done'])
+      if (name === kind) button.add_style_class_name(name);
+      else button.remove_style_class_name(name);
+    (button.child as St.Icon).icon_name =
+      kind === 'done'
+        ? 'system-log-out-symbolic'
+        : kind === 'failed'
+          ? 'dialog-warning-symbolic'
+          : 'software-update-available-symbolic';
+    button.accessible_name = this.updateText();
+    this.updateTooltip?.hide();
+    this.notify();
+  }
+
   private buildDockItem(id: string, name: string, icon: string): DockItem {
     const button = new St.Button({
       style_class: 'visor-dock-button',
@@ -807,7 +874,9 @@ export class Sheet implements SearchMount {
     // The list of results covers the rows; the keyboard stays with the search.
     if (this.overlay?.visible) return true;
     const direction = back ? St.DirectionType.TAB_BACKWARD : St.DirectionType.TAB_FORWARD;
-    const stops: St.Widget[] = [this.entry, this.scroll, this.dock];
+    const stops: St.Widget[] = [this.entry, this.scroll];
+    if (this.updateButton) stops.push(this.updateButton);
+    stops.push(this.dock);
     const focus = global.stage.get_key_focus();
     const at = focus ? stops.findIndex(stop => stop.contains(focus)) : -1;
     if (at < 0) return false;

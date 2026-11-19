@@ -1,10 +1,13 @@
 // The page about Visor: version, links, license.
 import Adw from 'gi://Adw';
 import Gdk from 'gi://Gdk';
+import type Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 
 import { gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+
+import { updatesGroup } from './updates.js';
 
 const WEBSITE = 'https://taulit.github.io/visor';
 const SOURCE = 'https://github.com/taulit/visor';
@@ -17,7 +20,9 @@ function linkRow(window: Adw.PreferencesWindow, title: string, uri: string): Adw
 }
 
 export function aboutPage(
+  settings: Gio.Settings,
   metadata: Record<string, unknown>,
+  path: string,
   window: Adw.PreferencesWindow,
 ): Adw.PreferencesPage {
   const page = new Adw.PreferencesPage({
@@ -38,6 +43,7 @@ export function aboutPage(
   );
   about.add(new Adw.ActionRow({ title: _('License'), subtitle: 'GPL-2.0-or-later' }));
   page.add(about);
+  page.add(updatesGroup(settings, metadata, path));
 
   const links = new Adw.PreferencesGroup({ title: _('Links') });
   links.add(linkRow(window, _('Website'), WEBSITE));
