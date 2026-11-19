@@ -10,6 +10,7 @@ import { Peek } from './peek.js';
 import { Registry, type ModuleEntry, type RegistryListener } from './registry.js';
 import { Search } from './search/controller.js';
 import { Sheet } from './sheet.js';
+import type { Updater } from './updater.js';
 import type { Attention, NotchContent, NotchHost, NotchState } from './types.js';
 
 export class Content implements NotchContent, RegistryListener {
@@ -30,12 +31,16 @@ export class Content implements NotchContent, RegistryListener {
   private syncing = false;
   private syncAgain = false;
 
-  constructor(settings: Gio.Settings, extension: ModuleOwner) {
+  constructor(settings: Gio.Settings, extension: ModuleOwner, updater: Updater | null = null) {
     this.registry = new Registry(settings, extension);
     this.api = this.registry.api;
-    this.sheet = new Sheet(this.registry, settings, s => extension.gettext(s), {
-      changed: () => this.host?.contentChanged(),
-    });
+    this.sheet = new Sheet(
+      this.registry,
+      settings,
+      s => extension.gettext(s),
+      { changed: () => this.host?.contentChanged() },
+      updater,
+    );
     this.finder = new Search(this.sheet, this.registry, settings, s => extension.gettext(s), {
       close: () => this.close(),
     });

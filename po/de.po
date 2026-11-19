@@ -1,12 +1,12 @@
 # German translation for Visor.
 # This file is distributed under the same license as the Visor package.
 #
-#: build/prefs/discover.js:102
+#: build/prefs/discover.js:106
 msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-19 13:07+0100\n"
+"POT-Creation-Date: 2026-11-19 13:45+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: German\n"
@@ -97,7 +97,7 @@ msgstr "Bildschirm sperren"
 msgid "Suspend"
 msgstr "Bereitschaft"
 
-#: build/core/search/system.js:68
+#: build/core/search/system.js:68 build/prefs/updates.js:92
 msgid "Log Out"
 msgstr "Abmelden"
 
@@ -138,51 +138,72 @@ msgstr "Nachtmodus ausschalten"
 msgid "Turn On Night Light"
 msgstr "Nachtmodus einschalten"
 
-#: build/core/sheet.js:198 build/core/sheet.js:567 build/prefs/modules.js:17
+#: build/core/sheet.js:208 build/core/sheet.js:598 build/prefs/modules.js:17
 msgid "Modules"
 msgstr "Module"
 
-#: build/core/sheet.js:331
+#: build/core/sheet.js:346
 msgid "Search, calculate or run a command …"
 msgstr "Suchen, rechnen oder Befehl ausführen …"
 
-#: build/core/sheet.js:332 build/prefs/general.js:77
+#: build/core/sheet.js:347 build/prefs/general.js:77
 msgid "Search"
 msgstr "Suchen"
 
-#: build/core/sheet.js:357 build/core/sheet.js:438
+#: build/core/sheet.js:388 build/core/sheet.js:469
 #: build/modules/upcoming/when.js:35 build/prefs/builtin-modules.js:17
 msgid "Now"
 msgstr "Jetzt"
 
-#: build/core/sheet.js:371
+#: build/core/sheet.js:402
 msgid "Back"
 msgstr "Zurück"
 
-#: build/core/sheet.js:438
+#: build/core/sheet.js:469
 msgid "Shows up only while something is running."
 msgstr "Zeigt sich nur, solange etwas läuft."
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:439 build/modules/upcoming/module.js:34
+#: build/core/sheet.js:470 build/modules/upcoming/module.js:34
 #: build/modules/upcoming/module.js:137 build/prefs/builtin-modules.js:7
 #: build/prefs/builtin-modules.js:18 build/prefs/general.js:74
 msgid "Up Next"
 msgstr "Als Nächstes"
 
-#: build/core/sheet.js:439
+#: build/core/sheet.js:470
 msgid "A short section next to “Now”."
 msgstr "Kurzer Abschnitt neben „Jetzt“."
 
-#: build/core/sheet.js:440 build/prefs/builtin-modules.js:19
+#: build/core/sheet.js:471 build/prefs/builtin-modules.js:19
 msgid "Dock"
 msgstr "Dock"
 
-#: build/core/sheet.js:440
+#: build/core/sheet.js:471
 msgid "A view of its own behind an icon."
 msgstr "Eigene Ansicht hinter einem Symbol."
 
-#: build/core/sheet.js:638
+#: build/core/sheet.js:616
+#, javascript-format
+msgid "Update to Visor %s"
+msgstr "Auf Visor %s aktualisieren"
+
+#: build/core/sheet.js:618 build/prefs/updates.js:86
+#, javascript-format
+msgid "Updating to %s…"
+msgstr "Aktualisiere auf %s …"
+
+#: build/core/sheet.js:620
+msgid "The update did not work. Click to try again."
+msgstr ""
+"Die Aktualisierung hat nicht geklappt. Klicke, um es noch einmal zu "
+"versuchen."
+
+#: build/core/sheet.js:622
+#, javascript-format
+msgid "Updated to %s. Click to log out and use it."
+msgstr "Auf %s aktualisiert. Klicke, um dich abzumelden und sie zu nutzen."
+
+#: build/core/sheet.js:708
 msgid "No modules"
 msgstr "Keine Module"
 
@@ -402,31 +423,31 @@ msgstr[1] "vor %d Min."
 msgid "Yesterday"
 msgstr "Gestern"
 
-#: build/prefs/about.js:18
+#: build/prefs/about.js:19
 msgid "About"
 msgstr "Über"
 
-#: build/prefs/about.js:26
+#: build/prefs/about.js:27
 msgid "Version"
 msgstr "Version"
 
-#: build/prefs/about.js:27 build/prefs/discover.js:229
+#: build/prefs/about.js:28 build/prefs/discover.js:233
 msgid "License"
 msgstr "Lizenz"
 
-#: build/prefs/about.js:29
+#: build/prefs/about.js:31
 msgid "Links"
 msgstr "Links"
 
-#: build/prefs/about.js:30
+#: build/prefs/about.js:32
 msgid "Website"
 msgstr "Website"
 
-#: build/prefs/about.js:31 build/prefs/discover.js:224
+#: build/prefs/about.js:33 build/prefs/discover.js:228
 msgid "Source code"
 msgstr "Quellcode"
 
-#: build/prefs/about.js:32
+#: build/prefs/about.js:34
 msgid "Report an issue"
 msgstr "Problem melden"
 
@@ -442,55 +463,55 @@ msgstr "Installieren"
 msgid "Not in the store yet"
 msgstr "Noch nicht im Store"
 
-#: build/prefs/discover.js:117
+#: build/prefs/discover.js:121
 msgid "By the makers of Visor"
 msgstr "Von den Machern von Visor"
 
-#: build/prefs/discover.js:199
+#: build/prefs/discover.js:203
 msgid "What it shows"
 msgstr "Was es zeigt"
 
-#: build/prefs/discover.js:200
+#: build/prefs/discover.js:204
 msgid "When it appears"
 msgstr "Wann es erscheint"
 
-#: build/prefs/discover.js:223
+#: build/prefs/discover.js:227
 msgid "Author"
 msgstr "Autor"
 
-#: build/prefs/discover.js:227
+#: build/prefs/discover.js:231
 msgid "GNOME extension store"
 msgstr "GNOME-Erweiterungs-Store"
 
-#: build/prefs/discover.js:254
+#: build/prefs/discover.js:259
 msgid "Discover"
 msgstr "Entdecken"
 
-#: build/prefs/discover.js:255
+#: build/prefs/discover.js:260
 msgid "Modules from the GNOME extension store that add to Visor."
 msgstr "Module aus dem GNOME-Erweiterungs-Store, die Visor erweitern."
 
-#: build/prefs/discover.js:258 build/prefs/discover.js:261
+#: build/prefs/discover.js:263 build/prefs/discover.js:266
 msgid "Search modules"
 msgstr "Module suchen"
 
-#: build/prefs/discover.js:259
+#: build/prefs/discover.js:264
 msgid "All places"
 msgstr "Alle Plätze"
 
-#: build/prefs/discover.js:262
+#: build/prefs/discover.js:267
 msgid "Place"
 msgstr "Platz"
 
-#: build/prefs/discover.js:277
+#: build/prefs/discover.js:282
 msgid "No modules found"
 msgstr "Keine Module gefunden"
 
-#: build/prefs/discover.js:315
+#: build/prefs/discover.js:320
 msgid "Update the catalog from the network"
 msgstr "Katalog aus dem Netz aktualisieren"
 
-#: build/prefs/discover.js:316
+#: build/prefs/discover.js:321
 msgid ""
 "At most once a day, when this page is opened. Pictures are loaded with it."
 msgstr ""
@@ -636,3 +657,84 @@ msgstr ""
 #: build/prefs/shortcut.js:48
 msgid "Cancel"
 msgstr "Abbrechen"
+
+#: build/prefs/updates.js:15
+msgid "Updates"
+msgstr "Aktualisierungen"
+
+#: build/prefs/updates.js:16 build/prefs/updates.js:62
+msgid "Visor is up to date"
+msgstr "Visor ist aktuell"
+
+#: build/prefs/updates.js:23 build/prefs/updates.js:111
+msgid "Look for updates"
+msgstr "Nach Aktualisierungen suchen"
+
+#: build/prefs/updates.js:24
+msgid "When this window opens, Visor asks GitHub for its latest release."
+msgstr ""
+"Beim Öffnen dieses Fensters fragt Visor GitHub nach der neuesten Version."
+
+#: build/prefs/updates.js:52
+msgid "Installed for all users"
+msgstr "Für alle Benutzer installiert"
+
+#: build/prefs/updates.js:53
+msgid "Update Visor with the package manager it came from."
+msgstr "Aktualisiere Visor mit der Paketverwaltung, aus der es stammt."
+
+#: build/prefs/updates.js:57
+msgid "Looking for updates…"
+msgstr "Suche nach Aktualisierungen …"
+
+#: build/prefs/updates.js:63 build/prefs/updates.js:110
+#, javascript-format
+msgid "Version %s"
+msgstr "Version %s"
+
+#: build/prefs/updates.js:64
+msgid "Look again"
+msgstr "Erneut suchen"
+
+#: build/prefs/updates.js:69
+#, javascript-format
+msgid "Visor %s is available"
+msgstr "Visor %s ist verfügbar"
+
+#: build/prefs/updates.js:70
+#, javascript-format
+msgid "You have version %s."
+msgstr "Installiert ist Version %s."
+
+#: build/prefs/updates.js:71
+msgid "Update"
+msgstr "Aktualisieren"
+
+#: build/prefs/updates.js:79
+msgid "Could not look for updates"
+msgstr "Suche nach Aktualisierungen fehlgeschlagen"
+
+#: build/prefs/updates.js:80
+msgid "Check the connection and try again."
+msgstr "Prüfe die Verbindung und versuche es noch einmal."
+
+#: build/prefs/updates.js:81 build/prefs/updates.js:102
+msgid "Try again"
+msgstr "Erneut versuchen"
+
+#: build/prefs/updates.js:90
+#, javascript-format
+msgid "Updated to %s"
+msgstr "Auf %s aktualisiert"
+
+#: build/prefs/updates.js:91
+msgid "Log out and back in to use the new version."
+msgstr "Melde dich ab und wieder an, um die neue Version zu nutzen."
+
+#: build/prefs/updates.js:100
+msgid "The update did not work"
+msgstr "Die Aktualisierung hat nicht geklappt"
+
+#: build/prefs/updates.js:101
+msgid "Visor stays as it is. Try again later."
+msgstr "Visor bleibt, wie es ist. Versuche es später noch einmal."

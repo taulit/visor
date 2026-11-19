@@ -10,6 +10,7 @@ gsettings set org.gnome.shell disable-user-extensions false
 # The settings window of Visor asks no server for the module catalog here; a
 # test that wants that turns it on and points it at a server of its own.
 dconf write /org/gnome/shell/extensions/visor/catalog-updates false
+dconf write /org/gnome/shell/extensions/visor/update-check false
 gsettings set org.gnome.shell welcome-dialog-last-shown-version '999'
 gsettings set org.gnome.desktop.interface color-scheme "$scheme"
 gsettings set org.gnome.desktop.interface accent-color "$VISOR_ACCENT"

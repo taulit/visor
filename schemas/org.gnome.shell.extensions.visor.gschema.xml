@@ -57,6 +57,16 @@
       <summary>Calendar in Up Next</summary>
       <description>Show the current week above the next events. Its title opens the month; a day shows its events.</description>
     </key>
+    <key name="update-check" type="b">
+      <default>true</default>
+      <summary>Look for updates</summary>
+      <description>When the settings window opens, ask GitHub for the latest release of Visor and offer to install it.</description>
+    </key>
+    <key name="update-url" type="s">
+      <default>''</default>
+      <summary>Address of the latest release</summary>
+      <description>Empty: the GitHub API for taulit/visor. Tests point it at a server of their own.</description>
+    </key>
     <key name="catalog-updates" type="b">
       <default>true</default>
       <summary>Update the module catalog</summary>
