@@ -24,6 +24,11 @@ const SEARCH_DEBOUNCE_MS = 40;
 /** How long the section of a clicked chip stays highlighted. */
 const MARK_MS = 1400;
 const MARK_CLASS = 'visor-marked';
+/**
+ * Sections that sit below "Now" in the left column while the panel has two,
+ * so both columns are about as tall. Alone in a column they stay in order.
+ */
+const LEFT_WHEN_SPLIT: ReadonlySet<string> = new Set(['notifications']);
 
 /** What the search needs from the sheet. The search itself is not part of the sheet. */
 export interface SearchMount {
@@ -638,7 +643,6 @@ export class Sheet implements SearchMount {
       built.widget.destroy();
       this.sections.delete(id);
     }
-    let index = 0;
     for (const entry of entries) {
       let built = this.sections.get(entry.module.id);
       if (!built) {
@@ -648,9 +652,36 @@ export class Sheet implements SearchMount {
         this.sections.set(entry.module.id, built);
         right.add_child(widget);
       }
-      if (right.get_child_at_index(index) !== built.widget)
-        right.set_child_at_index(built.widget, index);
-      index++;
+    }
+    this.placeSections();
+  }
+
+  /** The sections that go below "Now" now: only with rows there and something left on the right. */
+  private leftSections(): string[] {
+    if (this.nowCount() === 0) return [];
+    const ids = [...this.sections.keys()];
+    const left = ids.filter(id => LEFT_WHEN_SPLIT.has(id));
+    return left.length < ids.length ? left : [];
+  }
+
+  /** Puts each section into its column, in the order of the modules. */
+  private placeSections(): void {
+    const left = this.left!;
+    const right = this.right!;
+    const toLeft = new Set(this.leftSections());
+    let leftIndex = 1; // after "Now"
+    let rightIndex = 0;
+    for (const entry of this.aheadEntries()) {
+      const widget = this.sections.get(entry.module.id)?.widget;
+      if (!widget) continue;
+      const column = toLeft.has(entry.module.id) ? left : right;
+      const index = column === left ? leftIndex++ : rightIndex++;
+      if (widget.get_parent() !== column) {
+        widget.get_parent()?.remove_child(widget);
+        column.insert_child_at_index(widget, index);
+      } else if (column.get_child_at_index(index) !== widget) {
+        column.set_child_at_index(widget, index);
+      }
     }
   }
 
@@ -818,12 +849,13 @@ export class Sheet implements SearchMount {
   /** One or two columns, and how wide the left one is. */
   private layout(): void {
     if (!this.root) return;
+    this.placeSections();
     const hasNow = this.nowCount() > 0;
     const hasAhead = this.aheadEntries().length > 0;
     const left = this.left!;
     const right = this.right!;
     left.visible = hasNow;
-    right.visible = hasAhead;
+    right.visible = hasAhead && right.get_n_children() > 0;
     this.scroll!.visible = hasNow || hasAhead;
     if (hasNow && hasAhead) {
       const width = sheetWidth(this.settings.get_string('width'), true);

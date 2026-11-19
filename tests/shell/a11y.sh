@@ -132,12 +132,14 @@ shell_eval '(() => {
     // --- focus ---
     A.focus = () => global.stage.get_key_focus();
     A.inEntry = () => A.focus() === sheet().entry.clutter_text;
-    // Where in the main view the focus is: search, now, ahead 0, ahead 1, …, dock.
+    // Where in the main view the focus is: search, now, left (below now), ahead 0, …, dock.
     A.zone = () => {
         const f = A.focus(); const s = sheet();
         if (!f) return "none";
         if (s.entry.contains(f)) return "search";
-        if (s.left.contains(f)) return "now";
+        if (s.nowSection.actor.contains(f)) return "now";
+        // Below "Now" while there are two columns: the notifications.
+        if (s.left.contains(f)) return "left";
         const index = s.right.get_children().findIndex(c => c.contains(f));
         if (index >= 0) return "ahead" + index;
         if (s.dock.contains(f)) return "dock";
@@ -190,8 +192,8 @@ echo "# keyboard: Tab order"
 check 'opening puts the focus into the search entry' 'A.inEntry()'
 run 'A.tour().then(stops => { globalThis.tour = stops; return true; })'
 check 'Tab comes back to the search entry: no trap' 'tour.at(-1).zone !== "TRAPPED" && tour.length >= 8 || tour.length'
-check 'Tab order: search, Now, Up Next, Notifications, dock' \
-    '(() => { const order = ["now", "ahead0", "ahead1", "dock"]; const zones = tour.map(s => s.zone); const ranks = zones.map(z => order.indexOf(z)); const sorted = ranks.every((r, i) => r >= 0 && (i === 0 || r >= ranks[i - 1])); return sorted && order.every(z => zones.includes(z)) || zones.join(); })()'
+check 'Tab order: search, Now, Notifications below it, Up Next, dock' \
+    '(() => { const order = ["now", "left", "ahead0", "dock"]; const zones = tour.map(s => s.zone); const ranks = zones.map(z => order.indexOf(z)); const sorted = ranks.every((r, i) => r >= 0 && (i === 0 || r >= ranks[i - 1])); return sorted && order.every(z => zones.includes(z)) || zones.join(); })()'
 check 'every stop of the tour has a role and a name' \
     'tour.every(s => s.name !== "" && s.role !== A.Atk.Role.INVALID && s.role !== A.Atk.Role.PANEL) || tour.filter(s => !s.name).map(s => s.zone).join()'
 check 'the first stop is the first row, the last one the list of modules' \
