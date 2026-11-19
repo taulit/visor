@@ -19,6 +19,14 @@ gsettings set org.gnome.desktop.interface clock-format '24h'
 gsettings set org.gnome.desktop.background picture-options 'none'
 gsettings set org.gnome.desktop.background primary-color '#241f31'
 gsettings set org.gnome.desktop.background color-shading-type 'solid'
+if [[ -n "${VISOR_WALLPAPER:-}" ]]; then
+    for key in picture-uri picture-uri-dark; do
+        gsettings set org.gnome.desktop.background "$key" "file://$VISOR_WALLPAPER"
+    done
+    gsettings set org.gnome.desktop.background picture-options 'zoom'
+fi
+# The legacy global scale, which mutter takes for a monitor without a configuration.
+[[ "${VISOR_SCALE:-1}" != 1 ]] && gsettings set org.gnome.desktop.interface scaling-factor "$VISOR_SCALE"
 # Keep the sandbox away from real devices such as phones on USB.
 gsettings set org.gnome.desktop.media-handling automount false
 gsettings set org.gnome.desktop.media-handling automount-open false
