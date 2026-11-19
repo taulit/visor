@@ -1,17 +1,27 @@
 // "Up Next": the next events of the calendars the shell knows.
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import type St from 'gi://St';
+import Shell from 'gi://Shell';
+import St from 'gi://St';
 
 import { gettext } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Calendar from 'resource:///org/gnome/shell/ui/calendar.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import type { KitRow, KitSection, ModuleContext, RowProps, VisorModule } from '../../api.js';
+import { addDays, busyDays, eventsOn, sameDay, startOfDay } from './calendar.js';
+import { CalendarView } from './calendar-view.js';
 import { MeetingLinks } from './links.js';
 import type { MeetingService } from './meeting-link.js';
 import { chipText, eventSubtitle, eventUuid, nextWake, type PlannedEvent } from './plan.js';
-import { formatWhen, isAllDay, joinWindowOpen, pickUpcoming, type TimeOptions } from './when.js';
+import {
+  formatClock,
+  formatWhen,
+  isAllDay,
+  joinWindowOpen,
+  pickUpcoming,
+  type TimeOptions,
+} from './when.js';
 
 const DAY_MS = 86_400_000;
 const RANGE_DAYS = 7;
@@ -21,6 +31,8 @@ const CHIP_PRIORITY = 60;
 const ANSWER_WAIT_US = 1_000_000;
 /** A timeout fires a little early now and then; this keeps it from firing twice. */
 const WAKE_SLACK_MS = 20;
+/** The setting that shows the calendar above the events. */
+const CALENDAR_KEY = 'upcoming-calendar';
 
 /** Names of products, not translated. */
 const SERVICE_NAMES: Record<MeetingService, string> = {
@@ -48,8 +60,16 @@ class Upcoming implements VisorModule {
   private links: MeetingLinks | null = null;
   private removeOpenHandler: (() => void) | null = null;
 
+  private wrapper: St.BoxLayout | null = null;
   private section: KitSection | null = null;
   private empty: St.Widget | null = null;
+  /** "Nothing planned", for a picked day. */
+  private dayEmpty: St.Widget | null = null;
+  /** The picked day above its events. */
+  private dayTitle: St.Label | null = null;
+  private calendar: CalendarView | null = null;
+  /** The day picked in the calendar; null shows what comes next. Forgotten when the panel closes. */
+  private picked: Date | null = null;
   private rows = new Map<string, KitRow>();
   /** Null until the first row needs to know. */
   private hasCalendarApp: boolean | null = null;
@@ -80,9 +100,15 @@ class Upcoming implements VisorModule {
       },
       this,
     );
+    ctx.settings?.connectObject(`changed::${CALENDAR_KEY}`, () => this.syncCalendar(), this);
     this.request();
 
     this.removeOpenHandler = ctx.onOpenChanged(open => {
+      // Closed: next time it opens on today and the week.
+      if (!open && (this.picked || this.calendar)) {
+        this.picked = null;
+        this.calendar?.reset();
+      }
       // What is on screen has to be right; the answer of the server follows as 'changed'.
       if (open) this.request();
       this.refresh();
@@ -102,6 +128,7 @@ class Upcoming implements VisorModule {
 
     this.clock?.disconnectObject(this);
     this.clock = null;
+    this.ctx?.settings?.disconnectObject(this);
 
     const source = this.source;
     this.source = null;
@@ -120,8 +147,13 @@ class Upcoming implements VisorModule {
     this.sourceReady = false;
 
     // Visor destroys the section.
+    this.wrapper = null;
     this.section = null;
     this.empty = null;
+    this.dayEmpty = null;
+    this.dayTitle = null;
+    this.calendar = null;
+    this.picked = null;
     this.rows.clear();
     this.chip = null;
     this.requestedDay = '';
@@ -131,23 +163,79 @@ class Upcoming implements VisorModule {
   buildSection(): St.Widget {
     const ctx = this.ctx!;
     const _ = ctx.t;
+    this.wrapper = new St.BoxLayout({ vertical: true, x_expand: true });
     this.section = ctx.kit.section({ title: _('Up Next') });
+    this.dayTitle = new St.Label({ style_class: 'visor-calendar-day-title', visible: false });
+    this.section.body.add_child(this.dayTitle);
     this.empty = ctx.kit.empty(_('Nothing else today'));
     this.section.body.add_child(this.empty);
-    this.refresh();
-    return this.section.actor;
+    this.dayEmpty = ctx.kit.empty(_('Nothing planned'));
+    this.section.body.add_child(this.dayEmpty);
+    this.wrapper.add_child(this.section.actor);
+    this.syncCalendar();
+    return this.wrapper;
   }
 
-  /** Asks the calendar server for the next seven days. */
+  /** Builds or drops the calendar as the setting says. */
+  private syncCalendar(): void {
+    const ctx = this.ctx;
+    const wrapper = this.wrapper;
+    if (!ctx || !wrapper) return;
+    const wanted = ctx.settings?.get_boolean(CALENDAR_KEY) ?? false;
+    if (wanted && !this.calendar) {
+      this.calendar = new CalendarView({
+        t: ctx.t,
+        firstDay: Shell.util_get_week_start(),
+        onPick: day => this.pick(day),
+        onShownChanged: () => {
+          this.request();
+          this.refresh();
+        },
+      });
+      wrapper.insert_child_at_index(this.calendar.actor, 0);
+    } else if (!wanted && this.calendar) {
+      this.calendar.actor.destroy();
+      this.calendar = null;
+      this.picked = null;
+    }
+    this.request();
+    this.refresh();
+  }
+
+  /** A day in the calendar was clicked: its events show; today, or the same day again, goes back. */
+  private pick(day: Date): void {
+    const today = new Date();
+    this.picked =
+      sameDay(day, today) || (this.picked !== null && sameDay(day, this.picked)) ? null : day;
+    this.request();
+    this.refresh();
+  }
+
+  /**
+   * Asks the calendar server for today and the next seven days, and for the
+   * days the calendar shows. From midnight, so asking again on the same day
+   * asks nothing new.
+   */
   private request(): void {
     const now = new Date();
     this.requestedDay = now.toDateString();
+    let from = startOfDay(now);
+    let until = addDays(now, RANGE_DAYS + 1);
+    const shown = this.calendar?.shown(now);
+    if (shown) {
+      if (shown.from < from) from = shown.from;
+      if (shown.until > until) until = shown.until;
+    }
+    if (this.picked) {
+      if (this.picked < from) from = startOfDay(this.picked);
+      const after = addDays(this.picked, 1);
+      if (after > until) until = after;
+    }
     this.askedAt = GLib.get_monotonic_time();
-    this.source?.requestRange(now, new Date(now.getTime() + RANGE_DAYS * DAY_MS));
+    this.source?.requestRange(from, until);
   }
 
-  private events(now: Date): PlannedEvent[] {
-    const until = new Date(now.getTime() + RANGE_DAYS * DAY_MS);
+  private events(now: Date, until = new Date(now.getTime() + RANGE_DAYS * DAY_MS)): PlannedEvent[] {
     return (this.source?.getEvents(now, until) ?? []).map(event => ({
       id: event.id,
       summary: event.summary,
@@ -177,15 +265,38 @@ class Upcoming implements VisorModule {
       ctx.peek.set(chip === null ? null : { icon: ICON, text: chip, priority: CHIP_PRIORITY });
     }
 
-    if (this.section) this.render(shown, now, opts);
+    if (this.section) {
+      const picked = this.picked;
+      if (picked) {
+        const day = eventsOn(this.events(startOfDay(picked), addDays(picked, 1)), picked);
+        this.render(day, now, opts, picked);
+      } else {
+        this.render(shown, now, opts, null);
+      }
+    }
+    if (this.calendar && ctx.isOpen) {
+      const { from, until } = this.calendar.shown(now);
+      this.calendar.render({
+        today: startOfDay(now),
+        picked: this.picked ?? startOfDay(now),
+        busy: busyDays(this.events(from, until), from, until),
+      });
+    }
 
     this.arm(
-      nextWake({ events, shown, now, open: ctx.isOpen, hasCalendars: this.sourceReady }),
+      nextWake({
+        events,
+        shown,
+        now,
+        open: ctx.isOpen,
+        // The calendar marks today: midnight matters for it also without calendars.
+        hasCalendars: this.sourceReady || this.calendar !== null,
+      }),
       now,
     );
   }
 
-  private render(shown: PlannedEvent[], now: Date, opts: TimeOptions): void {
+  private render(shown: PlannedEvent[], now: Date, opts: TimeOptions, picked: Date | null): void {
     const ctx = this.ctx!;
     const body = this.section!.body;
     const wanted = new Set(shown.map(event => event.id));
@@ -195,7 +306,7 @@ class Upcoming implements VisorModule {
       this.rows.delete(id);
     }
     shown.forEach((event, index) => {
-      const props = this.rowProps(event, now, opts);
+      const props = this.rowProps(event, now, opts, picked);
       let row = this.rows.get(event.id);
       if (row) {
         row.update(props);
@@ -204,12 +315,28 @@ class Upcoming implements VisorModule {
         this.rows.set(event.id, row);
         body.add_child(row.actor);
       }
-      if (body.get_child_at_index(index) !== row.actor) body.set_child_at_index(row.actor, index);
+      // After the title of the picked day, which is always the first child.
+      if (body.get_child_at_index(index + 1) !== row.actor)
+        body.set_child_at_index(row.actor, index + 1);
     });
-    this.empty!.visible = shown.length === 0;
+    this.empty!.visible = shown.length === 0 && picked === null;
+    this.dayEmpty!.visible = shown.length === 0 && picked !== null;
+    this.dayTitle!.visible = picked !== null;
+    if (picked) {
+      this.dayTitle!.text = picked.toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      });
+    }
   }
 
-  private rowProps(event: PlannedEvent, now: Date, opts: TimeOptions): RowProps {
+  private rowProps(
+    event: PlannedEvent,
+    now: Date,
+    opts: TimeOptions,
+    picked: Date | null,
+  ): RowProps {
     const ctx = this.ctx!;
     const _ = ctx.t;
     let subtitle = eventSubtitle(event, now, _, undefined, opts);
@@ -217,6 +344,15 @@ class Upcoming implements VisorModule {
       lead: formatWhen(event, now, _, undefined, opts),
       title: event.summary,
     };
+    // On a picked day the day is said above: the rows say only the hours.
+    if (picked) {
+      const startsThatDay = event.start >= startOfDay(picked);
+      props.lead =
+        event.allDay || !startsThatDay ? _('all day') : formatClock(event.start, undefined, opts);
+      subtitle = event.allDay
+        ? ''
+        : _('until %s').replace('%s', formatClock(event.end, undefined, opts));
+    }
 
     // Details are read only for what can be joined now, and only while somebody looks.
     if (ctx.isOpen && !event.allDay && joinWindowOpen(event.start, event.end, now)) {
@@ -226,7 +362,7 @@ class Upcoming implements VisorModule {
         props.primary = { label: _('Join'), run: () => this.join(link.url) };
       }
     }
-    props.subtitle = subtitle;
+    if (subtitle) props.subtitle = subtitle;
 
     this.hasCalendarApp ??= GLib.find_program_in_path('gnome-calendar') !== null;
     const uuid = this.hasCalendarApp ? eventUuid(event.id) : null;

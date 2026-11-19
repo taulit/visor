@@ -93,6 +93,19 @@ export function generalPage(
   appearance.add(widthRow(settings));
   page.add(appearance);
 
+  const upcoming = new Adw.PreferencesGroup({ title: _('Up Next') });
+  upcoming.add(
+    switchRow(
+      settings,
+      'upcoming-calendar',
+      _('Show a calendar'),
+      _(
+        'The current week above the next events. Its title opens the month; a day shows its events.',
+      ),
+    ),
+  );
+  page.add(upcoming);
+
   const search = new Adw.PreferencesGroup({ title: _('Search') });
   search.add(
     switchRow(

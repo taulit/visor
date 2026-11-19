@@ -1,0 +1,241 @@
+<!doctype html>
+<!-- PROTOTYPE, throwaway. Question: how compact should Weather be in the right
+     column of Visor, and how does a calendar fit next to "Up Next"?
+     Four weather variants and four calendar variants, switchable above the panel.
+     Not production code: an HTML mock of the panel, the real one is St widgets. -->
+<style>
+  .bar { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 12px; font: 13px var(--font-sans); align-items: center; }
+  .bar b { font-weight: 600; margin-right: 2px; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .seg button { all: unset; cursor: pointer; padding: 4px 11px; font: 12.5px var(--font-sans); color: var(--foreground); }
+  .seg button + button { border-left: 1px solid var(--border); }
+  .seg button.on { background: var(--primary); color: var(--primary-foreground); }
+  .what { font: 12.5px/1.45 var(--font-sans); color: var(--muted-foreground); margin: 0 0 12px; min-height: 36px; }
+  .what strong { color: var(--foreground); font-weight: 600; }
+
+  /* --- the mocked panel: fixed colours, it imitates the shell --- */
+  .stage { min-height: 700px; }
+  .panel { --fg: rgb(245,245,247); --mu: rgba(245,245,247,.6); --fa: rgba(245,245,247,.38); --s: rgba(255,255,255,.07);
+    --s2: rgba(255,255,255,.12); --ac: #3584e4; --amber: #e5a50a;
+    background: #000; color: var(--fg); border-radius: 0 0 26px 26px; padding: 14px 20px 18px;
+    font: 13px/1.3 'Adwaita Sans', Inter, var(--font-sans); font-variant-numeric: tabular-nums; }
+  .search { display: flex; gap: 10px; align-items: center; color: var(--fa); font-size: 15px; padding: 4px 0 14px; border-bottom: 1px solid var(--s2); }
+  .cols { display: flex; }
+  .now { flex: 1; min-width: 0; padding: 14px 16px 0 0; border-right: 1px solid var(--s2); }
+  .right { width: 356px; flex: none; padding: 14px 0 0 18px; box-sizing: border-box; }
+  @media (max-width: 640px) { .now { display: none; } .right { width: 100%; padding-left: 0; } }
+  .h { white-space: nowrap; display: flex; align-items: center; justify-content: space-between; color: var(--mu); font-size: 12px; font-weight: 600; height: 22px; margin-bottom: 6px; }
+  .sec { margin-bottom: 18px; }
+  .quiet { color: var(--fa); }
+  .mu { color: var(--mu); }
+  .row { display: flex; gap: 10px; align-items: center; padding: 5px 0; }
+  .row .lead { width: 42px; color: var(--mu); font-size: 12px; flex: none; }
+  .row .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .sub { color: var(--mu); font-size: 11.5px; }
+  .grow { flex: 1; min-width: 0; }
+  .click { cursor: pointer; border-radius: 9px; }
+  .click:hover { background: var(--s); }
+  svg.i { width: 17px; height: 17px; flex: none; }
+  svg.i.big { width: 26px; height: 26px; }
+  .chev { color: var(--fa); transition: transform .15s; }
+  .open .chev { transform: rotate(180deg); }
+  .pill { display: inline-flex; gap: 5px; align-items: center; padding: 2px 8px; border-radius: 999px; cursor: pointer; color: var(--fg); font-weight: 600; }
+  .pill:hover, .pill.on { background: var(--s2); }
+  .sw { display: inline-flex; background: var(--s); border-radius: 7px; padding: 2px; }
+  .sw span { padding: 1px 9px; border-radius: 5px; cursor: pointer; font-size: 11.5px; color: var(--mu); }
+  .sw span.on { background: var(--s2); color: var(--fg); }
+
+  /* weather */
+  .hours { display: flex; background: var(--s); border-radius: 11px; padding: 8px 0 7px; }
+  .hours > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .hours small { color: var(--mu); font-size: 11px; }
+  .hours b { font-size: 12.5px; }
+  .hours i { font-style: normal; font-size: 10px; color: #62a0ea; height: 11px; }
+  .hours.flat { background: none; padding: 2px 0; }
+  .days { margin-top: 8px; }
+  .day { display: flex; align-items: center; gap: 9px; padding: 3px 0; font-size: 12.5px; }
+  .day .n { width: 24px; color: var(--mu); font-weight: 600; font-size: 12px; }
+  .day .p { width: 30px; text-align: right; font-size: 10.5px; color: #62a0ea; }
+  .day .lo { width: 26px; text-align: right; color: var(--mu); }
+  .day .hi { width: 26px; text-align: right; font-weight: 600; }
+  .rbar { flex: 1; height: 4px; border-radius: 2px; background: var(--s2); position: relative; }
+  .rbar u { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: linear-gradient(90deg, #62a0ea, #f6d32d); }
+  .temp { font-size: 22px; font-weight: 300; }
+  .more { margin-top: 8px; }
+
+  /* calendar */
+  .strip { display: flex; gap: 2px; }
+  .strip > div { flex: 1; text-align: center; padding: 4px 0 5px; border-radius: 9px; cursor: pointer; }
+  .strip > div:hover { background: var(--s); }
+  .strip small { display: block; font-size: 10.5px; color: var(--fa); margin-bottom: 2px; }
+  .strip b { font-size: 13.5px; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: 22px repeat(7, 1fr); row-gap: 1px; text-align: center; font-size: 12px; }
+  .grid.nowk { grid-template-columns: repeat(7, 1fr); }
+  .grid .wd { color: var(--fa); font-size: 10.5px; padding-bottom: 3px; }
+  .grid .wk { color: var(--fa); font-size: 10px; align-self: center; text-align: left; }
+  .grid .d { height: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; position: relative; }
+  .grid.small .d { height: 21px; font-size: 11.5px; }
+  .grid .d:hover { background: var(--s); }
+  .d.out { color: var(--fa); }
+  .d.we:not(.out) { color: var(--mu); }
+  .today, .strip > div.today { background: var(--ac) !important; color: #fff !important; font-weight: 700; }
+  .strip > div.today small { color: rgba(255,255,255,.8); }
+  .sel { box-shadow: inset 0 0 0 1.5px var(--mu); }
+  .dot::after { content: ''; position: absolute; bottom: 2px; width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: .7; }
+  .nav { display: inline-flex; gap: 2px; align-items: center; }
+  .nav span { cursor: pointer; padding: 0 6px; border-radius: 6px; font-size: 14px; line-height: 20px; }
+  .nav span:hover { background: var(--s2); color: var(--fg); }
+  .split { display: flex; gap: 14px; }
+  .split .m { width: 150px; flex: none; }
+  .amberrow { background: rgba(229,165,10,.12); border-radius: 11px; padding: 6px 10px; margin: 0 -10px 4px; }
+  .btn { background: var(--ac); color: #fff; font-weight: 600; font-size: 12px; padding: 4px 11px; border-radius: 8px; }
+</style>
+
+<div class="bar">
+  <span><b>Wetter</b> <span class="seg" id="segW"></span></span>
+  <span><b>Kalender</b> <span class="seg" id="segC"></span></span>
+</div>
+<p class="what" id="what"></p>
+<div class="stage"><div class="panel">
+  <div class="search">⌕ <span>Suchen, rechnen oder Befehl ausführen …</span></div>
+  <div class="cols">
+    <div class="now">
+      <div class="h">Jetzt</div>
+      <div class="amberrow"><div class="row"><div class="grow"><div class="t">Fix the tide parser</div><div class="sub">lighthouse · Fragt nach Erlaubnis</div></div><span class="btn">Zeigen</span></div></div>
+      <div class="row"><div class="grow"><div class="t">Draw the harbour map</div><div class="sub">lighthouse · Arbeitet · 4:17</div></div></div>
+      <div class="row"><div class="grow"><div class="t mu">Update the changelog</div><div class="sub">buoy-api · Fertig</div></div></div>
+    </div>
+    <div class="right" id="right"></div>
+  </div>
+</div></div>
+
+<script>
+const I = {
+  sun: '<circle cx="12" cy="12" r="4.4"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"/></g>',
+  cloud: '<path d="M7 19a4.3 4.3 0 0 1-.6-8.56A5.8 5.8 0 0 1 17.6 10 4.5 4.5 0 0 1 17.5 19z"/>',
+  partly: '<circle cx="8" cy="8" r="3.2"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 1.8v1.6M1.8 8h1.6M3.6 3.6l1.1 1.1M12.4 3.6l-1.1 1.1M3.6 12.4l1.1-1.1"/></g><path d="M10.5 21a3.7 3.7 0 0 1-.5-7.36A5 5 0 0 1 19.6 13 3.9 3.9 0 0 1 19.5 21z"/>',
+  rain: '<path d="M7 15a4.3 4.3 0 0 1-.6-8.56A5.8 5.8 0 0 1 17.6 6 4.5 4.5 0 0 1 17.5 15z"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 17.5l-1 3M12.5 17.5l-1 3M16.5 17.5l-1 3"/></g>',
+  snow: '<path d="M7 15a4.3 4.3 0 0 1-.6-8.56A5.8 5.8 0 0 1 17.6 6 4.5 4.5 0 0 1 17.5 15z"/><circle cx="8" cy="19" r="1.2"/><circle cx="12" cy="20.5" r="1.2"/><circle cx="16" cy="19" r="1.2"/>',
+  chev: '<path d="M6 9.5l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+};
+const ic = (n, c = '') => `<svg class="i ${c}" viewBox="0 0 24 24" fill="currentColor">${I[n]}</svg>`;
+
+// --- invented data ---
+const W = { place: 'Freiburg', now: 8, feels: 6, hi: 10, lo: 4, text: 'Teils bewölkt', icon: 'partly', next: 'Regen ab 12 Uhr',
+  hours: [['11', 'cloud', 9, 0], ['12', 'rain', 8, 55], ['13', 'rain', 7, 80], ['14', 'rain', 7, 65], ['15', 'rain', 6, 40], ['16', 'cloud', 6, 0]],
+  curve: [8, 9, 8, 7, 7, 6, 6, 5, 5, 4, 4, 4], rain: [0, 0, 55, 80, 65, 40, 10, 0, 0, 0, 0, 0],
+  days: [['Fr', 'cloud', 25, 3, 9], ['Sa', 'sun', 0, -1, 7], ['So', 'snow', 60, -3, 2], ['Mo', 'partly', 0, -2, 5]] };
+const TODAY = new Date(2026, 10, 19);
+const key = d => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+const EV = { '2026-11-19': [['15:00', 'Standup', '30 min'], ['17:30', 'Zahnarzt', 'Dr. Brandt']], '2026-11-20': [['10:00', 'Review Katalog', '1 h']],
+  '2026-11-23': [['09:00', 'Sprint-Planung', '2 h']], '2026-11-25': [['', 'Release 1.1', 'ganztägig']], '2026-11-27': [['19:00', 'Abendessen', 'bei Jonas']],
+  '2026-12-01': [['14:00', 'Steuerberater', '1 h']], '2026-12-04': [['', 'Urlaub', 'bis 8. Dez.']] };
+const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const MON = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+const add = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const monday = d => add(d, -((d.getDay() + 6) % 7));
+const week = d => { const t = add(d, 3 - ((d.getDay() + 6) % 7)); const y = new Date(t.getFullYear(), 0, 4); return 1 + Math.round(((t - y) / 864e5 - 3 + ((y.getDay() + 6) % 7)) / 7); };
+
+const S = { w: 1, c: 1, wOpen: false, cOpen: false, view: 'agenda', month: new Date(2026, 10, 1), sel: TODAY };
+
+// --- weather pieces ---
+const hours = (flat = '') => `<div class="hours ${flat}">${W.hours.map(h => `<div><small>${h[0]}</small>${ic(h[1])}<b>${h[2]}°</b><i>${h[3] >= 20 ? h[3] + '%' : ''}</i></div>`).join('')}</div>`;
+const days = () => { const min = -3, max = 10; return `<div class="days">${W.days.map(d => `<div class="day"><span class="n">${d[0]}</span>${ic(d[1])}<span class="p">${d[2] ? d[2] + '%' : ''}</span><span class="lo">${d[3]}°</span><span class="rbar"><u style="left:${(d[3] - min) / (max - min) * 100}%;right:${(max - d[4]) / (max - min) * 100}%"></u></span><span class="hi">${d[4]}°</span></div>`).join('')}</div>`; };
+const curve = () => { const w = 240, h = 40, n = W.curve.length, x = i => 4 + i * (w - 8) / (n - 1), y = t => 6 + (9 - t) / 5 * (h - 16);
+  const pts = W.curve.map((t, i) => `${x(i).toFixed(1)},${y(t).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h + 12}" style="width:100%;height:52px;display:block">${W.rain.map((r, i) => r ? `<rect x="${x(i) - 5}" y="${h - r / 100 * 18}" width="10" height="${r / 100 * 18}" rx="2" fill="#62a0ea" opacity=".45"/>` : '').join('')}<polyline points="${pts}" fill="none" stroke="rgb(245,245,247)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${x(0)}" cy="${y(8)}" r="2.6" fill="#fff"/>${[0, 3, 6, 9].map(i => `<text x="${x(i)}" y="${h + 10}" font-size="9" fill="rgba(245,245,247,.45)" text-anchor="${i ? 'middle' : 'start'}">${i ? 11 + i + ' Uhr' : 'Jetzt'}</text>`).join('')}<text x="${x(11)}" y="${y(4) - 5}" font-size="9" fill="rgba(245,245,247,.6)" text-anchor="end">4°</text></svg>`; };
+
+function weather() {
+  const o = S.wOpen ? 'open' : '';
+  if (S.w === 1) return `<div class="sec ${o}"><div class="h">Wetter</div>
+    <div class="row click" data-a="w" style="margin:0 -8px;padding:5px 8px">${ic(W.icon, 'big')}<span class="temp">${W.now}°</span>
+    <div class="grow"><div class="t">${W.text}</div><div class="sub">${W.place} · ${W.next}</div></div><span class="sub">↑${W.hi}° ↓${W.lo}°</span>${ic('chev', 'chev')}</div>
+    ${S.wOpen ? `<div class="more">${hours()}${days()}</div>` : ''}</div>`;
+  if (S.w === 3) return `<div class="sec ${o}"><div class="h"><span>Wetter · ${W.place}</span><span class="pill" data-a="w" style="font-weight:400;color:var(--mu)">${S.wOpen ? 'Weniger' : 'Tage'} ${ic('chev', 'chev')}</span></div>
+    <div class="hours flat"><div><small>Jetzt</small>${ic(W.icon)}<b>${W.now}°</b><i></i></div>${W.hours.slice(1).map(h => `<div><small>${h[0]}</small>${ic(h[1])}<b>${h[2]}°</b><i>${h[3] >= 20 ? h[3] + '%' : ''}</i></div>`).join('')}</div>
+    ${S.wOpen ? days() : ''}</div>`;
+  if (S.w === 4) return `<div class="sec ${o}"><div class="h"><span>Wetter · ${W.place}</span><span class="pill" data-a="w" style="font-weight:400;color:var(--mu)">${S.wOpen ? 'Weniger' : 'Tage'} ${ic('chev', 'chev')}</span></div>
+    <div class="row" style="gap:12px;padding:0"><div style="text-align:center">${ic(W.icon, 'big')}<div class="temp" style="line-height:1">${W.now}°</div></div><div class="grow">${curve()}</div></div>
+    <div class="sub" style="margin-top:4px">${W.text} · ${W.next} · ↑${W.hi}° ↓${W.lo}°</div>
+    ${S.wOpen ? days() : ''}</div>`;
+  return '';
+}
+const chip = () => S.w === 2 ? `<span class="pill ${S.wOpen ? 'on' : ''}" data-a="w">${ic(W.icon)} ${W.now}°</span>` : '';
+const chipBody = () => S.w === 2 && S.wOpen ? `<div style="margin-bottom:12px"><div class="row" style="padding-top:0"><div class="grow"><span class="t">${W.text}</span> <span class="sub">· ${W.place} · gefühlt ${W.feels}°</span></div><span class="sub">↑${W.hi}° ↓${W.lo}°</span></div>${hours()}${days()}</div>` : '';
+
+// --- calendar pieces ---
+const evRow = e => `<div class="row"><span class="lead">${e[0] || 'ganzt.'}</span><div class="grow"><div class="t">${e[1]}</div></div><span class="sub">${e[2]}</span></div>`;
+function agenda(compact) {
+  const t = EV[key(TODAY)] || [], m = EV[key(add(TODAY, 1))] || [];
+  return t.map(evRow).join('') + (compact ? '' : `<div class="sub quiet" style="margin:6px 0 2px">Morgen</div>` + m.map(evRow).join(''));
+}
+const same = (a, b) => key(a) === key(b);
+function cell(d, inMonth) {
+  const c = ['d']; if (!inMonth) c.push('out'); if (d.getDay() % 6 === 0) c.push('we');
+  if (same(d, TODAY)) c.push('today'); else if (same(d, S.sel)) c.push('sel'); if (EV[key(d)]) c.push('dot');
+  return `<div class="${c.join(' ')}" data-d="${d.getTime()}">${d.getDate()}</div>`;
+}
+function grid(start, rows, month, { wk = true, small = false } = {}) {
+  let h = `<div class="grid ${wk ? '' : 'nowk'} ${small ? 'small' : ''}">${wk ? '<span></span>' : ''}${WD.map(w => `<span class="wd">${small ? w[0] : w}</span>`).join('')}`;
+  for (let r = 0; r < rows; r++) { const m = add(start, r * 7); if (wk) h += `<span class="wk">${week(m)}</span>`; for (let i = 0; i < 7; i++) { const d = add(m, i); h += cell(d, month == null || d.getMonth() === month); } }
+  return h + '</div>';
+}
+function monthGrid(opts) { const first = monday(S.month); const last = new Date(S.month.getFullYear(), S.month.getMonth() + 1, 0); const rows = Math.ceil(((last - first) / 864e5 + 1) / 7); return grid(first, rows, S.month.getMonth(), opts); }
+const nav = () => `<span class="nav"><span data-a="prev">‹</span><span data-a="today" style="font-size:11.5px">Heute</span><span data-a="next">›</span></span>`;
+const selEvents = () => { const e = EV[key(S.sel)] || []; const lbl = same(S.sel, TODAY) ? 'Heute' : `${WD[(S.sel.getDay() + 6) % 7]}, ${S.sel.getDate()}. ${MON[S.sel.getMonth()]}`; return `<div class="sub quiet" style="margin:8px 0 2px">${lbl}</div>` + (e.length ? e.map(evRow).join('') : `<div class="quiet" style="padding:5px 0">Nichts geplant</div>`); };
+const mTitle = () => `${MON[S.month.getMonth()]} ${S.month.getFullYear()}`;
+
+function right() {
+  let h = '';
+  const upHead = extra => `<div class="h"><span>Als Nächstes</span><span style="display:flex;gap:6px;align-items:center">${extra || ''}${chip()}</span></div>`;
+  if (S.c === 1) { // week strip on top, opens into the month
+    const m = monday(TODAY);
+    h += `<div class="sec ${S.cOpen ? 'open' : ''}"><div class="h"><span class="pill" data-a="c" style="margin-left:-8px;color:var(--mu)">${S.cOpen ? mTitle() : `November · KW ${week(TODAY)}`} ${ic('chev', 'chev')}</span><span style="display:flex;gap:6px">${S.cOpen ? nav() : ''}${chip()}</span></div>${chipBody()}`;
+    h += S.cOpen ? monthGrid() : `<div class="strip">${WD.map((w, i) => { const d = add(m, i); return `<div class="${same(d, TODAY) ? 'today' : ''} ${EV[key(d)] ? '' : ''}" data-d="${d.getTime()}"><small>${w}</small><b>${d.getDate()}</b></div>`; }).join('')}</div>`;
+    h += `</div><div class="sec"><div class="h">Als Nächstes</div>${S.cOpen || !same(S.sel, TODAY) ? selEvents().replace(/^<div class="sub quiet"[^>]*>Heute<\/div>/, '') : agenda()}</div>`;
+  } else if (S.c === 2) { // switch between agenda and month
+    h += `<div class="sec">${upHead(`<span class="sw"><span class="${S.view === 'agenda' ? 'on' : ''}" data-v="agenda">Agenda</span><span class="${S.view === 'month' ? 'on' : ''}" data-v="month">Monat</span></span>`)}${chipBody()}`;
+    h += S.view === 'agenda' ? agenda() : `<div class="h" style="margin-bottom:2px"><span style="color:var(--fg)">${mTitle()}</span>${nav()}</div>${monthGrid()}${selEvents()}`;
+    h += '</div>';
+  } else if (S.c === 3) { // mini month next to the agenda
+    h += `<div class="sec">${upHead()}${chipBody()}<div class="split"><div class="m"><div class="h" style="height:18px;margin-bottom:4px"><span style="color:var(--fg)">${MON[S.month.getMonth()].slice(0, 3)} ${S.month.getFullYear()}</span>${nav().replace(/<span data-a="today".*?<\/span>/, '')}</div>${monthGrid({ wk: false, small: true })}</div><div class="grow">${same(S.sel, TODAY) ? agenda() : selEvents().replace('margin:8px 0 2px', 'margin:0 0 2px')}</div></div></div>`;
+  } else if (S.c === 4) { // rolling four weeks as a section of its own
+    h += `<div class="sec">${upHead()}${chipBody()}${agenda(true)}</div>`;
+    h += `<div class="sec"><div class="h"><span>Kalender · ${MON[TODAY.getMonth()]}</span><span class="quiet" style="font-weight:400">Do, 19. · KW ${week(TODAY)}</span></div>${grid(monday(TODAY), 4, null)}${same(S.sel, TODAY) ? '' : selEvents()}</div>`;
+  } else h += `<div class="sec">${upHead()}${chipBody()}${agenda()}</div>`;
+  h += `<div class="sec"><div class="h">Benachrichtigungen</div><div class="quiet">Keine neuen Benachrichtigungen</div></div>`;
+  h += weather();
+  document.getElementById('right').innerHTML = h;
+}
+
+const WN = ['Eine Zeile', 'Chip', 'Stundenband', 'Kurve'], CN = ['Aus', 'Wochenband', 'Umschalter', 'Monat daneben', '4 Wochen'];
+const WT = ['<strong>W1 Eine Zeile:</strong> eine Zeile wie die anderen Zeilen in Visor. Klick klappt Stunden und Tage aus.',
+  '<strong>W2 Chip:</strong> kein eigener Abschnitt. Symbol und Temperatur sitzen in der Überschrift, Klick zeigt die Vorhersage.',
+  '<strong>W3 Stundenband:</strong> jetzt und die nächsten Stunden in einer Reihe (wie das iOS-Widget). „Tage“ klappt die Tage aus.',
+  '<strong>W4 Kurve:</strong> Temperaturverlauf der nächsten 12 Stunden mit Regenbalken (wie Pixel/Android). „Tage“ klappt die Tage aus.'];
+const CT = ['<strong>Kein Kalender:</strong> wie heute.',
+  '<strong>K1 Wochenband:</strong> zusätzlich. Die laufende Woche als eine Zeile; Klick auf „November · KW 47“ macht daraus den Monat. Klick auf einen Tag zeigt dessen Termine.',
+  '<strong>K2 Umschalter:</strong> statt. „Als Nächstes“ schaltet zwischen Agenda und Monat mit Kalenderwochen um.',
+  '<strong>K3 Monat daneben:</strong> zusätzlich, ohne mehr Höhe. Kleiner Monat links, Termine rechts.',
+  '<strong>K4 Vier Wochen:</strong> zusätzlich als eigener Abschnitt. Immer diese und die nächsten drei Wochen, nie vergangene.'];
+function bar() {
+  document.getElementById('segW').innerHTML = WN.map((n, i) => `<button class="${S.w === i + 1 ? 'on' : ''}" data-w="${i + 1}">${n}</button>`).join('');
+  document.getElementById('segC').innerHTML = CN.map((n, i) => `<button class="${S.c === i ? 'on' : ''}" data-c="${i}">${n}</button>`).join('');
+  document.getElementById('what').innerHTML = WT[S.w - 1] + '<br>' + CT[S.c];
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-w],[data-c],[data-a],[data-v],[data-d]'); if (!t) return;
+  const d = t.dataset;
+  if (d.w) { S.w = +d.w; S.wOpen = false; }
+  else if (d.c) { S.c = +d.c; S.cOpen = false; S.sel = TODAY; S.month = new Date(2026, 10, 1); S.view = 'agenda'; }
+  else if (d.v) S.view = d.v;
+  else if (d.d) S.sel = new Date(+d.d);
+  else if (d.a === 'w') S.wOpen = !S.wOpen;
+  else if (d.a === 'c') S.cOpen = !S.cOpen;
+  else if (d.a === 'prev') S.month = new Date(S.month.getFullYear(), S.month.getMonth() - 1, 1);
+  else if (d.a === 'next') S.month = new Date(S.month.getFullYear(), S.month.getMonth() + 1, 1);
+  else if (d.a === 'today') { S.month = new Date(2026, 10, 1); S.sel = TODAY; }
+  bar(); right();
+});
+bar(); right();
+</script>
