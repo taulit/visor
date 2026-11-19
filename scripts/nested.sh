@@ -20,12 +20,15 @@
 #                       extension directory with a metadata.json); repeatable
 #   --no-keyring        run no Secret Service at all (calls to it fail at once)
 #   --log FILE          copy the shell log to FILE when done
+#   --scale N           scale of the monitor, a whole number (default 1); the
+#                       logical size is --size divided by it, for sharp pictures
+#   --wallpaper FILE    a picture as the background instead of the plain colour
 #
 # Inside the command, scripts/lib/shell.sh offers shell_eval and shell_shot.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-size=1920x1080 scheme=dark accent=blue animations=false with_visor=true keyring=true log=
+size=1920x1080 scheme=dark accent=blue animations=false with_visor=true keyring=true log= scale=1 wallpaper=
 extra_extensions=()
 
 while [[ $# -gt 0 ]]; do
@@ -38,6 +41,8 @@ while [[ $# -gt 0 ]]; do
         --no-keyring) keyring=false; shift ;;
         --extension) [[ -f "$2/metadata.json" ]] || { echo "nested.sh: no metadata.json in $2" >&2; exit 2; }; extra_extensions+=("$(cd "$2" && pwd)"); shift 2 ;;
         --log) log="$2"; shift 2 ;;
+        --scale) scale="$2"; shift 2 ;;
+        --wallpaper) [[ -f "$2" ]] || { echo "nested.sh: no picture $2" >&2; exit 2; }; wallpaper="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"; shift 2 ;;
         --) shift; break ;;
         *) echo "nested.sh: unknown option $1" >&2; exit 2 ;;
     esac
@@ -102,6 +107,7 @@ env -i \
     VISOR_REPO="$repo" VISOR_SANDBOX="$sandbox" \
     VISOR_SIZE="$size" VISOR_SCHEME="$scheme" VISOR_ACCENT="$accent" \
     VISOR_ANIMATIONS="$animations" VISOR_ENABLED="$enabled" VISOR_KEYRING="$keyring" \
+    VISOR_SCALE="$scale" VISOR_WALLPAPER="$wallpaper" \
     dbus-run-session -- bash "$repo/scripts/lib/nested-session.sh" "$@" || status=$?
 
 if [[ -n "$log" ]]; then

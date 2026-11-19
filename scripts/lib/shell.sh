@@ -51,6 +51,29 @@ shell_wait_for() {
     return 1
 }
 
+# shell_shot_focus FILE CLASS [PAD] [--frame]: a picture for the catalog (1600x1000)
+# of the first mapped actor with that style class, PAD logical pixels around it
+# (default 32) and never beyond the panel. Without --frame the screen is cropped around it; with --frame
+# the actor alone is laid as a card with round corners onto the wallpaper of
+# Visor, as large as fits. Sharpest with a big monitor at a high scale, e.g.
+# scripts/nested.sh --size 6400x4000 --scale 4.
+shell_shot_focus() {
+    local file="$1" cls="$2" pad="${3:-32}" frame=() box scale full
+    [[ "${4:-}" == --frame ]] && frame=(--frame "$VISOR_REPO/scripts/assets/wallpaper.jpg")
+    box="$(shell_eval "(() => { const find = a => { if (a.mapped && a.has_style_class_name?.('$cls')) return a; for (const c of a.get_children()) { const f = find(c); if (f) return f; } return null; }; const a = find(global.stage); if (!a) return ''; const box = actor => { const [x, y] = actor.get_transformed_position(); const [w, h] = actor.get_transformed_size(); return [x, y, x + w, y + h]; }; const [x1, y1, x2, y2] = box(a); const [px1, py1, px2, py2] = box(visor.notch.body); const p = $pad; const r = [Math.max(x1 - p, px1), Math.max(y1 - p, py1), Math.min(x2 + p, px2), Math.min(y2 + p, py2)]; return [r[0], r[1], r[2] - r[0], r[3] - r[1]].map(Math.round).join(' '); })()")"
+    box="${box//\"/}"
+    [[ -n "$box" ]] || { printf 'shell_shot_focus: nothing has the class %s\n' "$cls" >&2; return 1; }
+    scale="${VISOR_SCALE:-1}"
+    full="$(mktemp --suffix=.png)"
+    shell_shot "$full" || return 1
+    # shellcheck disable=SC2086  # four numbers
+    set -- $box
+    python3 "$VISOR_REPO/scripts/assets/crop-focus.py" "$full" "$(realpath -m "$file")" \
+        $(( $1 * scale )) $(( $2 * scale )) $(( $3 * scale )) $(( $4 * scale )) 0 \
+        --radius $(( 26 * scale )) "${frame[@]}"
+    rm -f "$full"
+}
+
 # shell_shot FILE: writes a PNG of the whole virtual monitor.
 shell_shot() {
     local file
