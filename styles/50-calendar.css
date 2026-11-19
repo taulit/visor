@@ -1,0 +1,176 @@
+/*
+ * The calendar above "Up Next": the week as a band, the month as a grid.
+ * Sizes first, then the colours per panel (see the tokens in 20-kit.css).
+ * Today is the accent; a picked day has a ring; a day with events a dot.
+ */
+.visor-calendar {
+  margin-bottom: 14px;
+}
+.visor-calendar-header {
+  min-height: 20px;
+  margin-bottom: 4px;
+}
+/* The title reads as a section title and starts where they start; it is also a button. */
+.visor-calendar-title-button {
+  padding: 1px 6px 1px 0;
+  border-radius: 10px;
+}
+.visor-calendar-title-box {
+  spacing: 4px;
+}
+.visor-calendar-title {
+  font-size: 9pt;
+  font-weight: 600;
+}
+.visor-calendar-chevron {
+  icon-size: 12px;
+}
+.visor-calendar-nav {
+  spacing: 2px;
+}
+.visor-calendar-nav-button {
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 8.625pt;
+}
+.visor-calendar-nav-icon {
+  icon-size: 12px;
+}
+
+.visor-calendar-day {
+  padding: 3px 0 2px;
+  border-radius: 9px;
+}
+.visor-calendar-month .visor-calendar-day {
+  padding: 2px 0 1px;
+  border-radius: 8px;
+}
+.visor-calendar-weekday {
+  font-size: 7.875pt;
+  margin-bottom: 1px;
+}
+.visor-calendar-month .visor-calendar-weekday {
+  margin-bottom: 3px;
+}
+.visor-calendar-number {
+  font-size: 10pt;
+  font-weight: 600;
+  font-feature-settings: 'tnum';
+}
+.visor-calendar-month .visor-calendar-number {
+  font-size: 9pt;
+  font-weight: 400;
+}
+.visor-calendar-day.today .visor-calendar-number {
+  font-weight: 700;
+}
+.visor-calendar-week-number {
+  font-size: 7.5pt;
+  min-width: 20px;
+  font-feature-settings: 'tnum';
+}
+.visor-calendar-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 2px;
+  margin-top: 1px;
+}
+.visor-calendar-day-title {
+  font-size: 8.625pt;
+  font-weight: 600;
+  padding: 0 0 2px;
+}
+
+/* --- Today: the accent, on both panels --- */
+.visor-calendar-day.today,
+.visor-calendar-day.today:hover {
+  background-color: -st-accent-color;
+  color: #ffffff;
+}
+.visor-calendar-day.today .visor-calendar-weekday {
+  color: rgba(255, 255, 255, 0.8);
+}
+.visor-calendar-day.today .visor-calendar-dot {
+  background-color: #ffffff;
+}
+.visor-calendar-day:focus,
+.visor-calendar-title-button:focus,
+.visor-calendar-nav-button:focus {
+  box-shadow: inset 0 0 0 2px -st-accent-color;
+}
+
+/* --- Colours on a dark panel --- */
+.visor-dark .visor-calendar-title,
+.visor-dark .visor-calendar-chevron,
+.visor-dark .visor-calendar-weekday,
+.visor-dark .visor-calendar-week-number,
+.visor-dark .visor-calendar-day.outside {
+  color: rgba(245, 245, 247, 0.36);
+}
+.visor-dark .visor-calendar-nav-button,
+.visor-dark .visor-calendar-day.weekend,
+.visor-dark .visor-calendar-day-title {
+  color: rgba(245, 245, 247, 0.6);
+}
+.visor-dark .visor-calendar-day.outside.weekend {
+  color: rgba(245, 245, 247, 0.36);
+}
+.visor-dark .visor-calendar-day:hover,
+.visor-dark .visor-calendar-title-button:hover,
+.visor-dark .visor-calendar-nav-button:hover {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+.visor-dark .visor-calendar-day.picked {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+.visor-dark .visor-calendar-dot {
+  background-color: rgba(245, 245, 247, 0.6);
+}
+
+/* --- Colours on a light panel --- */
+.visor-light .visor-calendar-title,
+.visor-light .visor-calendar-chevron,
+.visor-light .visor-calendar-weekday,
+.visor-light .visor-calendar-week-number,
+.visor-light .visor-calendar-day.outside {
+  color: rgba(29, 29, 31, 0.38);
+}
+.visor-light .visor-calendar-nav-button,
+.visor-light .visor-calendar-day.weekend,
+.visor-light .visor-calendar-day-title {
+  color: rgba(29, 29, 31, 0.6);
+}
+.visor-light .visor-calendar-day.outside.weekend {
+  color: rgba(29, 29, 31, 0.38);
+}
+.visor-light .visor-calendar-day:hover,
+.visor-light .visor-calendar-title-button:hover,
+.visor-light .visor-calendar-nav-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.visor-light .visor-calendar-day.picked {
+  background-color: rgba(0, 0, 0, 0.09);
+}
+.visor-light .visor-calendar-dot {
+  background-color: rgba(29, 29, 31, 0.6);
+}
+
+/* --- High contrast: muted text at 80 % --- */
+.visor-dark.visor-hc .visor-calendar-title,
+.visor-dark.visor-hc .visor-calendar-chevron,
+.visor-dark.visor-hc .visor-calendar-weekday,
+.visor-dark.visor-hc .visor-calendar-week-number,
+.visor-dark.visor-hc .visor-calendar-day.outside,
+.visor-dark.visor-hc .visor-calendar-nav-button,
+.visor-dark.visor-hc .visor-calendar-day-title {
+  color: rgba(245, 245, 247, 0.8);
+}
+.visor-light.visor-hc .visor-calendar-title,
+.visor-light.visor-hc .visor-calendar-chevron,
+.visor-light.visor-hc .visor-calendar-weekday,
+.visor-light.visor-hc .visor-calendar-week-number,
+.visor-light.visor-hc .visor-calendar-day.outside,
+.visor-light.visor-hc .visor-calendar-nav-button,
+.visor-light.visor-hc .visor-calendar-day-title {
+  color: rgba(29, 29, 31, 0.8);
+}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: visor\n"
 "Report-Msgid-Bugs-To: https://github.com/taulit/visor/issues\n"
-"POT-Creation-Date: 2026-11-18 16:21+0100\n"
+"POT-Creation-Date: 2026-11-19 13:07+0100\n"
 "PO-Revision-Date: 2026-01-01 00:00+0000\n"
 "Last-Translator: Visor contributors\n"
 "Language-Team: Brazilian Portuguese\n"
@@ -44,6 +44,7 @@ msgid "Show details of %s"
 msgstr "Mostrar detalhes de %s"
 
 #: build/core/search/controller.js:116
+#: build/modules/upcoming/calendar-view.js:99
 #, javascript-format
 msgid "Week %d"
 msgstr "Semana %d"
@@ -146,7 +147,7 @@ msgstr "Módulos"
 msgid "Search, calculate or run a command …"
 msgstr "Pesquise, calcule ou execute um comando …"
 
-#: build/core/sheet.js:332 build/prefs/general.js:74
+#: build/core/sheet.js:332 build/prefs/general.js:77
 msgid "Search"
 msgstr "Pesquisar"
 
@@ -164,9 +165,9 @@ msgid "Shows up only while something is running."
 msgstr "Aparece apenas enquanto algo está em andamento."
 
 #. Needed before enable(), for the list of modules: there is no context yet.
-#: build/core/sheet.js:439 build/modules/upcoming/module.js:28
-#: build/modules/upcoming/module.js:110 build/prefs/builtin-modules.js:7
-#: build/prefs/builtin-modules.js:18
+#: build/core/sheet.js:439 build/modules/upcoming/module.js:34
+#: build/modules/upcoming/module.js:137 build/prefs/builtin-modules.js:7
+#: build/prefs/builtin-modules.js:18 build/prefs/general.js:74
 msgid "Up Next"
 msgstr "A seguir"
 
@@ -308,7 +309,7 @@ msgid "Paused"
 msgstr "Em pausa"
 
 #: build/modules/timers/module.js:266 build/modules/timers/module.js:295
-#: build/modules/upcoming/plan.js:32
+#: build/modules/upcoming/module.js:315 build/modules/upcoming/plan.js:32
 #, javascript-format
 msgid "until %s"
 msgstr "até %s"
@@ -327,11 +328,46 @@ msgstr "Temporizador finalizado"
 msgid "Ended at %s"
 msgstr "Terminou às %s"
 
-#: build/modules/upcoming/module.js:111
+#: build/modules/upcoming/calendar-view.js:58
+#, fuzzy
+msgid "Previous month"
+msgstr "Anterior"
+
+#: build/modules/upcoming/calendar-view.js:61 build/modules/upcoming/when.js:35
+#: build/modules/upcoming/when.js:38
+msgid "Today"
+msgstr "Hoje"
+
+#: build/modules/upcoming/calendar-view.js:70
+msgid "Next month"
+msgstr ""
+
+#: build/modules/upcoming/calendar-view.js:101
+msgid "Show the week"
+msgstr ""
+
+#: build/modules/upcoming/calendar-view.js:101
+msgid "Show the month"
+msgstr ""
+
+#: build/modules/upcoming/calendar-view.js:206
+msgid "with events"
+msgstr ""
+
+#: build/modules/upcoming/module.js:140
 msgid "Nothing else today"
 msgstr "Nada mais hoje"
 
-#: build/modules/upcoming/module.js:194
+#: build/modules/upcoming/module.js:142
+#, fuzzy
+msgid "Nothing planned"
+msgstr "Nada mais hoje"
+
+#: build/modules/upcoming/module.js:312 build/modules/upcoming/plan.js:29
+msgid "all day"
+msgstr "dia inteiro"
+
+#: build/modules/upcoming/module.js:322
 msgid "Join"
 msgstr "Entrar"
 
@@ -349,14 +385,6 @@ msgstr "em %d h"
 #, javascript-format
 msgid "in %d h %d min"
 msgstr "em %d h %d min"
-
-#: build/modules/upcoming/plan.js:29
-msgid "all day"
-msgstr "dia inteiro"
-
-#: build/modules/upcoming/when.js:35 build/modules/upcoming/when.js:38
-msgid "Today"
-msgstr "Hoje"
 
 #: build/modules/upcoming/when.js:40
 msgid "Tomorrow"
@@ -537,10 +565,21 @@ msgid "Appearance"
 msgstr "Aparência"
 
 #: build/prefs/general.js:75
+#, fuzzy
+msgid "Show a calendar"
+msgstr "Mostrar na pasta"
+
+#: build/prefs/general.js:75
+msgid ""
+"The current week above the next events. Its title opens the month; a day "
+"shows its events."
+msgstr ""
+
+#: build/prefs/general.js:78
 msgid "Load currency rates"
 msgstr "Carregar taxas de câmbio"
 
-#: build/prefs/general.js:75
+#: build/prefs/general.js:78
 msgid "The rates come from the European Central Bank, at most once a day."
 msgstr "As taxas vêm do Banco Central Europeu, no máximo uma vez por dia."
 

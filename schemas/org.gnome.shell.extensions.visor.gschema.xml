@@ -52,6 +52,11 @@
       <summary>Currency rates</summary>
       <description>Fetch exchange rates online for the unit and currency converter.</description>
     </key>
+    <key name="upcoming-calendar" type="b">
+      <default>false</default>
+      <summary>Calendar in Up Next</summary>
+      <description>Show the current week above the next events. Its title opens the month; a day shows its events.</description>
+    </key>
     <key name="catalog-updates" type="b">
       <default>true</default>
       <summary>Update the module catalog</summary>

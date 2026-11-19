@@ -292,6 +292,34 @@ check 'nothing of Evolution stays in the shell after the lookups' \
 check 'the clock format setting is honoured' \
     "(async () => { const s = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' }); s.set_string('clock-format', '12h'); await T.wait(100); const lead = T.texts('Up Next', 'visor-row-lead')[1]; s.set_string('clock-format', '24h'); await T.wait(100); return /^[0-9]{1,2}:[0-9][0-9].[AP]M$/.test(lead) && T.texts('Up Next', 'visor-row-lead')[1] === U.clock(U.event('review').date) || [lead, T.texts('Up Next', 'visor-row-lead').join('|'), U.clock(U.event('review').date)].join(' / '); })()"
 check 'one timeout runs while the panel is open, for the next change of a row' "U.module.wake !== 0"
+
+echo "# the calendar above up next"
+run "globalThis.C = { days: () => T.find('visor-calendar-day').filter(a => a.mapped), title: () => T.find('visor-calendar-title').filter(a => a.mapped)[0], tomorrow: () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1); } }"
+check 'off by default: no calendar' "visor.getSettings().get_boolean('upcoming-calendar') === false && T.find('visor-calendar').length === 0"
+run "visor.getSettings().set_boolean('upcoming-calendar', true)"
+wait_check 'on: the week as seven days above the events' \
+    "C.days().length === 7 && T.find('visor-calendar-week').length === 1 && T.titles('Up Next') === 'Standup|Sprint Review|Planning'"
+check 'today has the accent and its number, and a dot for its events' \
+    "(() => { const today = C.days().filter(d => d.has_style_class_name('today')); return today.length === 1 && T.find('visor-calendar-number', today[0])[0].text === String(new Date().getDate()) && T.find('visor-calendar-dot', today[0])[0].opacity === 255; })()"
+check 'the title names the month and the week' \
+    "(() => { const t = C.title().text; return t.startsWith(new Date().toLocaleDateString(undefined, { month: 'long' }) + ' · Week ') || t; })()"
+run "U.module.pick(C.tomorrow())"
+wait_check 'a picked day shows its events, under its date' \
+    "T.titles('Up Next') === 'Jukek’s birthday' && T.texts('Up Next', 'visor-row-lead').join() === 'all day' && T.find('visor-calendar-day-title').some(a => a.mapped)"
+run "U.module.pick(C.tomorrow())"
+wait_check 'the same day again goes back to what comes next' \
+    "T.titles('Up Next') === 'Standup|Sprint Review|Planning' && !T.find('visor-calendar-day-title').some(a => a.mapped)"
+check 'a click on the title opens the month, with the numbers of the weeks' \
+    "(async () => { await T.click(T.find('visor-calendar-title-button').filter(a => a.mapped)[0]); await T.wait(200); const n = C.days().length; return n >= 28 && n <= 42 && n % 7 === 0 && T.find('visor-calendar-week-number').filter(a => a.mapped).length === n / 7 && T.find('visor-calendar-nav').some(a => a.mapped) || n; })()"
+check 'the next month is a click away' \
+    "(async () => { const before = C.title().text; await T.click(T.find('visor-calendar-nav-button').filter(a => a.mapped).at(-1)); await T.wait(200); return C.title().text !== before || before; })()"
+check 'a day of the month is picked with a click' \
+    "(async () => { const day = C.days().find(d => !d.has_style_class_name('outside') && !d.has_style_class_name('today')); await T.click(day); await T.wait(200); return T.find('visor-calendar-day-title').some(a => a.mapped); })()"
+run 'visor.notch.close()'
+check 'closed and opened again: back to today and the week' \
+    "(async () => { visor.notch.open(); await T.wait(300); return C.days().length === 7 && T.titles('Up Next') === 'Standup|Sprint Review|Planning'; })()"
+run "visor.getSettings().reset('upcoming-calendar')"
+wait_check 'off again: the calendar is gone' "T.find('visor-calendar').length === 0 && T.titles('Up Next') === 'Standup|Sprint Review|Planning'"
 run 'visor.notch.close()'
 events '[{"uid":"run","remove":true},{"uid":"review","remove":true},{"uid":"plan","remove":true},{"uid":"bday","remove":true},{"uid":"tender","remove":true}]'
 wait_check 'all events gone: no chip' "T.chip('upcoming') === null"
