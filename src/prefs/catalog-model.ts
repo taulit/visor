@@ -4,6 +4,7 @@
 // what the button of a module does. No gi:// imports, so Vitest can load it.
 import { API_VERSION, type Slot } from '../api.js';
 import { buildIndex, type Searchable, type SearchIndex } from '../lib/catalog-search.js';
+import { githubRepo } from '../lib/github-install.js';
 
 /** A text by language: `en` always, others such as `de` or `pt_BR` when the author wrote them. */
 export type Text = Record<string, string>;
@@ -188,5 +189,5 @@ export function installState(
   installed: ReadonlySet<string>,
 ): 'installed' | 'available' | 'unreleased' {
   if (installed.has(entry.uuid)) return 'installed';
-  return entry.egoId === null ? 'unreleased' : 'available';
+  return entry.egoId !== null || githubRepo(entry.repo) !== null ? 'available' : 'unreleased';
 }

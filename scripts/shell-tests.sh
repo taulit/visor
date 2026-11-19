@@ -18,6 +18,7 @@ tests=(
     "a11y|tests/shell/a11y.sh"
     "modules-now|tests/shell/modules-now.sh"
     "modules-ahead|tests/shell/modules-ahead.sh"
+    "install-github|tests/shell/install-github.sh"
     "template|tests/shell/template.sh"
     "disable-restores|tests/shell/disable-restores.sh"
     "e2e-timer|tests/shell/e2e-timer.sh"

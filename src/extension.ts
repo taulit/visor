@@ -2,6 +2,7 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import type { VisorApi } from './api.js';
 import { Content } from './core/content.js';
+import { Installer } from './core/installer.js';
 import { metricsOn, now, reportEnable } from './core/metrics.js';
 import { Notch } from './core/notch.js';
 import { builtinModules } from './modules/index.js';
@@ -11,6 +12,8 @@ export default class VisorExtension extends Extension {
   api: VisorApi | null = null;
   /** Internal, not part of the API. */
   notch: Notch | null = null;
+  /** Internal: installs modules from GitHub for the settings window. */
+  installer: Installer | null = null;
   private content: Content | null = null;
 
   override enable(): void {
@@ -21,10 +24,13 @@ export default class VisorExtension extends Extension {
     this.content.setHost(this.notch);
     this.api = this.content.api;
     for (const module of builtinModules()) this.api.register(module);
+    this.installer = new Installer();
     if (start) reportEnable(now() - start);
   }
 
   override disable(): void {
+    this.installer?.destroy();
+    this.installer = null;
     this.api = null;
     this.notch?.destroy();
     this.notch = null;

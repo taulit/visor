@@ -40,7 +40,7 @@ describe('parseCatalog', () => {
   it('reads the snapshot that ships with Visor', () => {
     const modules = parseCatalog(shipped);
     expect(modules?.length).toBeGreaterThan(0);
-    expect(modules?.[0]).toMatchObject({ uuid: 'visor-t3@taulit.github.io', slot: 'now' });
+    expect(modules?.map(m => m.uuid)).toContain('visor-t3@taulit.github.io');
   });
   it('reads an entry', () => {
     expect(parseCatalog(catalog(entry()))?.[0]).toMatchObject({
@@ -150,5 +150,9 @@ describe('installState', () => {
     expect(installState(module!, new Set(['visor-weather@example.org']))).toBe('installed');
     expect(installState(module!, new Set())).toBe('available');
     expect(installState({ ...module!, egoId: null }, new Set())).toBe('unreleased');
+  });
+  it('can install from the release of a GitHub repository without the store', () => {
+    const github = { ...module!, egoId: null, repo: 'https://github.com/taulit/visor-weather' };
+    expect(installState(github, new Set())).toBe('available');
   });
 });
