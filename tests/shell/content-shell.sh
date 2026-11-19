@@ -111,6 +111,8 @@ run "(() => {
 echo "# sizes"
 check 'two columns follow the width setting' \
     'visor.content.sheetWidth() === 960 && (visor.getSettings().set_string("width", "compact"), visor.content.sheetWidth() === 800) && (visor.getSettings().set_string("width", "wide"), visor.content.sheetWidth() === 1120) && (visor.getSettings().reset("width"), true)'
+check 'with two columns the notifications sit below "Now", the other sections on the right' \
+    '(() => { T.sheet.getActor(); const n = T.sheet.sections.get("notifications")?.widget; return !!n && T.sheet.left.contains(n) && T.sheet.left.get_child_at_index(1) === n && !T.sheet.right.contains(n) && T.sheet.right.get_n_children() > 0 && T.sheet.right.visible || [!!n, n && T.sheet.left.contains(n), T.sheet.left.get_n_children(), T.sheet.right.get_n_children(), [...T.sheet.sections.keys()].join("+")].join(); })()'
 check 'the peek row has four chips, the waiting one first' \
     '(() => { const peek = visor.content.getPeek(); const chips = peek.get_children(); return visor.content.hasPeek() && chips.length === 4 && chips[0].has_style_class_name("waiting") && chips[0].label_actor.text === "taulit is waiting" && chips.every(c => c.label_actor.text !== "3:16"); })()'
 check 'attention: waiting beats unread' 'T.content.attention === "waiting"'
@@ -255,7 +257,7 @@ check 'unregister removes rows, chip, section, dock icon and attention of a modu
             && T.find("visor-section-title").filter(a => a.mapped).map(a => a.text).join() === "Now,Notifications" || [T.titles().join(), peek, T.content.attention].join(" / ");
     })()'
 check 'without rows in "Now" the panel has one column of 600' \
-    '(() => { visor.api.unregister("timers"); visor.api.unregister("downloads"); return visor.content.sheetWidth() === 600 && !T.sheet.left.visible && T.sheet.right.visible && !T.sheet.right.has_style_class_name("divided"); })()'
+    '(() => { visor.api.unregister("timers"); visor.api.unregister("downloads"); return visor.content.sheetWidth() === 600 && !T.sheet.left.visible && T.sheet.right.visible && !T.sheet.right.has_style_class_name("divided") && T.sheet.right.contains(T.sheet.sections.get("notifications").widget); })()'
 check 'without modules nothing but the search row is left' \
     '(() => { visor.api.unregister("notifications"); return visor.content.sheetWidth() === 600 && !T.sheet.scroll.visible && !visor.content.hasPeek() && T.content.attention === null; })()'
 
