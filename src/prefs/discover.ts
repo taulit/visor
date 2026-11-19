@@ -17,7 +17,7 @@ import { searchCatalog } from '../lib/catalog-search.js';
 import { SLOTS } from './builtin-modules.js';
 import { catalogBase, installState, localized, type CatalogModule } from './catalog-model.js';
 import { loadCatalog, loadPicture, refreshCatalog } from './catalog-store.js';
-import { installExtension, listInstalledUuids } from './shell-extensions.js';
+import { installExtension, installFromGitHub, listInstalledUuids } from './shell-extensions.js';
 
 const UPDATES_KEY = 'catalog-updates';
 const URL_KEY = 'catalog-url';
@@ -32,6 +32,8 @@ interface Shared {
   cancellable: Gio.Cancellable;
   languages: string[];
   installed: Set<string>;
+  /** Where Visor is installed; the pictures of the snapshot are below it. */
+  extensionPath: string;
   /** Where pictures come from, null when the network is off or the address is none. */
   base: () => string | null;
   /** Called after something was installed. */
@@ -73,7 +75,7 @@ function cover(shared: Shared, path: string | undefined, height: number): Gtk.Wi
   overlay.connect('map', () => {
     if (asked) return;
     asked = true;
-    loadPicture(shared.http, shared.base(), path, shared.cancellable).then(
+    loadPicture(shared.http, shared.base(), shared.extensionPath, path, shared.cancellable).then(
       file => {
         if (!file || shared.cancellable.is_cancelled()) return;
         overlay.add_overlay(
@@ -110,7 +112,12 @@ function installButton(shared: Shared, entry: CatalogModule): Gtk.Button {
   shared.changed.push(sync);
   button.connect('clicked', () => {
     button.sensitive = false;
-    installExtension(entry.uuid).then(done => {
+    // From the store where it is there, else from the release on GitHub.
+    const install =
+      entry.egoId !== null
+        ? installExtension(entry.uuid)
+        : installFromGitHub(entry.uuid, entry.repo);
+    install.then(done => {
       if (shared.cancellable.is_cancelled()) return;
       if (done) shared.installed.add(entry.uuid);
       for (const callback of shared.changed) callback();
@@ -284,6 +291,7 @@ export function addDiscover(
     cancellable: new Gio.Cancellable(),
     languages: GLib.get_language_names(),
     installed: new Set(),
+    extensionPath,
     base: () =>
       settings.get_boolean(UPDATES_KEY) ? catalogBase(settings.get_string(URL_KEY)) : null,
     changed: [],

@@ -32,7 +32,7 @@ The maintainer wants "a store with extensions". Order of work, each step a pull 
    - The address is the setting `catalog-url`, default `https://visor.taulit.com/catalog`. **Nothing is
      served there yet**; the maintainer has not decided between that domain and GitHub Pages. Whoever
      serves it has to publish `catalog.json` and the folder `modules/` of the catalog repository below
-     that address. Until then the snapshot shows, without pictures.
+     that address. Until then the snapshot shows, with the screenshots that ship in `data/modules/`.
    - Not built: filter by tags, "by the makers of Visor" and sorting (the search can do all three; the
      website gets them), the icon of a module on its card, pictures that change under the same name
      (the cache keeps the first), a refresh of "Installed" when an extension is removed while the window
@@ -45,7 +45,26 @@ The maintainer wants "a store with extensions". Order of work, each step a pull 
      unless it points `catalog-url` at one of its own (`tests/shell/prefs-discover.sh`).
 4. Website in `site/` (plan 11.4).
 5. More modules as repositories of their own (`docs/module-ideas.md`, and from Quick Launcher: passwords
-   through `rbw`/`op`, Clockify).
+   through `rbw`/`op`, Clockify). Built on 2026-11-19, local only, not committed, no repository on GitHub
+   yet: `~/development/visor-weather` (slot `ahead`, Open-Meteo) and `~/development/visor-claude` (slot
+   `now`, reads `~/.claude/sessions/`). Both have an entry in the catalog and in the snapshot; both have
+   run in the sandbox only.
+   - The maintainer picked from `docs/design/prototype-right-column.html` (throwaway): weather as the
+     "hourly band" (now and five hours, days behind "Days"), calendar as the "week band". The weather days
+     have no range bars (they did not say anything); instead "Rain 13–17" and a bar per hour for the
+     chance of rain. The module now asks Open-Meteo for every hour of the six days (no `forecast_hours`).
+   - The week band is part of "Up Next" in Visor, pull request #1 of its own (branch `feat/week-band`),
+     behind the setting `upcoming-calendar` (off by default, switch under General → Up Next).
+   - Both modules are public (`taulit/visor-weather`, `taulit/visor-claude`) with release v0.1.0; their
+     entries are in the catalog (pull request #1 of `taulit/visor-modules`). Not on extensions.gnome.org.
+   - **Install from GitHub** (maintainer's decision of 2026-11-19, against the advice that EGO forbids
+     extensions that download and run code, which may block Visor's own review): a catalog entry without
+     `ego_id` whose `repo` is `https://github.com/owner/name` gets an Install button. The settings window
+     calls `io.github.taulit.Visor.Installer.InstallFromGitHub` on `org.gnome.Shell`
+     (`/io/github/taulit/Visor/Installer`, `src/core/installer.ts`); Visor downloads
+     `<repo>/releases/latest/download/<uuid>.shell-extension.zip`, checks the UUID and the `visor` key
+     of metadata.json, unpacks next to the folder of extensions, compiles the schemas, then loads and
+     enables it without a new login. Test: `tests/shell/install-github.sh`.
 
 ### What the extraction showed
 

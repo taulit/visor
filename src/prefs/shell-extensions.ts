@@ -9,6 +9,8 @@ import { foreignModule, type ForeignModule } from './foreign.js';
 const BUS_NAME = 'org.gnome.Shell';
 const OBJECT_PATH = '/org/gnome/Shell';
 const INTERFACE = 'org.gnome.Shell.Extensions';
+/** The same as in src/core/installer.ts, which the window cannot import (it imports the shell). */
+const INSTALLER_PATH = '/io/github/taulit/Visor/Installer';
 
 function call(method: string, parameters: GLib.Variant | null): Promise<GLib.Variant> {
   return new Promise((resolve, reject) => {
@@ -87,6 +89,37 @@ export async function listInstalledUuids(): Promise<Set<string>> {
  * loads nothing itself. True when it was installed, false when the user
  * declined or the store does not have it.
  */
+/**
+ * Asks Visor in the shell to install a module from the latest release of its
+ * GitHub repository and turn it on (see src/core/installer.ts). False when that
+ * did not work; the reason is in the log of the shell.
+ */
+export function installFromGitHub(uuid: string, repo: string): Promise<boolean> {
+  return new Promise(resolve => {
+    Gio.DBus.session.call(
+      BUS_NAME,
+      INSTALLER_PATH,
+      'io.github.taulit.Visor.Installer',
+      'InstallFromGitHub',
+      new GLib.Variant('(ss)', [uuid, repo]),
+      null,
+      Gio.DBusCallFlags.NONE,
+      // Download, unpack and enable; a slow line takes a while.
+      2 * 60 * 1000,
+      null,
+      (connection, result) => {
+        try {
+          connection!.call_finish(result);
+          resolve(true);
+        } catch (error) {
+          console.warn(`Visor: cannot install ${uuid}: ${error}`);
+          resolve(false);
+        }
+      },
+    );
+  });
+}
+
 export function installExtension(uuid: string): Promise<boolean> {
   return new Promise(resolve => {
     Gio.DBus.session.call(

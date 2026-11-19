@@ -62,10 +62,10 @@ shot() { shell_shot_window "$PREFS_WINDOW" "$repo/.shell-test/shots/prefs-discov
 
 # --- a catalog on this machine ------------------------------------------------------
 site="$HOME/site"
-mkdir -p "$site/modules/clock-visor@example.org" "$site/modules/visor-weather@example.org"
+mkdir -p "$site/modules/clock-visor@example.org" "$site/modules/visor-barometer@example.org"
 magick -size 1600x1000 -define gradient:angle=135 gradient:'#1c71d8-#613583' "$site/modules/clock-visor@example.org/screenshot-1.png"
-magick -size 1600x1000 -define gradient:angle=45 gradient:'#26a269-#1a5fb4' "$site/modules/visor-weather@example.org/screenshot-1.png"
-cp "$site/modules/visor-weather@example.org/screenshot-1.png" "$site/modules/visor-weather@example.org/screenshot-2.png"
+magick -size 1600x1000 -define gradient:angle=45 gradient:'#26a269-#1a5fb4' "$site/modules/visor-barometer@example.org/screenshot-1.png"
+cp "$site/modules/visor-barometer@example.org/screenshot-1.png" "$site/modules/visor-barometer@example.org/screenshot-2.png"
 python3 - "$site/catalog.json" <<'PY'
 import json, sys
 def entry(uuid, name, slot, ego, **more):
@@ -81,9 +81,9 @@ def entry(uuid, name, slot, ego, **more):
     }
 modules = [
     entry("clock-visor@example.org", "World Clock", "now", 4711),
-    entry("visor-weather@example.org", "Weather", "ahead", 4712,
-          shows={"en": "The weather of the next hours, as a section."},
-          screenshots=["visor-weather@example.org/screenshot-1.png", "visor-weather@example.org/screenshot-2.png"]),
+    entry("visor-barometer@example.org", "Barometer", "ahead", 4712,
+          shows={"en": "The air pressure of the last hours, as a section."},
+          screenshots=["visor-barometer@example.org/screenshot-1.png", "visor-barometer@example.org/screenshot-2.png"]),
     entry("visor-future@example.org", "Future", "dock", 4713, api=2),
 ]
 json.dump({"version": 1, "pictures": "modules/", "modules": modules}, open(sys.argv[1], "w"))
@@ -106,8 +106,8 @@ prefs_page modules
 prefs_scroll 250
 wait_shows 'T3 Code'
 expect_shows 'updates off: the catalog that ships with Visor is shown' 'T3 Code'
-expect_shows 'a module that is not in the store has no Install' 'Not in the store yet'
-expect_hides 'and nothing of the served catalog' 'Weather'
+expect_shows 'a module that is not in the store installs from its GitHub release' 'Install'
+expect_hides 'and nothing of the served catalog' 'Barometer'
 shot snapshot
 expect_true 'no request was made' '[[ "$(requests /)" == 0 ]]'
 expect_true 'and nothing is in the cache' '[[ ! -e "$cache/catalog.json" ]]'
@@ -118,8 +118,8 @@ gs catalog-updates true
 prefs_open
 prefs_page modules
 prefs_scroll 250
-wait_shows 'Weather'
-expect_shows 'updates on: the served catalog replaces the snapshot' 'Weather'
+wait_shows 'Barometer'
+expect_shows 'updates on: the served catalog replaces the snapshot' 'Barometer'
 expect_shows 'with its second module' 'World Clock'
 expect_hides 'a module for another API is not offered' 'Future'
 expect_hides 'the snapshot is no longer shown' 'T3 Code'
@@ -129,18 +129,18 @@ sleep 1
 expect_true 'the catalog was fetched once' '[[ "$(requests /catalog.json)" == 1 ]]'
 expect_true 'and is in the cache' '[[ -s "$cache/catalog.json" ]]'
 expect_true 'the cover pictures are in the cache' \
-    '[[ -s "$cache/modules/clock-visor@example.org/screenshot-1.png" && -s "$cache/modules/visor-weather@example.org/screenshot-1.png" ]]'
+    '[[ -s "$cache/modules/clock-visor@example.org/screenshot-1.png" && -s "$cache/modules/visor-barometer@example.org/screenshot-1.png" ]]'
 expect_true 'the second picture of a module is not fetched for its card' \
-    '[[ ! -e "$cache/modules/visor-weather@example.org/screenshot-2.png" ]]'
+    '[[ ! -e "$cache/modules/visor-barometer@example.org/screenshot-2.png" ]]'
 shot served
 
 # --- search and filter ----------------------------------------------------------------
 # The search field has no name on the accessibility bus; it is left of the filter.
 read -r place_x place_y <<<"$(prefs_where 'All places' 'combo box')"
 prefs_click "$((place_x - 250))" "$place_y"
-prefs_type 'wether'
+prefs_type 'baromter'
 sleep 0.6
-expect_shows 'the search finds despite a typo' 'Weather'
+expect_shows 'the search finds despite a typo' 'Barometer'
 expect_hides 'and hides what does not fit' 'The summary of World Clock in one sentence.'
 prefs_key Control_L a
 prefs_type 'qqqq'
@@ -153,13 +153,13 @@ expect_shows 'an empty search shows all again' 'The summary of World Clock in on
 
 # --- the page of a module -------------------------------------------------------------
 prefs_scroll 250
-prefs_click_on 'Weather' label
+prefs_click_on 'Barometer' label
 wait_shows 'What it shows'
 expect_shows 'a click on a card opens the page of the module' 'What it shows'
-expect_shows 'with its texts as plain text' 'What Weather does, in a few sentences. <b>Not markup</b> & more.'
-expect_shows 'and where it comes from' 'https://example.org/weather'
+expect_shows 'with its texts as plain text' 'What Barometer does, in a few sentences. <b>Not markup</b> & more.'
+expect_shows 'and where it comes from' 'https://example.org/barometer'
 sleep 1
-expect_true 'its second picture is fetched now' '[[ -s "$cache/modules/visor-weather@example.org/screenshot-2.png" ]]'
+expect_true 'its second picture is fetched now' '[[ -s "$cache/modules/visor-barometer@example.org/screenshot-2.png" ]]'
 shot detail
 prefs_close
 
@@ -167,8 +167,8 @@ prefs_close
 before="$(requests /)"
 prefs_open
 prefs_page modules
-wait_shows 'Weather'
-expect_shows 'opened again: the catalog of the cache is shown' 'Weather'
+wait_shows 'Barometer'
+expect_shows 'opened again: the catalog of the cache is shown' 'Barometer'
 sleep 1
 expect_true 'and the server is not asked again' '[[ "$(requests /)" == "$before" ]]'
 prefs_close
@@ -180,7 +180,7 @@ prefs_open
 prefs_page modules
 sleep 2
 expect_true 'an old cache: the server is asked again' '[[ "$(requests /catalog.json)" == 2 ]]'
-expect_shows 'what is no catalog is not taken: the cached one stays' 'Weather'
+expect_shows 'what is no catalog is not taken: the cached one stays' 'Barometer'
 expect_true 'also in the cache' 'grep -q World "$cache/catalog.json"'
 check 'the window is still there' "global.get_window_actors().some(a => a.meta_window.title === '$PREFS_WINDOW')" true
 prefs_close
