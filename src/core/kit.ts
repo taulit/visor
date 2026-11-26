@@ -452,7 +452,7 @@ export class Row implements KitRow {
     });
     this.frame = new St.BoxLayout({
       style_class: 'visor-row',
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       reactive: true,
       track_hover: true,
     });
@@ -473,7 +473,7 @@ export class Row implements KitRow {
 
     this.text = new St.BoxLayout({
       style_class: 'visor-row-text',
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       y_align: Clutter.ActorAlign.CENTER,
     });
@@ -809,7 +809,10 @@ export class Row implements KitRow {
     const content = this.guard.build(expand);
     this.moreBuiltFrom = expand;
     if (!content) return;
-    this.more = new St.BoxLayout({ style_class: 'visor-row-more', vertical: true });
+    this.more = new St.BoxLayout({
+      style_class: 'visor-row-more',
+      orientation: Clutter.Orientation.VERTICAL,
+    });
     this.more.add_child(content);
     this.frame.add_child(this.more);
   }
@@ -912,7 +915,7 @@ class Section implements KitSection {
   constructor(props: { title: string; links?: Action[]; toggle?: ToggleProps }, guard: Guard) {
     this.actor = new St.BoxLayout({
       style_class: 'visor-section',
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       reactive: true,
       track_hover: true,
@@ -955,7 +958,7 @@ class Section implements KitSection {
     this.actor.add_child(header);
     this.body = new St.BoxLayout({
       style_class: 'visor-section-body',
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
     });
     this.actor.add_child(this.body);

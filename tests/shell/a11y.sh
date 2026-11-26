@@ -50,7 +50,7 @@ content_register
 # Helpers inside the shell. No backslash in here: gdbus reads escapes.
 shell_eval '(() => {
     const Atk = imports.gi.Atk;
-    const seat = Clutter.get_default_backend().get_default_seat();
+    const seat = global.stage.context.get_backend().get_default_seat();
     const keyboard = seat.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
     const pointer = seat.create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
     const now = () => GLib.get_monotonic_time();

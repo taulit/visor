@@ -63,7 +63,7 @@ export class CalendarView {
     const { t: _ } = props;
     this.actor = new St.BoxLayout({
       style_class: 'visor-calendar',
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
     });
 
@@ -169,7 +169,10 @@ export class CalendarView {
     const strip = new St.BoxLayout({ style_class: 'visor-calendar-week', x_expand: true });
     (strip.layout_manager as Clutter.BoxLayout).homogeneous = true;
     for (const day of weekDays(state.today, this.props.firstDay)) {
-      const box = new St.BoxLayout({ vertical: true, x_align: Clutter.ActorAlign.CENTER });
+      const box = new St.BoxLayout({
+        orientation: Clutter.Orientation.VERTICAL,
+        x_align: Clutter.ActorAlign.CENTER,
+      });
       const center = { x_align: Clutter.ActorAlign.CENTER };
       box.add_child(
         new St.Label({ style_class: 'visor-calendar-weekday', text: weekdayName(day), ...center }),
@@ -226,7 +229,10 @@ export class CalendarView {
         1,
       );
       week.forEach((day, i) => {
-        const box = new St.BoxLayout({ vertical: true, x_align: Clutter.ActorAlign.CENTER });
+        const box = new St.BoxLayout({
+          orientation: Clutter.Orientation.VERTICAL,
+          x_align: Clutter.ActorAlign.CENTER,
+        });
         box.add_child(
           new St.Label({
             style_class: 'visor-calendar-number',

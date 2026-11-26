@@ -14,6 +14,7 @@ import { diffIds } from '../lib/diff.js';
 import { badgeText } from '../lib/modules.js';
 import { leftColumnWidth, sheetWidth } from '../lib/widths.js';
 import { createKit, ownGuard, Row, scaleFactor } from './kit.js';
+import { addCaptureKeyController } from './keys.js';
 import type { ModuleEntry, Registry } from './registry.js';
 import { Tooltip } from './tooltip.js';
 import type { Updater } from './updater.js';
@@ -396,7 +397,7 @@ export class Sheet implements SearchMount {
 
     // Main view: search row, then the columns.
     const mainPage = (this.mainPage = new St.BoxLayout({
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       y_expand: true,
     }));
@@ -421,7 +422,11 @@ export class Sheet implements SearchMount {
     }));
     searchRow.add_child(entry);
     entry.clutter_text.connect('text-changed', () => this.queryChanged());
-    entry.clutter_text.connect('key-press-event', (_actor, event) => {
+    // Before the text sees the key: since GNOME 51 its own bindings (Enter,
+    // Backspace) run ahead of key-press-event handlers connected to it.
+    entry.connect('captured-event', (_actor, event) => {
+      if (event.type() !== Clutter.EventType.KEY_PRESS) return Clutter.EVENT_PROPAGATE;
+      if (global.stage.get_key_focus() !== entry.clutter_text) return Clutter.EVENT_PROPAGATE;
       const handler = this.keyHandler;
       if (handler && ownGuard.build(() => handler(event))) return Clutter.EVENT_STOP;
       if (event.get_key_symbol() !== Clutter.KEY_Down) return Clutter.EVENT_PROPAGATE;
@@ -450,8 +455,15 @@ export class Sheet implements SearchMount {
     const columns = new St.BoxLayout({ style_class: 'visor-columns', x_expand: true });
     this.scroll = this.buildScroll(columns);
     mainPage.add_child(this.scroll);
-    this.left = new St.BoxLayout({ style_class: 'visor-column', vertical: true });
-    this.right = new St.BoxLayout({ style_class: 'visor-column', vertical: true, x_expand: true });
+    this.left = new St.BoxLayout({
+      style_class: 'visor-column',
+      orientation: Clutter.Orientation.VERTICAL,
+    });
+    this.right = new St.BoxLayout({
+      style_class: 'visor-column',
+      orientation: Clutter.Orientation.VERTICAL,
+      x_expand: true,
+    });
     columns.add_child(this.left);
     columns.add_child(this.right);
     this.nowSection = kit.section({ title: _('Now') });
@@ -459,7 +471,7 @@ export class Sheet implements SearchMount {
 
     // A module view: header with back button and title, then the view.
     const viewPage = (this.viewPage = new St.BoxLayout({
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       y_expand: true,
       visible: false,
@@ -486,7 +498,11 @@ export class Sheet implements SearchMount {
       y_align: Clutter.ActorAlign.CENTER,
     });
     header.add_child(this.viewActions);
-    this.viewBox = new St.BoxLayout({ style_class: 'visor-view', vertical: true, x_expand: true });
+    this.viewBox = new St.BoxLayout({
+      style_class: 'visor-view',
+      orientation: Clutter.Orientation.VERTICAL,
+      x_expand: true,
+    });
     this.viewScroll = this.buildScroll(this.viewBox);
     viewPage.add_child(this.viewScroll);
 
@@ -505,9 +521,12 @@ export class Sheet implements SearchMount {
     // The focus manager does that by itself only for events that reach the
     // stage, and under the modal grab of the open notch none does.
     const focusManager = St.FocusManager.get_for_stage(global.stage);
+    // Since GNOME 51 add_group puts a key controller on the root that walks
+    // the group on its own; ours comes first so Tab follows the stops above.
+    addCaptureKeyController(root, 'visor-tab', symbol => this.tab(symbol));
     focusManager.add_group(root);
     root.connect('key-press-event', (_actor, event) =>
-      this.tab(event) || focusManager.navigate_from_event(event)
+      this.tab(event.get_key_symbol()) || navigateFromEvent(focusManager, event)
         ? Clutter.EVENT_STOP
         : Clutter.EVENT_PROPAGATE,
     );
@@ -520,7 +539,7 @@ export class Sheet implements SearchMount {
    * that leaves room for the hover area of the rows sits one level further in.
    */
   private buildScroll(content: St.BoxLayout): St.ScrollView {
-    const child = new St.BoxLayout({ vertical: true, x_expand: true });
+    const child = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
     child.add_child(content);
     return new St.ScrollView({
       style_class: 'visor-scroll',
@@ -554,7 +573,7 @@ export class Sheet implements SearchMount {
       const label = new St.Label({ style_class: 'visor-modules-hint', text: hint, x_expand: true });
       label.clutter_text.line_wrap = true;
       section.body.add_child(label);
-      const box = new St.BoxLayout({ vertical: true, x_expand: true });
+      const box = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
       section.body.add_child(box);
       view.add_child(section.actor);
       this.moduleLists.push({ slot, box, shown: '\u0000', rows: new Map() });
@@ -594,7 +613,7 @@ export class Sheet implements SearchMount {
       if (!group) {
         group = {
           generation: entry.generation,
-          box: new St.BoxLayout({ vertical: true, x_expand: true }),
+          box: new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true }),
           rows: new Map(),
         };
         this.nowGroups.set(entry.module.id, group);
@@ -898,8 +917,7 @@ export class Sheet implements SearchMount {
    * the sections on the right, and the dock last, although the dock sits next
    * to the search entry. After the last stop it starts over; Escape is the way out.
    */
-  private tab(event: Clutter.Event): boolean {
-    const symbol = event.get_key_symbol();
+  private tab(symbol: number): boolean {
     const back = symbol === Clutter.KEY_ISO_Left_Tab;
     if (symbol !== Clutter.KEY_Tab && !back) return false;
     if (this.view !== null || !this.entry || !this.scroll || !this.dock) return false;
@@ -964,4 +982,34 @@ export class Sheet implements SearchMount {
     // While the notch is fetching the sheet it measures it anyway.
     if (!this.building) this.callbacks.changed();
   }
+}
+
+const NAVIGATION_KEYS: ReadonlyMap<number, [St.DirectionType, boolean]> = new Map([
+  [Clutter.KEY_Tab, [St.DirectionType.TAB_FORWARD, true]],
+  [Clutter.KEY_ISO_Left_Tab, [St.DirectionType.TAB_BACKWARD, true]],
+  [Clutter.KEY_Up, [St.DirectionType.UP, false]],
+  [Clutter.KEY_Down, [St.DirectionType.DOWN, false]],
+  [Clutter.KEY_Left, [St.DirectionType.LEFT, false]],
+  [Clutter.KEY_Right, [St.DirectionType.RIGHT, false]],
+]);
+
+/**
+ * Moves the focus for Tab and the arrow keys inside the focus group of the
+ * focused actor. GNOME 51 dropped St.FocusManager.navigate_from_event, which
+ * did the same.
+ */
+function navigateFromEvent(focusManager: St.FocusManager, event: Clutter.Event): boolean {
+  const native = (focusManager as { navigate_from_event?: (event: Clutter.Event) => boolean })
+    .navigate_from_event;
+  if (native) return native.call(focusManager, event);
+  if (event.type() !== Clutter.EventType.KEY_PRESS) return false;
+  if (event.get_state() & Clutter.ModifierType.MOD1_MASK) return false;
+  const navigation = NAVIGATION_KEYS.get(event.get_key_symbol());
+  if (!navigation) return false;
+  const focus = global.stage.get_key_focus();
+  // get_group takes a widget; the focus can be the ClutterText inside an entry.
+  let widget: Clutter.Actor | null = focus === global.stage ? null : focus;
+  while (widget && !(widget instanceof St.Widget)) widget = widget.get_parent();
+  const group = widget ? focusManager.get_group(widget as St.Widget) : null;
+  return group?.navigate_focus(focus, navigation[0], navigation[1]) ?? false;
 }

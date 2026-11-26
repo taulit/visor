@@ -1,5 +1,6 @@
 // "Notifications": what is in the message tray of the shell, newest first.
 // The shell keeps its banners; this module only lists, counts and announces.
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
@@ -134,7 +135,7 @@ class Notifications implements VisorModule {
         onChange: active => this.settings?.set_boolean('show-banners', !active),
       },
     });
-    this.list = new St.BoxLayout({ vertical: true, x_expand: true });
+    this.list = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
     this.section.body.add_child(this.list);
     this.empty = ctx.kit.empty(_('No new notifications'));
     this.section.body.add_child(this.empty);
@@ -409,7 +410,11 @@ class Notifications implements VisorModule {
   private buildDetails(notification: Notification, body: string): St.Widget {
     const kit = this.ctx!.kit;
     // Inline styles are scaled by St like the stylesheet.
-    const box = new St.BoxLayout({ vertical: true, x_expand: true, style: 'spacing: 8px;' });
+    const box = new St.BoxLayout({
+      orientation: Clutter.Orientation.VERTICAL,
+      x_expand: true,
+      style: 'spacing: 8px;',
+    });
     if (body) {
       // The class of the second line of a row: the same quiet text, here on several lines.
       const label = new St.Label({ style_class: 'visor-row-subtitle', text: body, x_expand: true });

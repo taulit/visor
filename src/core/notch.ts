@@ -45,6 +45,7 @@ import {
   themeClasses,
   type Rgb,
 } from './theme.js';
+import { addCaptureKeyController } from './keys.js';
 import type { Attention, NotchContent, NotchHost, NotchState } from './types.js';
 import { Ear } from '../lib/ear.js';
 import { PanelMenuProxy } from '../lib/panelMenu.js';
@@ -102,6 +103,7 @@ export class Notch implements NotchHost {
   private ears: [Ear, Ear];
   private seam: St.Widget;
   private body: St.Widget;
+  private escapeKeys: Clutter.Action | null;
   private clip: Clutter.Actor;
   /** The content widget that belongs to the current state. */
   private shown: St.Widget | null = null;
@@ -177,6 +179,12 @@ export class Notch implements NotchHost {
 
     // Escape goes to the content first. This handler has to be connected
     // before the menu manager connects its own, which closes the menu.
+    // GNOME 51 moved the manager's Escape into a capture-phase key controller
+    // on the same actor, which runs before captured-event. A controller added
+    // before it (the manager adds its own on every open) runs first.
+    this.escapeKeys = addCaptureKeyController(this.root, 'visor-escape', symbol =>
+      this.onCapturedKey(symbol),
+    );
     this.root.connectObject(
       'captured-event',
       (_actor: Clutter.Actor, event: Clutter.Event) => this.onCapturedEvent(event),
@@ -785,12 +793,13 @@ export class Notch implements NotchHost {
 
   /** While open, before anything inside sees the event. */
   private onCapturedEvent(event: Clutter.Event): boolean {
-    if (
-      this.model.state === 'open' &&
-      event.type() === Clutter.EventType.KEY_PRESS &&
-      event.get_key_symbol() === Clutter.KEY_Escape &&
-      this.content.handleEscape()
-    )
+    if (this.escapeKeys || event.type() !== Clutter.EventType.KEY_PRESS)
+      return Clutter.EVENT_PROPAGATE;
+    return this.onCapturedKey(event.get_key_symbol());
+  }
+
+  private onCapturedKey(symbol: number): boolean {
+    if (this.model.state === 'open' && symbol === Clutter.KEY_Escape && this.content.handleEscape())
       return Clutter.EVENT_STOP;
     // Otherwise the menu manager closes the notch on Escape and on a press outside.
     return Clutter.EVENT_PROPAGATE;

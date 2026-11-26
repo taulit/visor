@@ -39,7 +39,7 @@ pause() {
 # Test-only helpers inside the shell: a virtual pointer and keyboard, a module
 # that gives the notch something to show, and a sampler for the size of the body.
 shell_eval '(() => {
-    const seat = Clutter.get_default_backend().get_default_seat();
+    const seat = global.stage.context.get_backend().get_default_seat();
     const pointer = seat.create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
     const keyboard = seat.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
     const now = () => GLib.get_monotonic_time();

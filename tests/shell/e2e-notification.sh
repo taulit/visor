@@ -48,7 +48,7 @@ shell_wait_for 'visor !== null && visor.api !== null'
 log_before="$(wc -l <"$HOME/shell.log")"
 
 run "(() => {
-    const seat = Clutter.get_default_backend().get_default_seat();
+    const seat = global.stage.context.get_backend().get_default_seat();
     const pointer = seat.create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
     const now = () => GLib.get_monotonic_time();
     const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(true), false)));

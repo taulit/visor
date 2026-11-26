@@ -40,7 +40,7 @@ run '(() => { const qs = Main.panel.statusArea.quickSettings; for (const a of qs
 
 # Keys, as a person types them.
 run "(() => {
-    const keyboard = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
+    const keyboard = global.stage.context.get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
     const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(true), false)));
     const key = sym => {
         keyboard.notify_keyval(GLib.get_monotonic_time(), sym, Clutter.KeyState.PRESSED);

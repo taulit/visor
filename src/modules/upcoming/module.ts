@@ -1,4 +1,5 @@
 // "Up Next": the next events of the calendars the shell knows.
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Shell from 'gi://Shell';
@@ -163,7 +164,7 @@ class Upcoming implements VisorModule {
   buildSection(): St.Widget {
     const ctx = this.ctx!;
     const _ = ctx.t;
-    this.wrapper = new St.BoxLayout({ vertical: true, x_expand: true });
+    this.wrapper = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
     this.section = ctx.kit.section({ title: _('Up Next') });
     this.dayTitle = new St.Label({ style_class: 'visor-calendar-day-title', visible: false });
     this.section.body.add_child(this.dayTitle);
