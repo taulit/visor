@@ -11,7 +11,7 @@ prefs_click() {
     shell_eval "(async () => {
         const meta = global.get_window_actors().map(a => a.meta_window).find(w => w.title === '$PREFS_WINDOW');
         const { x, y } = meta.get_frame_rect();
-        const pointer = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+        const pointer = global.stage.context.get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
         const now = () => GLib.get_monotonic_time();
         const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
         for (const dx of [-10, 0]) {
@@ -33,7 +33,7 @@ prefs_drag() {
     shell_eval "(async () => {
         const meta = global.get_window_actors().map(a => a.meta_window).find(w => w.title === '$PREFS_WINDOW');
         const { x, y } = meta.get_frame_rect();
-        const pointer = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+        const pointer = global.stage.context.get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
         const now = () => GLib.get_monotonic_time();
         const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
         for (const dx of [-10, 0]) {
@@ -83,7 +83,7 @@ prefs_close() {
 }
 
 # The keyboard all typing goes through; a new device loses its first keys.
-PREFS_KEYBOARD="(globalThis.visorPrefsKeyboard ??= Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE))"
+PREFS_KEYBOARD="(globalThis.visorPrefsKeyboard ??= global.stage.context.get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE))"
 
 # prefs_type TEXT: types TEXT into whatever has the keyboard focus, then waits.
 prefs_type() {
@@ -122,7 +122,7 @@ prefs_scroll() {
     shell_eval "(async () => {
         const meta = global.get_window_actors().map(a => a.meta_window).find(w => w.title === '$PREFS_WINDOW');
         const { x, y, width, height } = meta.get_frame_rect();
-        const pointer = Clutter.get_default_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+        const pointer = global.stage.context.get_backend().get_default_seat().create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
         const now = () => GLib.get_monotonic_time();
         const wait = ms => new Promise(r => GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => (r(), false)));
         for (const dx of [-10, 0]) {

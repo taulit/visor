@@ -123,7 +123,7 @@ check 'closeCalendar closes' "$state" '"idle"'
 check 'open-shortcut is registered with the window manager' 'Main.wm._allowedKeybindings["open-shortcut"] !== undefined && global.display.get_keybinding_action(0, 0) !== undefined' true
 shell_eval 'visor.getSettings().set_strv("open-shortcut", ["<Super>y"])' >/dev/null
 pause 100
-press_combo='(async key => { const s = Clutter.get_default_backend().get_default_seat(); const k = s.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE); const t = () => GLib.get_monotonic_time(); k.notify_keyval(t(), Clutter.KEY_Super_L, Clutter.KeyState.PRESSED); k.notify_keyval(t(), key, Clutter.KeyState.PRESSED); k.notify_keyval(t(), key, Clutter.KeyState.RELEASED); k.notify_keyval(t(), Clutter.KEY_Super_L, Clutter.KeyState.RELEASED); await new Promise(r => GLib.timeout_add(0, 150, () => (r(), false))); return visor.notch.state; })'
+press_combo='(async key => { const s = global.stage.context.get_backend().get_default_seat(); const k = s.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE); const t = () => GLib.get_monotonic_time(); k.notify_keyval(t(), Clutter.KEY_Super_L, Clutter.KeyState.PRESSED); k.notify_keyval(t(), key, Clutter.KeyState.PRESSED); k.notify_keyval(t(), key, Clutter.KeyState.RELEASED); k.notify_keyval(t(), Clutter.KEY_Super_L, Clutter.KeyState.RELEASED); await new Promise(r => GLib.timeout_add(0, 150, () => (r(), false))); return visor.notch.state; })'
 check 'Super+Y (open-shortcut) opens' "$press_combo(Clutter.KEY_y)" '"open"'
 check 'Super+Y closes while open (action mode POPUP)' "$press_combo(Clutter.KEY_y)" '"idle"'
 check 'Super+V (shell shortcut for the notification list) opens' "$press_combo(Clutter.KEY_v)" '"open"'
