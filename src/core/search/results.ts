@@ -78,7 +78,7 @@ class Line {
     });
     this.actor.add_child(this.tile);
     const text = new St.BoxLayout({
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       y_align: Clutter.ActorAlign.CENTER,
     });
@@ -230,7 +230,7 @@ export class Results {
   constructor(private callbacks: ResultsCallbacks) {
     this.box = new St.BoxLayout({
       style_class: 'visor-results',
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       accessible_role: Atk.Role.LIST,
     });
@@ -318,7 +318,11 @@ export class Results {
     let section = this.sections.get(id);
     if (!section) {
       section = {
-        box: new St.BoxLayout({ vertical: true, x_expand: true, visible: false }),
+        box: new St.BoxLayout({
+          orientation: Clutter.Orientation.VERTICAL,
+          x_expand: true,
+          visible: false,
+        }),
         label: new St.Label({
           style_class: 'visor-result-group',
           accessible_role: Atk.Role.HEADING,

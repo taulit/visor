@@ -396,7 +396,7 @@ export class Sheet implements SearchMount {
 
     // Main view: search row, then the columns.
     const mainPage = (this.mainPage = new St.BoxLayout({
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       y_expand: true,
     }));
@@ -450,8 +450,15 @@ export class Sheet implements SearchMount {
     const columns = new St.BoxLayout({ style_class: 'visor-columns', x_expand: true });
     this.scroll = this.buildScroll(columns);
     mainPage.add_child(this.scroll);
-    this.left = new St.BoxLayout({ style_class: 'visor-column', vertical: true });
-    this.right = new St.BoxLayout({ style_class: 'visor-column', vertical: true, x_expand: true });
+    this.left = new St.BoxLayout({
+      style_class: 'visor-column',
+      orientation: Clutter.Orientation.VERTICAL,
+    });
+    this.right = new St.BoxLayout({
+      style_class: 'visor-column',
+      orientation: Clutter.Orientation.VERTICAL,
+      x_expand: true,
+    });
     columns.add_child(this.left);
     columns.add_child(this.right);
     this.nowSection = kit.section({ title: _('Now') });
@@ -459,7 +466,7 @@ export class Sheet implements SearchMount {
 
     // A module view: header with back button and title, then the view.
     const viewPage = (this.viewPage = new St.BoxLayout({
-      vertical: true,
+      orientation: Clutter.Orientation.VERTICAL,
       x_expand: true,
       y_expand: true,
       visible: false,
@@ -486,7 +493,11 @@ export class Sheet implements SearchMount {
       y_align: Clutter.ActorAlign.CENTER,
     });
     header.add_child(this.viewActions);
-    this.viewBox = new St.BoxLayout({ style_class: 'visor-view', vertical: true, x_expand: true });
+    this.viewBox = new St.BoxLayout({
+      style_class: 'visor-view',
+      orientation: Clutter.Orientation.VERTICAL,
+      x_expand: true,
+    });
     this.viewScroll = this.buildScroll(this.viewBox);
     viewPage.add_child(this.viewScroll);
 
@@ -520,7 +531,7 @@ export class Sheet implements SearchMount {
    * that leaves room for the hover area of the rows sits one level further in.
    */
   private buildScroll(content: St.BoxLayout): St.ScrollView {
-    const child = new St.BoxLayout({ vertical: true, x_expand: true });
+    const child = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
     child.add_child(content);
     return new St.ScrollView({
       style_class: 'visor-scroll',
@@ -554,7 +565,7 @@ export class Sheet implements SearchMount {
       const label = new St.Label({ style_class: 'visor-modules-hint', text: hint, x_expand: true });
       label.clutter_text.line_wrap = true;
       section.body.add_child(label);
-      const box = new St.BoxLayout({ vertical: true, x_expand: true });
+      const box = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
       section.body.add_child(box);
       view.add_child(section.actor);
       this.moduleLists.push({ slot, box, shown: '\u0000', rows: new Map() });
@@ -594,7 +605,7 @@ export class Sheet implements SearchMount {
       if (!group) {
         group = {
           generation: entry.generation,
-          box: new St.BoxLayout({ vertical: true, x_expand: true }),
+          box: new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true }),
           rows: new Map(),
         };
         this.nowGroups.set(entry.module.id, group);
